@@ -8,8 +8,9 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="Padel Metric">
-  <link id="pwa-apple-icon" rel="apple-touch-icon">
-  <link id="pwa-manifest" rel="manifest">
+  <link id="pwa-apple-icon" rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+  <link id="pwa-manifest" rel="manifest" href="manifest.json">
+  <link rel="icon" type="image/png" href="icons/icon-192.png">
   <title>PADEL METRIC</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -1268,7 +1269,6 @@
 
 <script>
   const FIXED_COURT_SIDES = ['Drive', 'Revés', 'Revés', 'Drive'];
-  const AI_GENERATED_ARENA_FILE = 'watermarked_img_129750674053782507.jpg';
 
   let dbPlayers = JSON.parse(localStorage.getItem('pm_jugadores_v5')) || [];
   let dbProfiles = JSON.parse(localStorage.getItem('pm_perfiles_v6')) || {};
@@ -1341,9 +1341,13 @@
   }
 
   function saveDB() {
-    localStorage.setItem('pm_jugadores_v5', JSON.stringify(dbPlayers));
-    localStorage.setItem('pm_perfiles_v6', JSON.stringify(dbProfiles));
-    localStorage.setItem('pm_historial_v5', JSON.stringify(matchHistory));
+    try {
+      localStorage.setItem('pm_jugadores_v5', JSON.stringify(dbPlayers));
+      localStorage.setItem('pm_perfiles_v6', JSON.stringify(dbProfiles));
+      localStorage.setItem('pm_historial_v5', JSON.stringify(matchHistory));
+    } catch (err) {
+      showToast('⚠️ Memoria llena: exporta la BD y quita fotos o la portada');
+    }
   }
 
   function renderAvatarHTML(playerName, extraClass = 'avatar-p1', customStyle = '', isGeneric = false, fallbackLabel = '') {
@@ -1475,7 +1479,7 @@
       return;
     }
     const fallbackDataURL = generateRealisticArenaCoverDataURL();
-    box.style.backgroundImage = `linear-gradient(90deg, rgba(6,9,15,0.75) 0%, rgba(6,9,15,0.3) 55%, rgba(6,9,15,0.1) 100%), url('${AI_GENERATED_ARENA_FILE}'), url('${fallbackDataURL}')`;
+    box.style.backgroundImage = `linear-gradient(90deg, rgba(6,9,15,0.75) 0%, rgba(6,9,15,0.3) 55%, rgba(6,9,15,0.1) 100%), url('${fallbackDataURL}')`;
   }
 
   function handleCustomCover(event) {
@@ -1483,13 +1487,24 @@
     if (!file) return;
     const reader = new FileReader();
     reader.onload = (e) => {
-      try {
-        localStorage.setItem('pm_custom_cover', e.target.result);
-        loadCustomCover();
-        showToast('Portada actualizada');
-      } catch (err) {
-        showToast('Elige una imagen más ligera');
-      }
+      // Reduce la imagen antes de guardarla para no llenar la memoria del móvil
+      const img = new Image();
+      img.onload = () => {
+        const scale = Math.min(1, 1080 / img.width);
+        const c = document.createElement('canvas');
+        c.width = Math.round(img.width * scale);
+        c.height = Math.round(img.height * scale);
+        c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
+        try {
+          localStorage.setItem('pm_custom_cover', c.toDataURL('image/jpeg', 0.8));
+          loadCustomCover();
+          showToast('Portada actualizada');
+        } catch (err) {
+          showToast('Elige una imagen más ligera');
+        }
+      };
+      img.onerror = () => showToast('No se pudo leer la imagen');
+      img.src = e.target.result;
     };
     reader.readAsDataURL(file);
   }
@@ -3364,6 +3379,17 @@
     initPlayerCardInteractions();
     renderSetupCourt();
   });
+
+  // App instalable y uso sin conexión
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('sw.js').catch(() => {});
+    });
+  }
+  // Pide al sistema que no borre los datos guardados de la app
+  if (navigator.storage && navigator.storage.persist) {
+    navigator.storage.persist().catch(() => {});
+  }
 </script>
 </body>
 </html>
