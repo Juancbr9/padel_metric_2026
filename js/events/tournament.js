@@ -502,6 +502,7 @@ function renderTournamentDetailHTML(t) {
       ${t.champion ? `<div class="champion-banner"><svg class="icon icon-lg"><use href="#i-trophy"/></svg><div><small>Campeones</small><strong>${escapeHtml(teamById(t, t.champion).players.join(' / '))}</strong></div></div>`
         : `<div class="event-progress" style="margin-top:12px;"><i style="width:${total ? (played / total) * 100 : 0}%"></i></div><div class="event-card-sub" style="position:relative;">${played} de ${total} partidos jugados</div>`}
     </div>
+    <button class="btn-icon share-btn" onclick="shareTournamentImage(${jsArg(t.id)})"><svg class="icon"><use href="#i-share"/></svg> Compartir ${t.format === 'ko' || t.koBuilt ? 'cuadro' : 'clasificación'}</button>
     <div class="sort-strip">${tabs.map(([k, l]) => `<button type="button" class="sort-chip ${tView.tab === k ? 'active' : ''}" onclick="setTournamentTab('${k}')">${l}</button>`).join('')}</div>
     ${body}
     <button class="btn-icon" style="width:100%;padding:11px;margin-top:14px;color:var(--coral);" onclick="deleteTournament(${jsArg(t.id)})"><svg class="icon"><use href="#i-trash"/></svg> Eliminar torneo</button>`;

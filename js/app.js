@@ -101,6 +101,7 @@ window.addEventListener('DOMContentLoaded', () => {
   initPlayerCardInteractions();
   renderVoiceToggle();
   switchMainTab('home');
+  initSync();
 });
 
 // Botón "Instalar app": el navegador avisa cuando la app se puede instalar

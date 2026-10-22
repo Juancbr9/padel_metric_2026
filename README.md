@@ -11,7 +11,7 @@ Marcador, estadísticas y competiciones de pádel. Se instala en el móvil y fun
 **Jugar**
 - **Partido en directo**: ventaja, star point o punto de oro; tercer set completo o súper tie-break; cambios de lado, bolas de break, cronómetro y narrador de voz.
 - **Torneos**: eliminatoria con cuadro, liga todos contra todos, o fase de grupos con cuadro final. Cabezas de serie por ELO o sorteo, y parejas equilibradas automáticamente. Cada cruce se puede anotar a mano o jugar con el marcador en directo, y el resultado pasa solo al cuadro.
-- **Americano y Mexicano**: Americano (cambias de pareja en cada ronda), Americano por parejas fijas, Mexicano (cruces según la clasificación), Mexicano mixto y Pozo (los ganadores suben de pista y los perdedores bajan). Admite cualquier número de jugadores y de pistas, a 16, 21, 24 o 32 puntos, con descansos rotativos.
+- **Americano y Mexicano**: Americano (cambias de pareja en cada ronda), Americano por parejas fijas, Mexicano (cruces según la clasificación), Mexicano mixto y Pozo (los ganadores suben de pista y los perdedores bajan). Admite cualquier número de jugadores y de pistas, con descansos rotativos. Tipos de partido: a puntos (16, 21, 24 o 32), juegos fijos, por tiempo (con cronómetro y aviso al acabar) o a un set (corto a 4, completo a 6 o pro set a 9).
 
 **Analizar**
 - **Mapa de calor de golpes**: zona de volea, transición y fondo, en el lado drive o revés.
@@ -19,6 +19,10 @@ Marcador, estadísticas y competiciones de pádel. Se instala en el móvil y fun
 - **Ranking ELO** con podio, forma reciente, cara a cara y rendimiento por parejas.
 - **Ficha de jugador**: evolución del ELO, rachas, sets y juegos, mejor compañero, rival más difícil, golpes ganadores, mapa de calor y últimos partidos.
 - **Historial** con resumen de actividad, póster para WhatsApp y exportación a Excel.
+
+**Compartir**
+- **Imágenes para WhatsApp** de clasificaciones de americanos, ligas, grupos y cuadros de torneo.
+- **Sincronizar entre móviles**: un club compartido en Supabase (gratis) para que todo el grupo vea el mismo ranking, partidos, torneos y americanos. Guía en [`supabase/LEEME.md`](supabase/LEEME.md).
 
 ## Datos de ejemplo
 

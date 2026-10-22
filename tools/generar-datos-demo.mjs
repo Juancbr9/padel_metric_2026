@@ -150,70 +150,76 @@ const payload = await p.evaluate(() => {
   playTournament(t3, 6);
 
   // ---------- Americanos ----------
-  function makeAmericano(name, format, players, points, opts = {}) {
+  function makeAmericano(name, format, players, matchKind, matchValue, opts = {}) {
     switchMainTab('americano');
     startAmericanoDraft();
-    Object.assign(eventDraft, { name, format, players, points, ...opts });
+    Object.assign(eventDraft, { name, format, players, matchKind, matchValue, ...opts });
     createAmericanoFromDraft();
     const ev = americanos[0];
     ev.createdAt = tick(1, 4);
     return ev;
   }
-  function playAmericano(ev, maxRounds = Infinity) {
+  // Resultado simulado según el tipo de partido (puntos, juegos fijos, tiempo o set)
+  function simScore(ev, m) {
     const strength = side => side.reduce((a, n) => a + level[n], 0) / side.length;
-    let r = 0;
-    while (r < maxRounds) {
-      const round = ev.rounds[ev.rounds.length - 1];
-      round.matches.forEach((m, mi) => {
-        const pA = Math.min(0.75, Math.max(0.25, 0.5 + (strength(m.a) - strength(m.b)) * 0.012 + (rnd() - 0.5) * 0.3));
-        let v = Math.round(ev.points * pA);
-        if (ev.format === 'pozo' && v * 2 === ev.points) v += rnd() < 0.5 ? 1 : -1;
-        saveAmericanoScore(ev.id, ev.rounds.length - 1, mi, v);
-      });
-      r++;
-      if (ev.rounds.length >= ev.totalRounds || ['americano', 'fixed'].includes(ev.format)) {
-        if (['americano', 'fixed'].includes(ev.format)) {
-          ev.rounds.forEach((rd, ri) => rd.matches.forEach((m, mi) => { if (m.sa === null && r < maxRounds) { /* se rellenan abajo */ } }));
-        }
-        break;
-      }
-      nextAmericanoRound(ev.id);
+    const pA = Math.min(0.75, Math.max(0.25, 0.5 + (strength(m.a) - strength(m.b)) * 0.012 + (rnd() - 0.5) * 0.3));
+    const mt = matchTypeOf(ev);
+    if (MATCH_TYPES[mt.kind].fixedTotal) {
+      let v = Math.round(mt.value * pA);
+      if (ev.format === 'pozo' && v * 2 === mt.value) v += rnd() < 0.5 ? 1 : -1;
+      return [v];
+    }
+    if (mt.kind === 'set') {
+      const T = mt.value;
+      const loser = rnd() < 0.15 ? T : rnd() < 0.2 ? T - 1 : Math.floor(rnd() * (T - 1));
+      const winner = loser >= T - 1 ? T + 1 : T;
+      return rnd() < pA ? [winner, loser] : [loser, winner];
+    }
+    const total = Math.round(mt.value * 0.45 + rnd() * 3);
+    let a = Math.round(total * pA), b = total - a;
+    if (a === b && ev.format === 'pozo') rnd() < pA ? a++ : b++;
+    return [a, b];
+  }
+  function scoreRound(ev, ri) {
+    ev.rounds[ri].matches.forEach((m, mi) => saveAmericanoScore(ev.id, ri, mi, ...simScore(ev, m)));
+  }
+  function playAmericano(ev, maxRounds = Infinity) {
+    for (let r = 0; r < maxRounds; r++) {
+      scoreRound(ev, ev.rounds.length - 1);
+      if (ev.rounds.length >= ev.totalRounds) break;
+      if (r < maxRounds - 1) nextAmericanoRound(ev.id);
     }
   }
-  function fillAllRounds(ev, upto) {
-    const strength = side => side.reduce((a, n) => a + level[n], 0) / side.length;
-    ev.rounds.slice(0, upto).forEach((rd, ri) => rd.matches.forEach((m, mi) => {
-      const pA = Math.min(0.75, Math.max(0.25, 0.5 + (strength(m.a) - strength(m.b)) * 0.012 + (rnd() - 0.5) * 0.3));
-      saveAmericanoScore(ev.id, ri, mi, Math.round(ev.points * pA));
-    }));
+  function fillAllRounds(ev, upto = ev.rounds.length) {
+    for (let ri = 0; ri < upto; ri++) scoreRound(ev, ri);
   }
 
-  const a1 = makeAmericano('Americano de los Jueves', 'americano', shuffled(men.slice(0, 8)), 24);
-  fillAllRounds(a1, a1.rounds.length);
+  const a1 = makeAmericano('Americano de los Jueves', 'americano', shuffled(men.slice(0, 8)), 'points', 24);
+  fillAllRounds(a1);
   for (let i = 0; i < 3; i++) simulateMatch(quad(women));
-  const a2 = makeAmericano('Mexicano Mixto Nocturno', 'mixicano', [...men.slice(2, 8), ...women.slice(0, 6)], 21, { rounds: 5 });
+  const a2 = makeAmericano('Mexicano Mixto Nocturno', 'mixicano', [...men.slice(2, 8), ...women.slice(0, 6)], 'points', 21, { rounds: 5 });
   playAmericano(a2, 5);
-  const a3 = makeAmericano('Americano por Parejas', 'fixed', pairsOf(shuffled(women.slice(0, 10)), 5).flat(), 16);
-  fillAllRounds(a3, a3.rounds.length);
+  const a3 = makeAmericano('Americano por Parejas a un Set', 'fixed', pairsOf(shuffled(women.slice(0, 10)), 5).flat(), 'set', 6);
+  fillAllRounds(a3);
   for (let i = 0; i < 3; i++) simulateMatch(quad(men));
-  const a4 = makeAmericano('Pozo del Sábado', 'pozo', [...men.slice(4, 12)], 21, { rounds: 6 });
+  const a4 = makeAmericano('Pozo del Sábado', 'pozo', [...men.slice(4, 12)], 'points', 21, { rounds: 6 });
   playAmericano(a4, 6);
-  const a5 = makeAmericano('Mexicano Femenino', 'mexicano', women.slice(0, 8), 24, { rounds: 5 });
-  playAmericano(a5, 3);
-  const a6 = makeAmericano('Pozo Mixto (en juego)', 'pozo', [...men.slice(0, 4), ...women.slice(4, 8)], 21, { rounds: 6 });
-  playAmericano(a6, 2);
+  const a5 = makeAmericano('Mexicano Femenino por Tiempo', 'mexicano', women.slice(0, 8), 'time', 15, { rounds: 5 });
+  playAmericano(a5, 4);
+  const a6 = makeAmericano('Pozo Mixto (en juego)', 'pozo', [...men.slice(0, 4), ...women.slice(4, 8)], 'games', 8, { rounds: 6 });
+  playAmericano(a6, 3);
   for (let i = 0; i < 2; i++) simulateMatch(mixedQuad(), { ts: tick(0.2, 0.6) });
 
   tView = { mode: 'list', tid: null, tab: null };
   setupConfig.slots = ['GEN_0', 'GEN_1', 'GEN_2', 'GEN_3'];
-  return { app: 'Padel Metric', version: 4, exportedAt: new Date().toISOString(), dbPlayers, dbProfiles, matchHistory, tournaments, americanos };
+  return { app: 'Padel Metric', version: 5, exportedAt: new Date().toISOString(), dbPlayers, dbProfiles, matchHistory, tournaments, americanos };
 });
 fs.writeFileSync('assets/demo/padel-metric-demo.json', JSON.stringify(payload));
 const summary = {
   players: payload.dbPlayers.length, matches: payload.matchHistory.length,
   points: payload.matchHistory.reduce((a, m) => a + m.points.length, 0),
   tournaments: payload.tournaments.map(t => [t.name, t.format, t.status, t.champion && t.teams.find(x => x.id === t.champion).players.join(' / ')]),
-  americanos: payload.americanos.map(a => [a.name, a.format, a.status, a.rounds.length + '/' + a.totalRounds]),
+  americanos: payload.americanos.map(a => [a.name, a.format, a.matchType && a.matchType.kind, a.status, a.rounds.length + '/' + a.totalRounds]),
   first: payload.matchHistory.at(-1).date, last: payload.matchHistory[0].date
 };
 console.log(JSON.stringify(summary, null, 1));

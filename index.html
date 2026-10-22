@@ -149,6 +149,9 @@
     </div>
     <div class="menu-group-title">Datos</div>
     <div class="menu-list">
+      <button type="button" class="menu-row" onclick="openSyncPanel()">
+        <svg class="icon"><use href="#i-users"/></svg><span>Sincronizar entre móviles</span><span id="sync-hint" class="menu-row-hint">Desactivado</span>
+      </button>
       <button type="button" class="menu-row" onclick="exportBackupJSON()">
         <svg class="icon"><use href="#i-download"/></svg><span>Exportar copia de seguridad</span><span class="menu-row-hint">.json</span>
       </button>
@@ -170,7 +173,7 @@
     </div>
     <div class="menu-footer">
       <svg class="menu-footer-logo"><use href="#logo-mark"/></svg>
-      <span>Padel Metric · v4.0</span>
+      <span>Padel Metric · v5.0</span>
     </div>
   </div>
 </div>
@@ -763,7 +766,7 @@
 <div id="poster-modal" class="sheet-backdrop hidden" onclick="closePosterModal()">
   <div class="telemetry-sheet" onclick="event.stopPropagation()">
     <div style="display:flex; justify-content:space-between; align-items:center;">
-      <div style="font-family:var(--font-display);font-size:1.3rem;font-weight:900;text-transform:uppercase;color:var(--volt);">PÓSTER DEL PARTIDO</div>
+      <div id="poster-modal-title" style="font-family:var(--font-display);font-size:1.3rem;font-weight:900;text-transform:uppercase;color:var(--volt);">Póster del partido</div>
       <button class="btn-icon" onclick="closePosterModal()">✕</button>
     </div>
     <canvas id="poster-canvas" width="1080" height="1350" class="hidden"></canvas>
@@ -792,6 +795,8 @@
 <script src="js/events/common.js"></script>
 <script src="js/events/tournament.js"></script>
 <script src="js/events/americano.js"></script>
+<script src="js/share.js"></script>
+<script src="js/sync.js"></script>
 <script src="js/home.js"></script>
 <script src="js/app.js"></script>
 </body>

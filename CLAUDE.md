@@ -26,7 +26,9 @@ El dueño del proyecto no es programador: explica los cambios en español y en l
   - `stats.js`, `poster.js`, `ranking.js` (incluye ELO y podio), `history.js` (historial, copias de seguridad).
   - `events/common.js`: utilidades de competición (selector de jugadores, modal de resultados, `escapeHtml`/`jsArg` están en `core/utils.js`).
   - `events/tournament.js`: torneos (eliminatoria, liga, grupos + cuadro). Un partido de torneo se puede jugar con el marcador: `startMatch({ kind: 'tournament', tid, mid })` y al terminar `applyLinkedMatchResult` anota el resultado en el cuadro.
-  - `events/americano.js`: Americano, Americano por parejas, Mexicano, Mexicano mixto y Pozo (ganadores suben de pista, perdedores bajan; sin empates; múltiplo de 4 jugadores).
+  - `events/americano.js`: Americano, Americano por parejas, Mexicano, Mexicano mixto y Pozo (ganadores suben de pista, perdedores bajan; sin empates; múltiplo de 4 jugadores). Tipo de partido en `ev.matchType` (`points`, `games` = total fijo; `time` con cronómetro de ronda; `set` a 4, 6 o 9 con validación). Los eventos antiguos solo tienen `ev.points`: usa siempre `matchTypeOf(ev)`.
+  - `share.js`: imágenes 1080×1350 para compartir clasificaciones y cuadros (usa el lienzo y el modal del póster).
+  - `sync.js`: sincronización entre móviles con Supabase (club compartido). `saveDB()` llama a `trackChanges()` (pone `updatedAt` a lo que cambia y anota borrados en `syncMeta.deleted`) y a `scheduleSync()`. La fusión es por id con `updatedAt` y respeta los borrados. Al importar datos hay que poner `entityHashes = null` antes de `saveDB()` para no generar borrados. El SQL está en `supabase/setup.sql` y la guía en `supabase/LEEME.md`.
   - `home.js`: página de inicio (sección por defecto): resumen, partido en pausa, accesos rápidos, competiciones en juego, último partido y top 3.
   - `app.js`: navegación (`switchMainTab`, `SECTIONS`), menú, ajustes (`appSettings`), exportación CSV, instalación.
   - `history.js` también tiene `applyBackupData`, `loadDemoData` (datos de ejemplo) y `openFactoryReset`/`factoryReset` (borra todas las claves `pm_`).
@@ -37,7 +39,7 @@ El dueño del proyecto no es programador: explica los cambios en español y en l
 
 - Cada partido guarda `state.points`: un objeto por punto con `s` (set), `n` (nombre del jugador), `t` (`W`, `ENF`, `EF`, `DF`, `N` neutro), `sh` (golpe), `z` (zona `R` red/volea, `T` transición, `F` fondo), `l` (lado `D` drive / `V` revés), `w` (pareja ganadora), `sv` (índice del sacador), `sn` (1.º o 2.º saque), `bp` (bola de break), `gp` (punto de oro), `tb` (tie-break), `at` (segundo del partido).
 - Los partidos antiguos no tienen `points`: todo el código nuevo debe funcionar sin ese campo.
-- Claves de `localStorage`: `pm_jugadores_v5`, `pm_perfiles_v6`, `pm_historial_v5`, `pm_partido_activo_v14`, `pm_torneos_v1`, `pm_americanos_v1`, `pm_ajustes_v1`, `pm_custom_cover`, `pm_theme_light`, `pm_voz`. No cambiarlas sin migrar los datos. La copia de seguridad (JSON) incluye jugadores, perfiles, historial, torneos y americanos.
+- Claves de `localStorage`: `pm_jugadores_v5`, `pm_perfiles_v6`, `pm_historial_v5`, `pm_partido_activo_v14`, `pm_torneos_v1`, `pm_americanos_v1`, `pm_ajustes_v1`, `pm_sync_v1` (club), `pm_sync_meta_v1` (borrados), `pm_custom_cover`, `pm_theme_light`, `pm_voz`. No cambiarlas sin migrar los datos. La copia de seguridad (JSON) incluye jugadores, perfiles, historial, torneos y americanos.
 - Textos: tono profesional y descriptivo, sin emojis ni apodos (nada de "Rey de la pista").
 - Índices de jugadores: 0 y 1 = pareja 1, 2 y 3 = pareja 2.
 
@@ -47,4 +49,4 @@ El dueño del proyecto no es programador: explica los cambios en español y en l
 python3 -m http.server 8765   # y abrir http://localhost:8765
 ```
 
-Comprobar siempre: inicio, menú superior y cambio de sección, cargar datos de ejemplo y restaurar de fábrica, empezar un partido, registrar golpes en modo Toque y Gestos, deshacer, tie-break, súper tie-break, estadísticas (mapa de calor y puntos clave), torneo con resultado manual y en directo, americano/mexicano, ranking y ficha de jugador, en modo oscuro y claro, a 400 px de ancho.
+Comprobar siempre: inicio, menú superior y cambio de sección, cargar datos de ejemplo y restaurar de fábrica, empezar un partido, registrar golpes en modo Toque y Gestos, deshacer, tie-break, súper tie-break, estadísticas (mapa de calor y puntos clave), torneo con resultado manual y en directo, americano/mexicano con cada tipo de partido, compartir imagen, sincronización (con un servidor simulado), ranking y ficha de jugador, en modo oscuro y claro, a 400 px de ancho.

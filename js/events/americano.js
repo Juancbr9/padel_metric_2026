@@ -8,7 +8,35 @@ const AMERICANO_FORMATS = {
   mixicano: { main: 'Mexicano mixto', sub: 'Siempre hombre + mujer' },
   pozo: { main: 'Pozo', sub: 'Ganadores suben de pista, perdedores bajan' }
 };
-const AMERICANO_POINTS = [16, 21, 24, 32];
+// Tipos de partido: cómo se juega y se anota cada cruce
+const MATCH_TYPES = {
+  points: { main: 'A puntos', sub: 'Se reparten X puntos', values: [16, 21, 24, 32], unit: 'puntos', fixedTotal: true },
+  games: { main: 'Juegos fijos', sub: 'Se juegan X juegos', values: [6, 8, 10, 12], unit: 'juegos', fixedTotal: true },
+  time: { main: 'Por tiempo', sub: 'Cuentan los juegos', values: [10, 12, 15, 20], unit: 'juegos', valueUnit: 'min' },
+  set: { main: 'A un set', sub: 'Con tie-break', values: [4, 6, 9], unit: 'juegos' }
+};
+const SET_NAMES = { 4: 'Set corto a 4', 6: 'Set completo a 6', 9: 'Pro set a 9' };
+
+function matchTypeOf(ev) {
+  return ev.matchType || { kind: 'points', value: ev.points || 24 };
+}
+
+function matchTypeLabel(mt) {
+  if (mt.kind === 'points') return `a ${mt.value} puntos`;
+  if (mt.kind === 'games') return `${mt.value} juegos fijos`;
+  if (mt.kind === 'time') return `${mt.value} minutos`;
+  return SET_NAMES[mt.value] ? SET_NAMES[mt.value].toLowerCase() : `set a ${mt.value}`;
+}
+
+function scoreUnit(ev) {
+  return MATCH_TYPES[matchTypeOf(ev).kind].unit;
+}
+
+// Un set es válido si alguien llega a X con 2 de ventaja, o gana X+1 a X-1 / X+1 a X (tie-break)
+function validSetScore(a, b, target) {
+  const hi = Math.max(a, b), lo = Math.min(a, b);
+  return (hi === target && lo <= target - 2) || (hi === target + 1 && (lo === target - 1 || lo === target));
+}
 let aView = { mode: 'list', aid: null, tab: 'rounds' };
 
 function findAmericano(aid) {
@@ -180,7 +208,11 @@ function americanoStandings(ev) {
       });
     });
   }));
-  const byPoints = Object.values(rows).sort((a, b) => b.pts - a.pts || b.diff - a.diff || b.w - a.w);
+  // A un set manda el número de partidos ganados; en el resto, los puntos o juegos sumados
+  const byWins = matchTypeOf(ev).kind === 'set';
+  const byPoints = Object.values(rows).sort((a, b) => byWins
+    ? (b.w - a.w || b.diff - a.diff || b.pts - a.pts)
+    : (b.pts - a.pts || b.diff - a.diff || b.w - a.w));
   if (ev.format !== 'pozo') return byPoints;
   // Pozo: manda la pista de la última ronda jugada (ganadores de la pista 1 primero)
   const lastDone = [...ev.rounds].reverse().find(roundComplete);
@@ -204,28 +236,65 @@ function updateAmericanoStatus(ev) {
 }
 
 // ---------- Anotar resultados ----------
+let scoreDraft = { a: 0, b: 0 };
+
 function openAmericanoScore(aid, ri, mi) {
   const ev = findAmericano(aid);
   const m = ev.rounds[ri].matches[mi];
-  // En el Pozo no puede haber empate: alguien tiene que subir y alguien bajar
-  const buttons = Array.from({ length: ev.points + 1 }, (_, v) => (ev.format === 'pozo' && v * 2 === ev.points) ? '' :
-    `<button type="button" class="score-pick ${m.sa === v ? 'on' : ''}" onclick="saveAmericanoScore(${jsArg(aid)}, ${ri}, ${mi}, ${v})">${v}<small>${ev.points - v}</small></button>`).join('');
-  openEventModal(`
-    <div class="event-modal-title">Ronda ${ri + 1} · Pista ${m.court}</div>
+  const mt = matchTypeOf(ev);
+  const head = `
+    <div class="event-modal-title">Ronda ${ri + 1} · Pista ${m.court} · ${escapeHtml(matchTypeLabel(mt))}</div>
     <div class="result-teams">
       <div class="result-team a">${escapeHtml(m.a.join(' / '))}</div>
       <div class="result-vs">VS</div>
       <div class="result-team b">${escapeHtml(m.b.join(' / '))}</div>
+    </div>`;
+  const clear = m.sa !== null ? `<button class="btn-icon" style="width:100%;padding:11px;margin-top:10px;color:var(--coral);" onclick="saveAmericanoScore(${jsArg(aid)}, ${ri}, ${mi}, null)">Borrar resultado</button>` : '';
+
+  if (MATCH_TYPES[mt.kind].fixedTotal) {
+    // Total fijo: basta con elegir lo de una pareja. En el Pozo no puede haber empate.
+    const buttons = Array.from({ length: mt.value + 1 }, (_, v) => (ev.format === 'pozo' && v * 2 === mt.value) ? '' :
+      `<button type="button" class="score-pick ${m.sa === v ? 'on' : ''}" onclick="saveAmericanoScore(${jsArg(aid)}, ${ri}, ${mi}, ${v})">${v}<small>${mt.value - v}</small></button>`).join('');
+    openEventModal(`${head}
+      <div class="form-label">${MATCH_TYPES[mt.kind].unit === 'puntos' ? 'Puntos' : 'Juegos'} de ${escapeHtml(pairLabel(m.a))} · entre las dos parejas suman ${mt.value}</div>
+      <div class="score-grid-pick">${buttons}</div>${clear}`);
+    return;
+  }
+
+  scoreDraft = { a: m.sa ?? 0, b: m.sb ?? 0 };
+  const hint = mt.kind === 'set'
+    ? `Set a ${mt.value} juegos: hay que ganar con 2 de diferencia o en el tie-break (${mt.value + 1}-${mt.value}).`
+    : `Anota los juegos que ha ganado cada pareja al acabar el tiempo.${ev.format === 'pozo' ? ' En el Pozo no puede haber empate.' : ''}`;
+  openEventModal(`${head}
+    <div class="score-steppers">
+      ${['a', 'b'].map(side => `
+        <div class="score-stepper ${side}">
+          <button type="button" class="btn-icon" onclick="stepScoreDraft('${side}', 1)">+</button>
+          <span id="score-draft-${side}">${scoreDraft[side]}</span>
+          <button type="button" class="btn-icon" onclick="stepScoreDraft('${side}', -1)">−</button>
+        </div>`).join('<div class="score-stepper-sep">–</div>')}
     </div>
-    <div class="form-label">Puntos de ${escapeHtml(pairLabel(m.a))} · el rival suma hasta ${ev.points}</div>
-    <div class="score-grid-pick">${buttons}</div>
-    ${m.sa !== null ? `<button class="btn-icon" style="width:100%;padding:11px;margin-top:10px;color:var(--coral);" onclick="saveAmericanoScore(${jsArg(aid)}, ${ri}, ${mi}, null)">Borrar resultado</button>` : ''}`);
+    <div class="empty-note" style="padding:4px 0 10px;">${hint}</div>
+    <button class="btn-volt" onclick="saveAmericanoScore(${jsArg(aid)}, ${ri}, ${mi}, scoreDraft.a, scoreDraft.b)">Guardar resultado</button>${clear}`);
 }
 
-function saveAmericanoScore(aid, ri, mi, v) {
+function stepScoreDraft(side, delta) {
+  scoreDraft[side] = Math.max(0, Math.min(99, scoreDraft[side] + delta));
+  document.getElementById(`score-draft-${side}`).innerText = scoreDraft[side];
+  vibrate(6);
+}
+
+function saveAmericanoScore(aid, ri, mi, v, vb) {
   const ev = findAmericano(aid);
   const m = ev.rounds[ri].matches[mi];
-  if (v === null) { m.sa = null; m.sb = null; } else { m.sa = v; m.sb = ev.points - v; }
+  const mt = matchTypeOf(ev);
+  if (v !== null && vb !== undefined) {
+    if (mt.kind === 'set' && !validSetScore(v, vb, mt.value)) { showToast(`Resultado no válido para un set a ${mt.value}`); return; }
+    if (ev.format === 'pozo' && v === vb) { showToast('En el Pozo tiene que haber un ganador'); return; }
+  }
+  if (v === null) { m.sa = null; m.sb = null; }
+  else if (vb !== undefined) { m.sa = v; m.sb = vb; }
+  else { m.sa = v; m.sb = mt.value - v; }
   // Mexicano: si se corrige una ronda antigua, las posteriores sin jugar se rehacen con la nueva clasificación
   if (['mexicano', 'mixicano', 'pozo'].includes(ev.format)) {
     while (ev.rounds.length - 1 > ri && !ev.rounds[ev.rounds.length - 1].matches.some(x => x.sa !== null)) ev.rounds.pop();
@@ -256,13 +325,14 @@ function deleteAmericano(aid) {
 
 // ---------- Alta ----------
 function startAmericanoDraft() {
-  eventDraft = { kind: 'americano', name: '', format: 'americano', players: [], points: 24, courts: null, rounds: null };
+  eventDraft = { kind: 'americano', name: '', format: 'americano', players: [], matchKind: 'points', matchValue: 24, courts: null, rounds: null };
   aView = { mode: 'create', aid: null, tab: 'rounds' };
   renderAmericanoView();
 }
 
 function setADraft(key, val) {
-  eventDraft[key] = key === 'points' ? parseInt(val, 10) : val;
+  eventDraft[key] = key === 'matchValue' ? parseInt(val, 10) : val;
+  if (key === 'matchKind') eventDraft.matchValue = MATCH_TYPES[val].values[val === 'set' ? 1 : Math.min(2, MATCH_TYPES[val].values.length - 1)];
   if (key === 'format') { eventDraft.courts = null; eventDraft.rounds = null; }
   renderAmericanoView();
 }
@@ -334,7 +404,7 @@ function createAmericanoFromDraft() {
   const def = draftDefaults(d);
   const ev = {
     id: uid('a'), name: d.name.trim(), format: d.format, createdAt: Date.now(), players: [...d.players],
-    points: d.points, courts: def.courts, totalRounds: def.rounds, rounds: [], status: 'active'
+    matchType: { kind: d.matchKind, value: d.matchValue }, courts: def.courts, totalRounds: def.rounds, rounds: [], status: 'active'
   };
   if (d.format === 'mixicano') {
     const f = ev.players.filter(p => ensureProfile(p).gender === 'F').length;
@@ -363,6 +433,7 @@ function createAmericanoFromDraft() {
 function renderAmericanoView() {
   const box = document.getElementById('view-americano');
   if (!box) return;
+  setTimeout(ensureRoundTimerTick, 0);
   if (aView.mode === 'create' && eventDraft && eventDraft.kind === 'americano') box.innerHTML = renderAmericanoCreateHTML();
   else if (aView.mode === 'detail' && findAmericano(aView.aid)) box.innerHTML = renderAmericanoDetailHTML(findAmericano(aView.aid));
   else box.innerHTML = renderAmericanoListHTML();
@@ -390,7 +461,7 @@ function renderAmericanoListHTML() {
           <span class="event-status ${ev.status}">${ev.status === 'finished' ? 'Finalizado' : 'En juego'}</span>
         </div>
         <div class="event-card-title">${escapeHtml(ev.name)}</div>
-        <div class="event-card-sub">${ev.players.length} jugadores · ${ev.courts} pista${ev.courts > 1 ? 's' : ''} · a ${ev.points} puntos · ${formatEventDate(ev.createdAt)}</div>
+        <div class="event-card-sub">${ev.players.length} jugadores · ${ev.courts} pista${ev.courts > 1 ? 's' : ''} · ${matchTypeLabel(matchTypeOf(ev))} · ${formatEventDate(ev.createdAt)}</div>
         <div class="event-progress"><i style="width:${(doneRounds / ev.totalRounds) * 100}%"></i></div>
         <div class="event-card-sub">Ronda ${Math.min(doneRounds + 1, ev.totalRounds)} de ${ev.totalRounds}${leader && leader.pj ? ` · Lidera ${escapeHtml(leader.members.map(shortName).join(' / '))} (${leader.pts})` : ''}</div>
       </button>`;
@@ -434,8 +505,14 @@ function renderAmericanoCreateHTML() {
       <input type="text" value="${escapeHtml(d.name)}" placeholder="Ej. Americano del viernes" oninput="eventDraft.name=this.value">
       <div class="form-label">Modalidad</div>
       ${segOptionsHTML(Object.entries(AMERICANO_FORMATS).map(([value, f]) => ({ value, main: f.main, sub: f.sub })), d.format, "setADraft.bind(null,'format')")}
-      <div class="form-label">Puntos por partido</div>
-      ${segOptionsHTML(AMERICANO_POINTS.map(p => ({ value: p, main: String(p), sub: 'puntos' })), d.points, "setADraft.bind(null,'points')")}
+      <div class="form-label">Tipo de partido</div>
+      ${segOptionsHTML(Object.entries(MATCH_TYPES).map(([value, t]) => ({ value, main: t.main, sub: t.sub })), d.matchKind, "setADraft.bind(null,'matchKind')")}
+      <div style="height:6px;"></div>
+      ${segOptionsHTML(MATCH_TYPES[d.matchKind].values.map(v => ({
+        value: v,
+        main: d.matchKind === 'set' ? SET_NAMES[v] : String(v),
+        sub: d.matchKind === 'set' ? `Tie-break a ${v}-${v}` : (MATCH_TYPES[d.matchKind].valueUnit || MATCH_TYPES[d.matchKind].unit)
+      })), d.matchValue, "setADraft.bind(null,'matchValue')")}
     </div>
     <div class="bento-card">
       <div class="section-header"><div class="section-title">Jugadores (${n})</div></div>
@@ -453,6 +530,75 @@ function renderAmericanoCreateHTML() {
     <button class="btn-icon" style="width:100%;padding:12px;margin-top:8px;" onclick="showAmericanoList()">Cancelar</button>`;
 }
 
+// ---------- Cronómetro de ronda (partidos por tiempo) ----------
+let roundTimerInterval = null;
+
+function roundTimerHTML(ev, ri, r) {
+  const mt = matchTypeOf(ev);
+  if (mt.kind !== 'time' || roundComplete(r)) return '';
+  const t = ev.timer && ev.timer.round === ri ? ev.timer : null;
+  if (!t) {
+    return `<button type="button" class="round-timer-btn" onclick="startRoundTimer(${jsArg(ev.id)}, ${ri})"><svg class="icon"><use href="#i-play"/></svg> Iniciar ${mt.value}:00</button>`;
+  }
+  return `
+    <div class="round-timer-box">
+      <span class="round-timer" data-ends="${t.endsAt}" data-aid="${escapeHtml(ev.id)}">${formatCountdown(t.endsAt - Date.now())}</span>
+      <button type="button" class="btn-icon" onclick="startRoundTimer(${jsArg(ev.id)}, ${ri})">Reiniciar</button>
+    </div>`;
+}
+
+function formatCountdown(ms) {
+  if (ms <= 0) return 'TIEMPO';
+  const s = Math.ceil(ms / 1000);
+  return `${String(Math.floor(s / 60)).padStart(2, '0')}:${String(s % 60).padStart(2, '0')}`;
+}
+
+function startRoundTimer(aid, ri) {
+  const ev = findAmericano(aid);
+  ev.timer = { round: ri, endsAt: Date.now() + matchTypeOf(ev).value * 60000, alerted: false };
+  saveDB();
+  vibrate([20, 40]);
+  renderAmericanoView();
+  ensureRoundTimerTick();
+}
+
+function ensureRoundTimerTick() {
+  if (roundTimerInterval) return;
+  roundTimerInterval = setInterval(() => {
+    const els = document.querySelectorAll('.round-timer');
+    if (!els.length) { clearInterval(roundTimerInterval); roundTimerInterval = null; return; }
+    els.forEach(el => {
+      const left = Number(el.dataset.ends) - Date.now();
+      el.innerText = formatCountdown(left);
+      el.classList.toggle('ending', left > 0 && left <= 60000);
+      el.classList.toggle('over', left <= 0);
+      const ev = findAmericano(el.dataset.aid);
+      if (left <= 0 && ev && ev.timer && !ev.timer.alerted) {
+        ev.timer.alerted = true;
+        saveDB();
+        vibrate([300, 120, 300, 120, 500]);
+        playTimeUpBeep();
+        speak('Tiempo. Fin de la ronda');
+        showToast('Tiempo: fin de la ronda');
+      }
+    });
+  }, 500);
+}
+
+function playTimeUpBeep() {
+  try {
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    [0, 0.35, 0.7].forEach(t => {
+      const o = ctx.createOscillator(), g = ctx.createGain();
+      o.frequency.value = 880;
+      g.gain.setValueAtTime(0.25, ctx.currentTime + t);
+      g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + t + 0.3);
+      o.connect(g); g.connect(ctx.destination);
+      o.start(ctx.currentTime + t); o.stop(ctx.currentTime + t + 0.3);
+    });
+  } catch (e) {}
+}
+
 function setAmericanoTab(tab) {
   aView.tab = tab;
   renderAmericanoView();
@@ -468,18 +614,18 @@ function renderAmericanoDetailHTML(ev) {
         <div class="podium-slot ${pos === 0 ? 'first' : ''}">
           ${renderAvatarHTML(st[pos].members[0], 'avatar-p1')}
           <div class="podium-name">${escapeHtml(st[pos].members.map(shortName).join(' / '))}</div>
-          <div class="podium-elo">${st[pos].pts} pts</div>
+          <div class="podium-elo">${matchTypeOf(ev).kind === 'set' ? `${st[pos].w} victorias` : `${st[pos].pts} ${scoreUnit(ev) === 'puntos' ? 'pts' : 'juegos'}`}</div>
           <div class="podium-step" style="height:${[64, 46, 34][pos]}px;">${pos + 1}</div>
         </div>` : '<div></div>').join('')}
     </div>` : `<div class="event-progress" style="margin-top:12px;"><i style="width:${(doneRounds / ev.totalRounds) * 100}%"></i></div>
-    <div class="event-card-sub" style="position:relative;">Ronda ${Math.min(doneRounds + 1, ev.totalRounds)} de ${ev.totalRounds} · a ${ev.points} puntos · ${ev.courts} pista${ev.courts > 1 ? 's' : ''}</div>`;
+    <div class="event-card-sub" style="position:relative;">Ronda ${Math.min(doneRounds + 1, ev.totalRounds)} de ${ev.totalRounds} · ${matchTypeLabel(matchTypeOf(ev))} · ${ev.courts} pista${ev.courts > 1 ? 's' : ''}</div>`;
 
   let body;
   if (aView.tab === 'table') {
     body = `
       <div class="bento-card">
         <table class="standings">
-          <thead><tr><th>${isTeamFormat(ev) ? 'Pareja' : 'Jugador'}</th>${ev.format === 'pozo' ? '<th>Pista</th>' : ''}<th>PJ</th><th>G</th><th>Dif</th><th>Pts</th></tr></thead>
+          <thead><tr><th>${isTeamFormat(ev) ? 'Pareja' : 'Jugador'}</th>${ev.format === 'pozo' ? '<th>Pista</th>' : ''}<th>PJ</th><th>G</th><th>Dif</th><th>${scoreUnit(ev) === 'puntos' ? 'Pts' : 'Juegos'}</th></tr></thead>
           <tbody>${st.map((r, i) => `
             <tr class="${i < 3 && r.pj ? 'qualify' : ''}">
               <td><span class="pos">${i + 1}</span>${escapeHtml(r.members.map(shortName).join(' / '))}</td>
@@ -492,6 +638,7 @@ function renderAmericanoDetailHTML(ev) {
     body = ev.rounds.map((r, ri) => `
       <div class="round-card ${roundComplete(r) ? 'done' : ''}">
         <div class="round-head"><span>Ronda ${ri + 1}</span>${r.rest && r.rest.length ? `<small>Descansa${r.rest.length > 1 ? 'n' : ''}: ${escapeHtml(r.rest.map(shortName).join(', '))}</small>` : ''}</div>
+        ${roundTimerHTML(ev, ri, r)}
         ${r.matches.map((m, mi) => `
           <button type="button" class="court-match" onclick="openAmericanoScore(${jsArg(ev.id)}, ${ri}, ${mi})">
             <span class="court-num">P${m.court}</span>
@@ -509,6 +656,7 @@ function renderAmericanoDetailHTML(ev) {
       <div class="section-hero-title">${escapeHtml(ev.name)}</div>
       ${podium}
     </div>
+    <button class="btn-icon share-btn" onclick="shareAmericanoImage(${jsArg(ev.id)})"><svg class="icon"><use href="#i-share"/></svg> Compartir clasificación</button>
     <div class="sort-strip">
       <button type="button" class="sort-chip ${aView.tab === 'rounds' ? 'active' : ''}" onclick="setAmericanoTab('rounds')">Rondas</button>
       <button type="button" class="sort-chip ${aView.tab === 'table' ? 'active' : ''}" onclick="setAmericanoTab('table')">Clasificación</button>

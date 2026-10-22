@@ -88,6 +88,8 @@ function applyBackupData(data) {
   matchHistory = data.matchHistory || [];
   tournaments = data.tournaments || [];
   americanos = data.americanos || [];
+  // Lo importado no cuenta como "borrado" de lo anterior: si hay club, se suma a sus datos
+  entityHashes = null;
   saveDB();
   closeAppMenu();
   tView = { mode: 'list', tid: null, tab: null };

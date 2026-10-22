@@ -5,6 +5,7 @@ function openPosterModal() {
   posterTargetState = posterTargetState || state;
   if (!posterTargetState) return;
   drawPosterCanvas(posterTargetState);
+  document.getElementById('poster-modal-title').innerText = 'Póster del partido';
   document.getElementById('poster-modal').classList.remove('hidden');
 }
 

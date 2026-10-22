@@ -16,6 +16,8 @@ function ensureProfile(key) {
 }
 
 function saveDB() {
+  // Marca qué ha cambiado (para la sincronización entre móviles) antes de guardar
+  if (typeof trackChanges === 'function') trackChanges();
   try {
     localStorage.setItem('pm_jugadores_v5', JSON.stringify(dbPlayers));
     localStorage.setItem('pm_perfiles_v6', JSON.stringify(dbProfiles));
@@ -25,4 +27,5 @@ function saveDB() {
   } catch (err) {
     showToast('Memoria llena: exporta una copia y quita fotos o la portada');
   }
+  if (typeof scheduleSync === 'function') scheduleSync();
 }
