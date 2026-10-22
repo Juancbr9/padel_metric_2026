@@ -5,7 +5,8 @@ const AMERICANO_FORMATS = {
   americano: { main: 'Americano', sub: 'Cambias de pareja cada ronda' },
   fixed: { main: 'Americano por parejas', sub: 'Parejas fijas, todos contra todos' },
   mexicano: { main: 'Mexicano', sub: 'Cada ronda se empareja por clasificación' },
-  mixicano: { main: 'Mexicano mixto', sub: 'Siempre hombre + mujer' }
+  mixicano: { main: 'Mexicano mixto', sub: 'Siempre hombre + mujer' },
+  pozo: { main: 'Pozo', sub: 'Ganadores suben de pista, perdedores bajan' }
 };
 const AMERICANO_POINTS = [16, 21, 24, 32];
 let aView = { mode: 'list', aid: null, tab: 'rounds' };
@@ -129,9 +130,36 @@ function buildFixedRounds(ev) {
   return rounds;
 }
 
+// Pozo: la pista 1 es la más alta. Los ganadores suben una pista y los perdedores bajan;
+// en cada pista se separan las dos parejas que llegan para formar parejas nuevas.
+function buildPozoRound(ev) {
+  const N = ev.courts;
+  if (!ev.rounds.length) {
+    const ranked = rankedForMexicano(ev, ev.players);
+    const matches = [];
+    for (let c = 0; c < N; c++) {
+      const [p1, p2, p3, p4] = ranked.slice(c * 4, c * 4 + 4);
+      matches.push({ court: c + 1, a: [p1, p4], b: [p2, p3], sa: null, sb: null });
+    }
+    return { matches, rest: [] };
+  }
+  const last = ev.rounds[ev.rounds.length - 1].matches;
+  const incoming = Array.from({ length: N }, () => []);
+  last.forEach(m => {
+    const c = m.court - 1;
+    const winners = m.sa > m.sb ? m.a : m.b;
+    const losers = m.sa > m.sb ? m.b : m.a;
+    incoming[Math.max(0, c - 1)].push(winners);
+    incoming[Math.min(N - 1, c + 1)].push(losers);
+  });
+  const matches = incoming.map(([x, y], c) => ({ court: c + 1, a: [x[0], y[0]], b: [x[1], y[1]], sa: null, sb: null }));
+  return { matches, rest: [] };
+}
+
 function generateNextRound(ev) {
   const round = ev.format === 'americano' ? buildAmericanoRound(ev)
     : ev.format === 'mixicano' ? buildMixicanoRound(ev)
+    : ev.format === 'pozo' ? buildPozoRound(ev)
     : buildMexicanoRound(ev);
   ev.rounds.push(round);
 }
@@ -152,7 +180,18 @@ function americanoStandings(ev) {
       });
     });
   }));
-  return Object.values(rows).sort((a, b) => b.pts - a.pts || b.diff - a.diff || b.w - a.w);
+  const byPoints = Object.values(rows).sort((a, b) => b.pts - a.pts || b.diff - a.diff || b.w - a.w);
+  if (ev.format !== 'pozo') return byPoints;
+  // Pozo: manda la pista de la última ronda jugada (ganadores de la pista 1 primero)
+  const lastDone = [...ev.rounds].reverse().find(roundComplete);
+  if (!lastDone) return byPoints;
+  const order = {};
+  lastDone.matches.forEach(m => {
+    const winners = m.sa > m.sb ? m.a : m.b;
+    m.a.concat(m.b).forEach(p => { order[p] = (m.court - 1) * 2 + (winners.includes(p) ? 0 : 1); });
+  });
+  byPoints.forEach(r => { r.court = Math.floor((order[r.key] ?? 99) / 2) + 1; });
+  return byPoints.sort((a, b) => (order[a.key] ?? 99) - (order[b.key] ?? 99) || b.pts - a.pts);
 }
 
 function roundComplete(r) {
@@ -168,7 +207,8 @@ function updateAmericanoStatus(ev) {
 function openAmericanoScore(aid, ri, mi) {
   const ev = findAmericano(aid);
   const m = ev.rounds[ri].matches[mi];
-  const buttons = Array.from({ length: ev.points + 1 }, (_, v) =>
+  // En el Pozo no puede haber empate: alguien tiene que subir y alguien bajar
+  const buttons = Array.from({ length: ev.points + 1 }, (_, v) => (ev.format === 'pozo' && v * 2 === ev.points) ? '' :
     `<button type="button" class="score-pick ${m.sa === v ? 'on' : ''}" onclick="saveAmericanoScore(${jsArg(aid)}, ${ri}, ${mi}, ${v})">${v}<small>${ev.points - v}</small></button>`).join('');
   openEventModal(`
     <div class="event-modal-title">Ronda ${ri + 1} · Pista ${m.court}</div>
@@ -187,7 +227,7 @@ function saveAmericanoScore(aid, ri, mi, v) {
   const m = ev.rounds[ri].matches[mi];
   if (v === null) { m.sa = null; m.sb = null; } else { m.sa = v; m.sb = ev.points - v; }
   // Mexicano: si se corrige una ronda antigua, las posteriores sin jugar se rehacen con la nueva clasificación
-  if (ev.format === 'mexicano' || ev.format === 'mixicano') {
+  if (['mexicano', 'mixicano', 'pozo'].includes(ev.format)) {
     while (ev.rounds.length - 1 > ri && !ev.rounds[ev.rounds.length - 1].matches.some(x => x.sa !== null)) ev.rounds.pop();
   }
   updateAmericanoStatus(ev);
@@ -256,6 +296,7 @@ function draftDefaults(d) {
   const n = d.players.length;
   const teams = Math.floor(n / 2);
   const maxCourts = d.format === 'fixed' ? Math.max(1, Math.floor(teams / 2)) : Math.max(1, Math.floor(n / 4));
+  if (d.format === 'pozo') return { courts: maxCourts, maxCourts, rounds: d.rounds || 6 };
   const courts = Math.min(d.courts || maxCourts, maxCourts);
   let rounds = d.rounds;
   if (!rounds) {
@@ -278,6 +319,7 @@ function validateADraft(d) {
   if (!d.name.trim()) return 'Ponle un nombre al evento';
   if (n < 4) return 'Hacen falta al menos 4 jugadores';
   if (d.format === 'fixed' && n % 2) return 'En parejas fijas el número de jugadores tiene que ser par';
+  if (d.format === 'pozo' && n % 4) return 'El Pozo necesita un múltiplo de 4 jugadores (4, 8, 12, 16...)';
   if (d.format === 'mixicano') {
     const f = d.players.filter(p => ensureProfile(p).gender === 'F').length;
     if (f < 2 || n - f < 2) return 'El mixto necesita al menos 2 hombres y 2 mujeres';
@@ -401,7 +443,7 @@ function renderAmericanoCreateHTML() {
       ${pairsPreview}
     </div>
     <div class="bento-card">
-      ${d.format === 'fixed' ? `<div class="stepper"><span class="stepper-label">Pistas</span><span class="stepper-val">${def.courts}</span></div>` : stepper('courts', def.courts, 'Pistas')}
+      ${['fixed', 'pozo'].includes(d.format) ? `<div class="stepper"><span class="stepper-label">Pistas</span><span class="stepper-val">${def.courts}</span></div>` : stepper('courts', def.courts, 'Pistas')}
       ${d.format === 'fixed' ? '' : stepper('rounds', def.rounds, 'Rondas')}
       <div class="empty-note" style="text-align:left;padding:8px 0 0;">
         ${err ? escapeHtml(err) : `${def.courts * 4} jugadores en pista por ronda${resting ? ` · ${resting} descansa${resting > 1 ? 'n' : ''} por turnos` : ''}${d.format === 'fixed' ? ` · ${Math.floor(n / 2) % 2 ? Math.floor(n / 2) : Math.floor(n / 2) - 1} rondas` : ''}`}
@@ -437,11 +479,11 @@ function renderAmericanoDetailHTML(ev) {
     body = `
       <div class="bento-card">
         <table class="standings">
-          <thead><tr><th>${isTeamFormat(ev) ? 'Pareja' : 'Jugador'}</th><th>PJ</th><th>G</th><th>Dif</th><th>Pts</th></tr></thead>
+          <thead><tr><th>${isTeamFormat(ev) ? 'Pareja' : 'Jugador'}</th>${ev.format === 'pozo' ? '<th>Pista</th>' : ''}<th>PJ</th><th>G</th><th>Dif</th><th>Pts</th></tr></thead>
           <tbody>${st.map((r, i) => `
             <tr class="${i < 3 && r.pj ? 'qualify' : ''}">
               <td><span class="pos">${i + 1}</span>${escapeHtml(r.members.map(shortName).join(' / '))}</td>
-              <td>${r.pj}</td><td>${r.w}</td><td>${r.diff > 0 ? '+' : ''}${r.diff}</td>
+              ${ev.format === 'pozo' ? `<td style="color:var(--volt);font-weight:800;">${r.court || '–'}</td>` : ''}<td>${r.pj}</td><td>${r.w}</td><td>${r.diff > 0 ? '+' : ''}${r.diff}</td>
               <td style="color:var(--volt);font-weight:800;">${r.pts}</td>
             </tr>`).join('')}</tbody>
         </table>

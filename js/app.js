@@ -2,13 +2,14 @@
 // NAVEGACIÓN: MENÚ SUPERIOR Y SECCIONES
 // ==========================================================
 const SECTIONS = {
+  home: { view: 'view-home', section: 'home', label: 'Inicio' },
   setup: { view: 'view-setup', section: 'match', label: 'Partido' },
   tournaments: { view: 'view-tournaments', section: 'events', label: 'Torneos' },
   americano: { view: 'view-americano', section: 'events', label: 'Americano · Mexicano' },
   ranking: { view: 'view-ranking', section: 'ranking', label: 'Ranking' },
   history: { view: 'view-history', section: 'history', label: 'Historial' }
 };
-let currentTab = 'setup';
+let currentTab = 'home';
 
 function setSectionIdentity(section, label) {
   document.body.dataset.section = section;
@@ -25,6 +26,7 @@ function switchMainTab(tab) {
   });
   setSectionIdentity(SECTIONS[tab].section, SECTIONS[tab].label);
   window.scrollTo(0, 0);
+  if (tab === 'home') renderHome();
   if (tab === 'setup') renderSetupCourt();
   if (tab === 'ranking') renderGlobalRanking();
   if (tab === 'history') renderHistoryList();
@@ -98,7 +100,7 @@ window.addEventListener('DOMContentLoaded', () => {
   initAvatarCropperEvents();
   initPlayerCardInteractions();
   renderVoiceToggle();
-  switchMainTab('setup');
+  switchMainTab('home');
 });
 
 // Botón "Instalar app": el navegador avisa cuando la app se puede instalar

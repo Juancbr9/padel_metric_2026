@@ -42,7 +42,7 @@ function renderHistoryList() {
 function openHistoryMatchStats(idx) {
   posterTargetState = matchHistory[idx];
   statsSourceIsHistory = true;
-  document.getElementById('view-history').classList.add('hidden');
+  Object.values(SECTIONS).forEach(c => document.getElementById(c.view)?.classList.add('hidden'));
   document.getElementById('view-stats').classList.remove('hidden');
   selectSetFilter('all');
 }
@@ -53,6 +53,7 @@ function openHistoryMatchPoster(idx) {
 }
 
 function deleteHistoryMatch(idx) {
+  if (!confirm('¿Eliminar este partido del historial?')) return;
   matchHistory.splice(idx, 1);
   saveDB();
   renderHistoryList();
@@ -61,6 +62,8 @@ function deleteHistoryMatch(idx) {
 }
 
 function clearAllHistory() {
+  if (!matchHistory.length) return;
+  if (!confirm(`¿Vaciar el historial completo (${matchHistory.length} partidos)? El ranking ELO se recalculará.`)) return;
   matchHistory = [];
   saveDB();
   renderHistoryList();
@@ -77,28 +80,69 @@ function exportBackupJSON() {
   a.click();
 }
 
+// Sustituye todos los datos por los de una copia (archivo importado o datos de ejemplo)
+function applyBackupData(data) {
+  if (!data || !Array.isArray(data.dbPlayers)) throw new Error('Copia no válida');
+  dbPlayers = data.dbPlayers;
+  dbProfiles = data.dbProfiles || {};
+  matchHistory = data.matchHistory || [];
+  tournaments = data.tournaments || [];
+  americanos = data.americanos || [];
+  saveDB();
+  closeAppMenu();
+  tView = { mode: 'list', tid: null, tab: null };
+  aView = { mode: 'list', aid: null, tab: 'rounds' };
+  switchMainTab('home');
+}
+
+function hasAnyData() {
+  return dbPlayers.length || matchHistory.length || tournaments.length || americanos.length;
+}
+
 function importBackupJSON(event) {
   const file = event.target.files[0];
+  event.target.value = '';
   if (!file) return;
   const reader = new FileReader();
   reader.onload = (e) => {
     try {
       const data = JSON.parse(e.target.result);
-      if (data.dbPlayers) dbPlayers = data.dbPlayers;
-      if (data.dbProfiles) dbProfiles = data.dbProfiles;
-      if (data.matchHistory) matchHistory = data.matchHistory;
-      if (data.tournaments) tournaments = data.tournaments;
-      if (data.americanos) americanos = data.americanos;
-      saveDB();
-      renderSetupCourt();
-      renderGlobalRanking();
-      renderHistoryList();
+      if (hasAnyData() && !confirm('Se sustituirán los datos actuales por los de la copia. ¿Continuar?')) return;
+      applyBackupData(data);
       showToast('Copia de seguridad restaurada');
-      closeAppMenu();
-      switchMainTab(currentTab);
     } catch (err) {
-      showToast('Archivo JSON no válido');
+      showToast('El archivo no es una copia válida de Padel Metric');
     }
   };
   reader.readAsText(file);
+}
+
+async function loadDemoData() {
+  if (hasAnyData() && !confirm('Se sustituirán los datos actuales por los datos de ejemplo. ¿Continuar?')) return;
+  try {
+    const res = await fetch('assets/demo/padel-metric-demo.json', { cache: 'no-store' });
+    applyBackupData(await res.json());
+    showToast('Datos de ejemplo cargados');
+  } catch (e) {
+    showToast('No se pudieron cargar los datos de ejemplo');
+  }
+}
+
+// Restaurar de fábrica: borra todo lo que guarda la app en este dispositivo
+function openFactoryReset() {
+  closeAppMenu();
+  const summary = `${dbPlayers.length} jugadores, ${matchHistory.length} partidos, ${tournaments.length} torneos y ${americanos.length} americanos`;
+  openEventModal(`
+    <div class="event-modal-title" style="color:var(--coral);">Restaurar de fábrica</div>
+    <div class="reset-title">Borrar todos los datos</div>
+    <p class="reset-text">Se eliminarán <strong>${summary}</strong>, el partido en pausa, la portada y los ajustes de este dispositivo. No se puede deshacer.</p>
+    <p class="reset-text">Si quieres conservar algo, exporta antes una copia: luego podrás restaurarla desde el menú.</p>
+    <button class="btn-volt" onclick="exportBackupJSON(); setTimeout(factoryReset, 600)">Exportar copia y borrar</button>
+    <button class="btn-icon reset-danger" onclick="factoryReset()">Borrar sin copia</button>
+    <button class="btn-icon" style="width:100%;padding:12px;margin-top:8px;" onclick="closeEventModal()">Cancelar</button>`);
+}
+
+function factoryReset() {
+  Object.keys(localStorage).filter(k => k.startsWith('pm_')).forEach(k => localStorage.removeItem(k));
+  location.reload();
 }

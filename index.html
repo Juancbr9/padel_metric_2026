@@ -19,7 +19,7 @@
 </head>
 </head>
 <body>
-<svg style="display:none;">
+<svg style="position:absolute;width:0;height:0;overflow:hidden;" aria-hidden="true">
   <symbol id="i-ball" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M5.6 5.6C9 9 9 15 5.6 18.4"/><path d="M18.4 5.6C15 9 15 15 18.4 18.4"/></symbol>
   <symbol id="i-undo" viewBox="0 0 24 24"><path d="M3 7v6h6"/><path d="M21 17a9 9 0 0 0-9-9 9 9 0 0 0-6 2.3L3 13"/></symbol>
   <symbol id="i-chart" viewBox="0 0 24 24"><path d="M18 20V10"/><path d="M12 20V4"/><path d="M6 20v-6"/></symbol>
@@ -93,18 +93,21 @@
       <span class="brand-title">PADEL METRIC</span>
       <span id="section-label" class="section-label">Partido</span>
     </span>
-    <svg class="icon brand-chevron"><use href="#i-chevron"/></svg>
+    <svg id="main-nav" class="icon brand-chevron"><use href="#i-chevron"/></svg>
   </button>
   <div class="header-actions">
     <button id="btn-undo" class="btn-icon hidden" onclick="undoLast()" title="Deshacer"><svg class="icon"><use href="#i-undo"/></svg></button>
     <button id="btn-stats" class="btn-icon hidden" onclick="toggleStatsView()"><svg class="icon"><use href="#i-chart"/></svg> DATOS</button>
-    <button id="main-nav" class="btn-icon menu-btn" onclick="toggleAppMenu()" aria-label="Menú"><svg class="icon icon-lg"><use href="#i-menu"/></svg></button>
   </div>
 </header>
 
 <!-- MENÚ DESPLEGABLE SUPERIOR -->
 <div id="app-menu" class="app-menu hidden" onclick="closeAppMenu()">
   <div class="app-menu-panel" onclick="event.stopPropagation()">
+    <button type="button" class="menu-home" id="menu-home" onclick="switchMainTab('home')">
+      <svg class="menu-home-mark"><use href="#logo-mark"/></svg>
+      <span><strong>Inicio</strong><small>Resumen, partidos en juego y accesos rápidos</small></span>
+    </button>
     <div class="menu-group-title">Jugar</div>
     <div class="menu-tiles">
       <button type="button" class="menu-tile" data-section="match" id="menu-setup" onclick="switchMainTab('setup')">
@@ -155,18 +158,27 @@
       <button type="button" class="menu-row" onclick="exportHistoryCSV()">
         <svg class="icon"><use href="#i-file"/></svg><span>Exportar partidos a Excel</span><span class="menu-row-hint">.csv</span>
       </button>
+      <button type="button" class="menu-row" onclick="loadDemoData()">
+        <svg class="icon"><use href="#i-users"/></svg><span>Cargar datos de ejemplo</span><span class="menu-row-hint">top 15</span>
+      </button>
+      <button type="button" class="menu-row menu-row-danger" onclick="openFactoryReset()">
+        <svg class="icon"><use href="#i-trash"/></svg><span>Restaurar de fábrica</span><span class="menu-row-hint">›</span>
+      </button>
       <button type="button" id="btn-install-pwa" class="menu-row hidden" onclick="triggerInstallPWA()">
         <svg class="icon"><use href="#i-download"/></svg><span>Instalar la app en este dispositivo</span><span class="menu-row-hint">›</span>
       </button>
     </div>
     <div class="menu-footer">
       <svg class="menu-footer-logo"><use href="#logo-mark"/></svg>
-      <span>Padel Metric · v3.0</span>
+      <span>Padel Metric · v4.0</span>
     </div>
   </div>
 </div>
 
 <div class="container">
+
+  <!-- PANTALLA 0: INICIO -->
+  <div id="view-home" class="hidden"></div>
 
   <!-- PANTALLA 1: PIZARRA DE CONVOCATORIA EN PISTA -->
   <div id="view-setup">
@@ -780,6 +792,7 @@
 <script src="js/events/common.js"></script>
 <script src="js/events/tournament.js"></script>
 <script src="js/events/americano.js"></script>
+<script src="js/home.js"></script>
 <script src="js/app.js"></script>
 </body>
 </html>

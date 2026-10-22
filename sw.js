@@ -1,7 +1,7 @@
 // Service worker: permite usar la app sin conexión.
 // Estrategia: primero la red (así siempre llegan las actualizaciones) y, si no hay conexión, la copia guardada.
 // Al añadir archivos nuevos a la app, inclúyelos en APP_FILES y sube el número de versión.
-const CACHE = 'padel-metric-v3';
+const CACHE = 'padel-metric-v4';
 const APP_FILES = [
   './',
   './index.html',
@@ -25,6 +25,7 @@ const APP_FILES = [
   './js/events/tournament.js',
   './js/events/americano.js',
   './assets/logo.svg',
+  './js/home.js',
   './js/app.js',
   './icons/icon-192.png',
   './icons/icon-512.png',

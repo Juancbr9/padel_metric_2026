@@ -469,6 +469,6 @@ function exitMatchScreen() {
   if (link && link.kind === 'tournament') {
     openTournament(link.tid);
   } else {
-    switchMainTab('setup');
+    switchMainTab('home');
   }
 }
