@@ -1,7 +1,7 @@
 {
   "name": "Padel Metric",
   "short_name": "Padel Metric",
-  "description": "Marcador y estadísticas de pádel en directo.",
+  "description": "Marcador, estadísticas, torneos y americanos de pádel.",
   "lang": "es",
   "id": "./",
   "start_url": "./",

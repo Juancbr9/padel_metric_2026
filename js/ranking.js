@@ -109,7 +109,7 @@ function renderGlobalRanking() {
     if (rankingSortBy === 'W') return b.W - a.W;
     if (rankingSortBy === 'lowENF') return (a.PJ ? a.ENF / a.PJ : 99) - (b.PJ ? b.ENF / b.PJ : 99);
     if (rankingSortBy === 'bal') return (b.W - b.ENF) - (a.W - a.ENF);
-    if (rankingSortBy === 'elo') return b.elo - a.elo || b.V - a.V;
+    if (rankingSortBy === 'elo') return (b.PJ > 0) - (a.PJ > 0) || b.elo - a.elo || b.V - a.V;
     return b.V - a.V || avgRB - avgRA;
   });
 
@@ -147,8 +147,34 @@ function renderGlobalRanking() {
     }).join('')}</div>`;
   }
 
+  renderRankingPodium(statsMap);
   renderH2HSelectors();
   renderPairsRanking();
+}
+
+function renderRankingPodium(statsMap) {
+  const box = document.getElementById('ranking-podium');
+  if (!box) return;
+  const top = Object.values(statsMap).filter(st => st.PJ > 0).sort((a, b) => b.elo - a.elo).slice(0, 3);
+  if (!top.length) {
+    box.innerHTML = `<div class="podium-empty">Juega partidos con jugadores de la base de datos para formar el podio.</div>`;
+    return;
+  }
+  // Orden visual del podio: 2.º · 1.º · 3.º
+  const order = [1, 0, 2];
+  const heights = { 0: 64, 1: 46, 2: 34 };
+  box.innerHTML = order.map(pos => {
+    const st = top[pos];
+    if (!st) return '<div></div>';
+    const safe = st.name.replace(/'/g, "\\'");
+    return `
+      <div class="podium-slot ${pos === 0 ? 'first' : ''}" onclick="openPlayerProfile('${safe}')">
+        ${renderAvatarHTML(st.name, 'avatar-p1')}
+        <div class="podium-name">${st.name.split(' ')[0]}</div>
+        <div class="podium-elo">${st.elo}</div>
+        <div class="podium-step" style="height:${heights[pos]}px;">${pos + 1}</div>
+      </div>`;
+  }).join('');
 }
 
 function openPlayerProfile(name) {
@@ -189,7 +215,7 @@ function openPlayerProfile(name) {
       <div class="kpi-card"><div class="kpi-label">Forma</div><div class="kpi-value">${formDotsHTML(st.form) || '–'}</div></div>
     </div>
     ${renderProfileZonesHTML(st)}
-    ${Object.keys(st.badges).length ? `<div class="sheet-category-label" style="color:var(--amber);">🏅 Logros</div>${badgeChipsHTML(Object.keys(st.badges), st.badges)}` : ''}
+    ${Object.keys(st.badges).length ? `<div class="sheet-category-label" style="color:var(--amber);">Hitos</div>${badgeChipsHTML(Object.keys(st.badges), st.badges)}` : ''}
     ${prof.notes ? `<div class="notes-box">${prof.notes}</div>` : ''}
     <button type="button" class="btn-icon" style="width:100%;color:var(--coral);padding:10px;margin-top:8px;" onclick="deletePlayerFromDB('${safeName}')">
       <svg class="icon"><use href="#i-trash"/></svg> ELIMINAR JUGADOR DE LA BD
@@ -210,11 +236,11 @@ function renderProfileZonesHTML(st) {
   const strong = withW.length ? withW.reduce((a, z) => (net(z) > net(a) ? z : a)) : null;
   const weak = withE.length ? withE.reduce((a, z) => (net(z) < net(a) ? z : a)) : null;
   return `
-    <div class="sheet-category-label" style="color:var(--cyan);">🔥 Mapa de calor (todos sus partidos)</div>
+    <div class="sheet-category-label" style="color:var(--cyan);">Mapa de calor · todos sus partidos</div>
     ${renderHalfCourtHeatSVG(st.zones, 'all')}
     <div class="coach-list">
-      ${strong ? `<div class="coach-tip"><span>💪</span><span>Zona fuerte: <strong>${ZONE_NAMES[strong]}</strong> (${zoneTot[strong].W} winners, ${zoneTot[strong].E} errores)</span></div>` : ''}
-      ${weak && weak !== strong ? `<div class="coach-tip" style="border-left-color:var(--coral);"><span>🎯</span><span>A mejorar: <strong>${ZONE_NAMES[weak]}</strong> (${zoneTot[weak].E} errores, ${zoneTot[weak].W} winners)</span></div>` : ''}
+      ${strong ? `<div class="coach-tip"><span class="coach-tag">Fuerte</span><span>Zona fuerte: <strong>${ZONE_NAMES[strong]}</strong> (${zoneTot[strong].W} winners, ${zoneTot[strong].E} errores)</span></div>` : ''}
+      ${weak && weak !== strong ? `<div class="coach-tip" style="border-left-color:var(--coral);"><span class="coach-tag">Mejorar</span><span>A mejorar: <strong>${ZONE_NAMES[weak]}</strong> (${zoneTot[weak].E} errores, ${zoneTot[weak].W} winners)</span></div>` : ''}
     </div>`;
 }
 

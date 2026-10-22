@@ -1,4 +1,18 @@
+function renderHistorySummary() {
+  const box = document.getElementById('history-summary');
+  if (!box) return;
+  const secs = matchHistory.reduce((a, m) => a + (m.elapsedSec || 0), 0);
+  const pts = matchHistory.reduce((a, m) => a + ((m.points && m.points.length) || 0), 0);
+  const hours = secs >= 3600 ? `${(secs / 3600).toFixed(1).replace('.', ',')} h` : `${Math.round(secs / 60)} min`;
+  box.innerHTML = [
+    [matchHistory.length, 'Partidos'],
+    [hours, 'En pista'],
+    [pts, 'Puntos registrados']
+  ].map(([v, l]) => `<div class="hero-stat"><div class="hero-stat-val">${v}</div><div class="hero-stat-lbl">${l}</div></div>`).join('');
+}
+
 function renderHistoryList() {
+  renderHistorySummary();
   const el = document.getElementById('history-list');
   if (!el) return;
   if (matchHistory.length === 0) {
@@ -55,7 +69,7 @@ function clearAllHistory() {
 }
 
 function exportBackupJSON() {
-  const payload = { dbPlayers, dbProfiles, matchHistory };
+  const payload = { app: 'Padel Metric', version: 3, exportedAt: new Date().toISOString(), dbPlayers, dbProfiles, matchHistory, tournaments, americanos };
   const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
   const a = document.createElement('a');
   a.download = `PadelMetric_BD_${Date.now()}.json`;
@@ -73,11 +87,15 @@ function importBackupJSON(event) {
       if (data.dbPlayers) dbPlayers = data.dbPlayers;
       if (data.dbProfiles) dbProfiles = data.dbProfiles;
       if (data.matchHistory) matchHistory = data.matchHistory;
+      if (data.tournaments) tournaments = data.tournaments;
+      if (data.americanos) americanos = data.americanos;
       saveDB();
       renderSetupCourt();
       renderGlobalRanking();
       renderHistoryList();
-      showToast('Base de datos importada con éxito');
+      showToast('Copia de seguridad restaurada');
+      closeAppMenu();
+      switchMainTab(currentTab);
     } catch (err) {
       showToast('Archivo JSON no válido');
     }

@@ -20,7 +20,9 @@ function saveDB() {
     localStorage.setItem('pm_jugadores_v5', JSON.stringify(dbPlayers));
     localStorage.setItem('pm_perfiles_v6', JSON.stringify(dbProfiles));
     localStorage.setItem('pm_historial_v5', JSON.stringify(matchHistory));
+    localStorage.setItem('pm_torneos_v1', JSON.stringify(tournaments));
+    localStorage.setItem('pm_americanos_v1', JSON.stringify(americanos));
   } catch (err) {
-    showToast('⚠️ Memoria llena: exporta la BD y quita fotos o la portada');
+    showToast('Memoria llena: exporta una copia y quita fotos o la portada');
   }
 }

@@ -147,7 +147,7 @@ function scorePointForTeam(winningTeam, shortTag, meta = {}) {
     state.gamePointLog.push(`${state.pts[0]}-${state.pts[1]} (${shortTag})`);
     const totalPts = state.pts[0] + state.pts[1];
     if (totalPts % 2 === 1) state.serverIdx = (state.serverIdx + 1) % 4;
-    if (totalPts > 0 && totalPts % 6 === 0) showToast('🔄 Cambio de lado en pista (6 ptos)');
+    if (totalPts > 0 && totalPts % 6 === 0) showToast('Cambio de lado (6 puntos)');
     if (state.pts[winningTeam] >= 10 && (state.pts[winningTeam] - state.pts[1 - winningTeam]) >= 2) {
       // El súper tie-break se apunta con sus puntos (p. ej. 10-8) para que cuente como set ganado
       state.sets[state.currentSet] = [...state.pts];
@@ -160,7 +160,7 @@ function scorePointForTeam(winningTeam, shortTag, meta = {}) {
     state.gamePointLog.push(`${state.pts[0]}-${state.pts[1]} (${shortTag})`);
     const totalPts = state.pts[0] + state.pts[1];
     if (totalPts % 2 === 1) state.serverIdx = (state.serverIdx + 1) % 4;
-    if (totalPts > 0 && totalPts % 6 === 0) showToast('🔄 Cambio de lado en pista (6 ptos)');
+    if (totalPts > 0 && totalPts % 6 === 0) showToast('Cambio de lado (6 puntos)');
     if (state.pts[winningTeam] >= 7 && (state.pts[winningTeam] - state.pts[1 - winningTeam]) >= 2) {
       state.sets[state.currentSet][winningTeam]++;
       winSet(winningTeam);
@@ -211,7 +211,7 @@ function winGame(winningTeam) {
   } else if ((gW >= 6 && (gW - gL) >= 2) || gW === 7) {
     winSet(winningTeam);
   } else if (totalGamesInSet % 2 === 1) {
-    showToast('🔄 Juego impar completado · Cambio de lado en pista');
+    showToast('Cambio de lado');
   }
 }
 
@@ -311,6 +311,8 @@ function saveMatchToHistory(manualClick = false) {
     matchHistory.unshift(snapshot);
   }
   state.savedToHistory = true;
+  // Si el partido pertenece a un torneo, su resultado se anota solo en el cuadro
+  if (state.link && state.matchOver) applyLinkedMatchResult(state);
   saveDB();
   if (manualClick) showToast('Partido guardado en Historial y Estadísticas');
 }

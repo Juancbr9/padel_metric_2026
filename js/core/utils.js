@@ -1,5 +1,18 @@
+function escapeHtml(text) {
+  return String(text ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+}
+
+// Para pasar un texto como argumento dentro de un onclick="..."
+function jsArg(text) {
+  return escapeHtml(JSON.stringify(String(text ?? '')));
+}
+
+function uid(prefix = 'id') {
+  return `${prefix}_${Date.now().toString(36)}${Math.random().toString(36).slice(2, 7)}`;
+}
+
 function vibrate(pattern = 15) {
-  if (navigator.vibrate) {
+  if (appSettings.vibration && navigator.vibrate) {
     try { navigator.vibrate(pattern); } catch (e) {}
   }
 }
@@ -173,7 +186,8 @@ function toggleThemeMode() {
   document.body.classList.toggle('light-mode');
   const isLight = document.body.classList.contains('light-mode');
   localStorage.setItem('pm_theme_light', isLight ? '1' : '0');
-  showToast(isLight ? 'Modo Exterior (Sol) activado' : 'Modo Noche activado');
+  showToast(isLight ? 'Modo claro activado' : 'Modo oscuro activado');
+  renderMenuSwitches();
 }
 
 if (localStorage.getItem('pm_theme_light') === '1') {

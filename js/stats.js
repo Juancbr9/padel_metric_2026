@@ -55,9 +55,9 @@ function renderStats(mode) {
   const wall = [...playersData].sort((a, b) => a.fENF - b.fENF)[0];
 
   document.getElementById('mvp-highlights').innerHTML = `
-    <div class="kpi-card"><div class="kpi-label">MVP Pista</div><div class="kpi-value">${mvp.name}</div></div>
-    <div class="kpi-card"><div class="kpi-label">Más Winners</div><div class="kpi-value">${sniper.name} (${sniper.fW})</div></div>
-    <div class="kpi-card"><div class="kpi-label">Más Sólido</div><div class="kpi-value">${wall.name} (${wall.fENF})</div></div>
+    <div class="kpi-card"><div class="kpi-label">Mejor valorado</div><div class="kpi-value">${mvp.name}</div></div>
+    <div class="kpi-card"><div class="kpi-label">Más winners</div><div class="kpi-value">${sniper.name} (${sniper.fW})</div></div>
+    <div class="kpi-card"><div class="kpi-label">Menos errores</div><div class="kpi-value">${wall.name} (${wall.fENF})</div></div>
   `;
 
   const container = document.getElementById('stats-content');
@@ -174,9 +174,9 @@ function renderKeyMomentsPanel(target) {
     ${row('PUNTOS GANADOS CON 1.ER SAQUE', frac(A.firstWon, A.first), frac(B.firstWon, B.first))}
     ${row('PUNTOS GANADOS CON 2.º SAQUE', frac(A.secondWon, A.second), frac(B.secondWon, B.second))}
     ${row('PUNTOS GANADOS AL RESTO', frac(A.returnWon, A.returnPts), frac(B.returnWon, B.returnPts))}
-    ${clutchTop ? `<div class="notes-box" style="margin-top:8px;">🧊 <strong>Sangre fría:</strong> ${clutchTop[0]} hizo ${clutchTop[1]} winner${clutchTop[1] > 1 ? 's' : ''} en puntos decisivos.</div>` : ''}
-    <div class="sheet-category-label" style="color:var(--cyan);">🧠 El entrenador dice</div>
-    <div class="coach-list">${tips.map(t => `<div class="coach-tip"><span>${t.icon}</span><span>${t.text}</span></div>`).join('')}</div>
-    ${badges ? `<div class="sheet-category-label" style="color:var(--amber);">🏅 Logros del partido</div>${badges}` : ''}
+    ${clutchTop ? `<div class="notes-box" style="margin-top:8px;"><strong>Puntos decisivos:</strong> ${clutchTop[0]} hizo ${clutchTop[1]} winner${clutchTop[1] > 1 ? 's' : ''} en bolas de break, puntos de oro o tie-break.</div>` : ''}
+    <div class="sheet-category-label" style="color:var(--cyan);">Análisis del partido</div>
+    <div class="coach-list">${tips.map(t => `<div class="coach-tip"><span class="coach-tag">${t.tag}</span><span>${t.text}</span></div>`).join('')}</div>
+    ${badges ? `<div class="sheet-category-label" style="color:var(--amber);">Hitos del partido</div>${badges}` : ''}
   `;
 }

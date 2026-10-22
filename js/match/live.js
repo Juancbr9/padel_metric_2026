@@ -40,9 +40,12 @@ function resumeSavedActiveMatch() {
     historyStack = [];
     requestWakeLock();
     document.body.classList.add('in-live-match');
+    setSectionIdentity('match', 'En directo');
+    closeAppMenu();
     document.getElementById('resume-match-banner').classList.add('hidden');
     document.getElementById('main-nav').classList.add('hidden');
     document.getElementById('view-setup').classList.add('hidden');
+    Object.values(SECTIONS).forEach(c => document.getElementById(c.view)?.classList.add('hidden'));
     document.getElementById('view-match').classList.remove('hidden');
     document.getElementById('btn-undo').classList.remove('hidden');
     document.getElementById('btn-stats').classList.remove('hidden');
@@ -62,12 +65,12 @@ function discardSavedActiveMatch() {
 // MOTOR DE PARTIDO EN VIVO (ALTURA FIJA Y MODO DE REGISTRO EXCLUSIVO)
 // ==========================================================
 async function requestWakeLock() {
-  if ('wakeLock' in navigator) {
+  if (appSettings.wakeLock && 'wakeLock' in navigator) {
     try { wakeLockRef = await navigator.wakeLock.request('screen'); } catch (e) {}
   }
 }
 
-function startMatch() {
+function startMatch(link = null) {
   vibrate([20, 40]);
   const players = setupConfig.slots.map((slotVal, idx) => {
     const isGeneric = slotVal.startsWith('GEN_');
@@ -109,17 +112,21 @@ function startMatch() {
     matchOver: false,
     winnerPair: null,
     savedToHistory: false,
-    points: []
+    points: [],
+    link
   };
 
   historyStack = [];
   requestWakeLock();
   document.body.classList.add('in-live-match');
+  setSectionIdentity('match', 'En directo');
+  closeAppMenu();
   document.getElementById('main-nav').classList.add('hidden');
   document.getElementById('view-setup').classList.add('hidden');
   document.getElementById('view-ranking').classList.add('hidden');
   document.getElementById('view-history').classList.add('hidden');
   document.getElementById('view-stats').classList.add('hidden');
+  Object.values(SECTIONS).forEach(c => document.getElementById(c.view)?.classList.add('hidden'));
   document.getElementById('view-match').classList.remove('hidden');
   document.getElementById('btn-undo').classList.remove('hidden');
   document.getElementById('btn-stats').classList.remove('hidden');
@@ -248,7 +255,7 @@ function updateUI() {
     card.innerHTML = `
       <div class="swipe-live-badge up">↑ WINNER</div>
       <div class="swipe-live-badge down">↓ ERROR NF</div>
-      ${isFire ? `<span class="streak-pill">🔥 RACHA x${p.streak}</span>` : ''}
+      ${isFire ? `<span class="streak-pill">RACHA ×${p.streak}</span>` : ''}
       <div class="hud-card-top">
         <span class="hud-side-label">
           ${isSrv ? '<svg class="icon" style="width:11px;height:11px;"><use href="#i-ball"/></svg>' : ''}
@@ -441,6 +448,7 @@ function exitMatchScreen() {
   if (timerInterval) clearInterval(timerInterval);
   document.body.classList.remove('in-live-match');
 
+  const link = state ? state.link : null;
   if (state) {
     if (state.matchOver) {
       if (!state.savedToHistory) saveMatchToHistory(false);
@@ -458,5 +466,9 @@ function exitMatchScreen() {
   document.getElementById('btn-undo').classList.add('hidden');
   document.getElementById('btn-stats').classList.add('hidden');
   document.getElementById('main-nav').classList.remove('hidden');
-  switchMainTab('setup');
+  if (link && link.kind === 'tournament') {
+    openTournament(link.tid);
+  } else {
+    switchMainTab('setup');
+  }
 }

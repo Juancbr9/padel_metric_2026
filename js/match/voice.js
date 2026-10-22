@@ -10,12 +10,14 @@ function toggleVoiceNarrator() {
   try { localStorage.setItem('pm_voz', voiceEnabled ? '1' : '0'); } catch (e) {}
   renderVoiceToggle();
   if (voiceEnabled) speak('Narrador activado');
-  showToast(voiceEnabled ? '🔊 Narrador de voz activado' : '🔇 Narrador de voz desactivado');
+  showToast(voiceEnabled ? 'Narrador de voz activado' : 'Narrador de voz desactivado');
+  renderMenuSwitches();
 }
 
 function renderVoiceToggle() {
   document.getElementById('voice-on')?.classList.toggle('active', voiceEnabled);
   document.getElementById('voice-off')?.classList.toggle('active', !voiceEnabled);
+  document.getElementById('sw-voice')?.classList.toggle('on', voiceEnabled);
 }
 
 function speak(text) {

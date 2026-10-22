@@ -95,7 +95,7 @@ function generateCoachInsights(match, setFilter = 'all') {
   const tips = [];
   const pts = matchPoints(match, setFilter);
   if (pts.length < 6) {
-    return [{ icon: '⏳', text: 'Registra más puntos con el modo Toque para que el entrenador pueda analizar el partido.' }];
+    return [{ tag: 'Datos', text: 'Registra más puntos con el modo Toque para poder analizar el partido.' }];
   }
   const { pair } = computePressureStats(match, setFilter);
   const { byPlayer } = computeZoneCounts(match, { setFilter });
@@ -111,16 +111,16 @@ function generateCoachInsights(match, setFilter = 'all') {
     const totW = ZONES.reduce((a, z) => a + zone[z].W, 0);
     const totE = ZONES.reduce((a, z) => a + zone[z].E, 0);
     if (totE >= 4 && zone.F.E / totE >= 0.55) {
-      tips.push({ icon: '🎯', text: `${pairName(pi)}: el ${pct(zone.F.E, totE)}% de sus errores llegan desde el fondo. Más globo y paciencia; no forzar la bajada.` });
+      tips.push({ tag: 'Zonas', text: `${pairName(pi)}: el ${pct(zone.F.E, totE)}% de sus errores llegan desde el fondo. Más globo y paciencia; no forzar la bajada.` });
     }
     if (totE >= 4 && zone.R.E / totE >= 0.55) {
-      tips.push({ icon: '🧱', text: `${pairName(pi)}: falla mucho en la red (${zone.R.E} errores). Voleas más largas y al centro, menos ángulo.` });
+      tips.push({ tag: 'Zonas', text: `${pairName(pi)}: falla mucho en la red (${zone.R.E} errores). Voleas más largas y al centro, menos ángulo.` });
     }
     if (totW >= 4 && zone.R.W / totW >= 0.6) {
-      tips.push({ icon: '👑', text: `${pairName(pi)} manda en la red: ${pct(zone.R.W, totW)}% de sus winners son en zona de volea. Recuperar la red cuanto antes.` });
+      tips.push({ tag: 'Zonas', text: `${pairName(pi)} manda en la red: ${pct(zone.R.W, totW)}% de sus winners son en zona de volea. Recuperar la red cuanto antes.` });
     }
     if (totW >= 3 && zone.T.W + zone.T.E >= 4 && zone.T.E > zone.T.W * 2) {
-      tips.push({ icon: '⚠️', text: `${pairName(pi)} sufre en la transición (${zone.T.E} errores). No quedarse en "tierra de nadie".` });
+      tips.push({ tag: 'Zonas', text: `${pairName(pi)} sufre en la transición (${zone.T.E} errores). No quedarse en "tierra de nadie".` });
     }
   });
 
@@ -128,16 +128,16 @@ function generateCoachInsights(match, setFilter = 'all') {
   [0, 1].forEach(pi => {
     const st = pair[pi];
     if (st.second >= 4 && pct(st.secondWon, st.second) < 40) {
-      tips.push({ icon: '🎾', text: `${pairName(pi)} solo gana el ${pct(st.secondWon, st.second)}% con segundo saque. Priorizar meter el primero aunque sea más lento.` });
+      tips.push({ tag: 'Saque', text: `${pairName(pi)} solo gana el ${pct(st.secondWon, st.second)}% con segundo saque. Priorizar meter el primero aunque sea más lento.` });
     }
     if (st.bpChances >= 3 && pct(st.bpWon, st.bpChances) < 35) {
-      tips.push({ icon: '🔓', text: `${pairName(pi)} convirtió ${st.bpWon} de ${st.bpChances} bolas de break. Falta acierto en los puntos clave.` });
+      tips.push({ tag: 'Presión', text: `${pairName(pi)} convirtió ${st.bpWon} de ${st.bpChances} bolas de break. Falta acierto en los puntos clave.` });
     }
     if (st.bpFaced >= 3 && pct(st.bpSaved, st.bpFaced) >= 70) {
-      tips.push({ icon: '🛡️', text: `${pairName(pi)} salvó ${st.bpSaved} de ${st.bpFaced} bolas de break. Muy sólidos bajo presión.` });
+      tips.push({ tag: 'Presión', text: `${pairName(pi)} salvó ${st.bpSaved} de ${st.bpFaced} bolas de break. Muy sólidos bajo presión.` });
     }
     if (st.maxRun >= 6) {
-      tips.push({ icon: '⚡', text: `${pairName(pi)} llegó a encadenar ${st.maxRun} puntos seguidos.` });
+      tips.push({ tag: 'Ritmo', text: `${pairName(pi)} llegó a encadenar ${st.maxRun} puntos seguidos.` });
     }
   });
 
@@ -146,14 +146,14 @@ function generateCoachInsights(match, setFilter = 'all') {
   const worst = [...ps].sort((a, b) => (b.ENF || 0) - (a.ENF || 0))[0];
   const total = ps.reduce((a, p) => a + (p.ENF || 0), 0);
   if (worst && worst.ENF >= 4 && worst.ENF / Math.max(1, total) >= 0.4) {
-    tips.push({ icon: '📉', text: `${worst.name} acumula ${worst.ENF} errores no forzados (${pct(worst.ENF, total)}% de los del partido). Bajar el riesgo.` });
+    tips.push({ tag: 'Jugador', text: `${worst.name} acumula ${worst.ENF} errores no forzados (${pct(worst.ENF, total)}% de los del partido). Bajar el riesgo.` });
   }
   const best = [...ps].sort((a, b) => ((b.W || 0) - (b.ENF || 0)) - ((a.W || 0) - (a.ENF || 0)))[0];
   if (best && (best.W - best.ENF) >= 3) {
-    tips.push({ icon: '🏆', text: `${best.name} es el jugador más determinante: balance de +${best.W - best.ENF} (winners menos errores).` });
+    tips.push({ tag: 'Jugador', text: `${best.name} es el jugador más determinante: balance de +${best.W - best.ENF} (winners menos errores).` });
   }
 
-  if (tips.length === 0) tips.push({ icon: '⚖️', text: 'Partido muy igualado: ninguna zona ni fase del juego marca diferencias claras.' });
+  if (tips.length === 0) tips.push({ tag: 'Resumen', text: 'Partido muy igualado: ninguna zona ni fase del juego marca diferencias claras.' });
   return tips.slice(0, 6);
 }
 
@@ -161,15 +161,15 @@ function generateCoachInsights(match, setFilter = 'all') {
 // LOGROS (INSIGNIAS) DE CADA JUGADOR EN UN PARTIDO
 // ==========================================================
 const BADGES = {
-  sniper: { icon: '🎯', name: 'Francotirador', desc: '8 o más winners en un partido' },
-  wall: { icon: '🧱', name: 'Muro', desc: 'Máximo 1 error no forzado (con 5+ puntos jugados)' },
-  netKing: { icon: '👑', name: 'Rey de la red', desc: '5 o más winners en zona de volea' },
-  smash: { icon: '💣', name: 'Cañonero', desc: '3 o más remates ganadores' },
-  bagel: { icon: '🍩', name: 'Rosco', desc: 'Ganar un set 6-0' },
-  comeback: { icon: '🔥', name: 'Remontada', desc: 'Ganar tras perder el primer set' },
-  ace: { icon: '🚀', name: 'Saque bala', desc: '2 o más saques directos' },
-  streak: { icon: '⚡', name: 'En llamas', desc: 'Racha de 5 winners seguidos' },
-  clutch: { icon: '🧊', name: 'Sangre fría', desc: '2+ winners en bolas de break, punto de oro o tie-break' }
+  sniper: { name: '8+ winners', desc: '8 o más winners en un partido' },
+  wall: { name: 'Máx. 1 error no forzado', desc: 'Como mucho 1 error no forzado (con 5 o más puntos jugados)' },
+  netKing: { name: 'Dominio en la red', desc: '5 o más winners en zona de volea' },
+  smash: { name: '3+ remates ganadores', desc: '3 o más remates ganadores' },
+  bagel: { name: 'Set 6-0', desc: 'Ganar un set 6-0' },
+  comeback: { name: 'Remontada', desc: 'Ganar tras perder el primer set' },
+  ace: { name: '2+ saques directos', desc: '2 o más saques directos' },
+  streak: { name: '5 winners seguidos', desc: 'Racha de 5 winners consecutivos' },
+  clutch: { name: 'Decisivo en puntos clave', desc: '2 o más winners en bola de break, punto de oro o tie-break' }
 };
 
 function badgesForPlayerInMatch(match, idx) {
@@ -199,6 +199,6 @@ function badgeChipsHTML(keys, counts = null) {
   return `<div class="badge-row">${keys.map(k => {
     const b = BADGES[k];
     const c = counts && counts[k] > 1 ? ` ×${counts[k]}` : '';
-    return `<span class="badge-chip" title="${b.desc}">${b.icon} ${b.name}${c}</span>`;
+    return `<span class="badge-chip" title="${b.desc}">${b.name}${c}</span>`;
   }).join('')}</div>`;
 }

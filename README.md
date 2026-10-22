@@ -1,21 +1,22 @@
 # Padel Metric
 
-Marcador y estadísticas de pádel en directo, instalable en el móvil y que funciona sin conexión.
+Marcador, estadísticas y competiciones de pádel. Se instala en el móvil y funciona sin conexión.
 
 **App publicada:** https://padelmetric2026.netlify.app
 
 ## Qué hace
 
-- **Marcador profesional**: ventaja, star point o punto de oro; tercer set normal o súper tie-break; cambio de lado, bolas de break y cronómetro.
-- **Registro de golpes** por jugador (winners, errores no forzados y forzados), en modo Toque o con gestos.
-- **Mapa de calor de golpes**: zona de volea (red), transición y fondo, por lado drive o revés, por jugador, por set y por tipo (winners o errores).
-- **Momentos clave**: bolas de break ganadas y salvadas, puntos de oro, tie-breaks, rachas, y eficacia con 1.º y 2.º saque y al resto.
-- **El entrenador**: consejos automáticos según dónde gana y dónde falla cada pareja.
-- **Logros**: Francotirador, Muro, Rey de la red, Cañonero, Rosco, Remontada, Saque bala, En llamas y Sangre fría.
-- **Ranking ELO**, forma reciente, previsión del partido y equilibrado automático de parejas.
-- **Ficha de jugador** con mapa de calor de toda su carrera, zona fuerte y zona a mejorar.
-- **Narrador de voz** que canta el marcador.
-- Póster para WhatsApp, historial, cara a cara y copia de seguridad (exportar e importar).
+**Jugar**
+- **Partido en directo**: ventaja, star point o punto de oro; tercer set completo o súper tie-break; cambios de lado, bolas de break, cronómetro y narrador de voz.
+- **Torneos**: eliminatoria con cuadro, liga todos contra todos, o fase de grupos con cuadro final. Cabezas de serie por ELO o sorteo, y parejas equilibradas automáticamente. Cada cruce se puede anotar a mano o jugar con el marcador en directo, y el resultado pasa solo al cuadro.
+- **Americano y Mexicano**: Americano (cambias de pareja en cada ronda), Americano por parejas fijas, Mexicano (cruces según la clasificación) y Mexicano mixto. Admite cualquier número de jugadores y de pistas, a 16, 21, 24 o 32 puntos, con descansos rotativos.
+
+**Analizar**
+- **Mapa de calor de golpes**: zona de volea, transición y fondo, en el lado drive o revés.
+- **Puntos clave**: bolas de break, puntos de oro, tie-breaks, rachas, saque y resto, más un análisis automático del partido.
+- **Ranking ELO** con podio, forma reciente, cara a cara y rendimiento por parejas.
+- **Ficha de jugador** con su mapa de calor histórico e hitos.
+- **Historial** con resumen de actividad, póster para WhatsApp y exportación a Excel.
 
 ## Estructura del código
 

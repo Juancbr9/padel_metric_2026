@@ -103,7 +103,7 @@ function renderHeatmapPanel(target) {
     `<button type="button" class="sort-chip ${active ? 'active' : ''}" onclick="setHeatFilter('${kind}', ${typeof val === 'string' ? `'${val.replace(/'/g, "\\'")}'` : val})">${label}</button>`;
   const playerChips = [chip('player', 'all', 'Todos', heatFilterPlayer === 'all')]
     .concat(target.players.map(p => chip('player', p.name, p.name.split(' ')[0], heatFilterPlayer === p.name))).join('');
-  const typeChips = [['all', 'Todo'], ['W', '✅ Winners'], ['E', '❌ Errores']]
+  const typeChips = [['all', 'Todo'], ['W', 'Winners'], ['E', 'Errores']]
     .map(([v, l]) => chip('type', v, l, heatFilterType === v)).join('');
 
   // Resumen por jugador: red vs fondo
