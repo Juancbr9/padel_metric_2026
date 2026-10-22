@@ -32,12 +32,26 @@ function isBreakPointSituation() {
   return false;
 }
 
-function recordAction(type, shotName) {
+function isGoldenPointNow() {
+  if (!state || state.inTieBreak || state.inSuperTB) return false;
+  const isGold = (state.deuceRule === 'golden') || (state.deuceRule === 'star' && state.deuceCount >= 2);
+  return isGold && state.pts[0] >= 3 && state.pts[0] === state.pts[1];
+}
+
+// Zona de la pista donde se juega cada golpe si no se marca a mano: R = red / volea, T = transición, F = fondo
+const SHOT_DEFAULT_ZONE = {
+  'Saque Directo': 'F', 'Volea': 'R', 'Bandeja/Víbora': 'T', 'Remate': 'R', 'Fondo/Bajada': 'F',
+  'Red': 'R', 'Fondo': 'F', 'Defensa': 'F'
+};
+
+function recordAction(type, shotName, zoneOverride = null) {
   if (!state || state.matchOver || selectedSlot === null) return;
   cloneStateForUndo();
   vibrate(18);
   const p = state.players[selectedSlot];
   const sIdx = state.currentSet;
+  const zone = zoneOverride || getModalZone(shotName, p);
+  const meta = { by: selectedSlot, n: p.name, t: type, sh: shotName, z: zone.z, l: zone.l };
 
   if (p.shots && p.shots[shotName] !== undefined) {
     p.shots[shotName]++;
@@ -47,33 +61,38 @@ function recordAction(type, shotName) {
     p.W++;
     p.setStats[sIdx].W++;
     p.streak++;
+    p.maxStreak = Math.max(p.maxStreak || 0, p.streak);
     if (shotName === 'Saque Directo') p.aces++;
     state.players.forEach((other, i) => { if (i !== selectedSlot) other.streak = 0; });
-    scorePointForTeam(p.pair, `${p.name.split(' ')[0]} W`);
+    scorePointForTeam(p.pair, `${p.name.split(' ')[0]} W`, meta);
   } else if (type === 'ENF') {
     p.ENF++;
     p.setStats[sIdx].ENF++;
     p.streak = 0;
-    scorePointForTeam(1 - p.pair, `${p.name.split(' ')[0]} ENF`);
+    scorePointForTeam(1 - p.pair, `${p.name.split(' ')[0]} ENF`, meta);
   } else if (type === 'EF') {
     p.EF++;
     p.setStats[sIdx].EF++;
     p.streak = 0;
-    scorePointForTeam(1 - p.pair, `${p.name.split(' ')[0]} EF`);
+    scorePointForTeam(1 - p.pair, `${p.name.split(' ')[0]} EF`, meta);
   }
 
   closeModal();
-  persistActiveMatchState();
-  updateUI();
+  afterPointScored();
 }
 
 function addNeutralPoint(teamIdx) {
   if (!state || state.matchOver) return;
   cloneStateForUndo();
   vibrate(15);
-  scorePointForTeam(teamIdx, `P${teamIdx + 1} +Pto`);
+  scorePointForTeam(teamIdx, `P${teamIdx + 1} +Pto`, { by: -1, t: 'N' });
+  afterPointScored();
+}
+
+function afterPointScored() {
   persistActiveMatchState();
   updateUI();
+  announceScore();
 }
 
 function handleServeFault() {
@@ -90,13 +109,34 @@ function handleServeFault() {
     srv.setStats[state.currentSet].ENF++;
     srv.streak = 0;
     showToast(`Doble falta de ${srv.name}`);
-    scorePointForTeam(1 - srv.pair, `${srv.name.split(' ')[0]} DF`);
+    scorePointForTeam(1 - srv.pair, `${srv.name.split(' ')[0]} DF`, { by: state.serverIdx, n: srv.name, t: 'DF', sh: 'Doble falta' });
+    afterPointScored();
+    return;
   }
   persistActiveMatchState();
   updateUI();
 }
 
-function scorePointForTeam(winningTeam, shortTag) {
+function scorePointForTeam(winningTeam, shortTag, meta = {}) {
+  // Registro punto a punto: alimenta el mapa de calor, los momentos clave y el análisis del entrenador
+  if (!state.points) state.points = [];
+  state.points.push({
+    s: state.currentSet,
+    by: meta.by ?? -1,
+    n: meta.n || null,
+    t: meta.t || 'N',
+    sh: meta.sh || null,
+    z: meta.z || null,
+    l: meta.l || null,
+    w: winningTeam,
+    sv: state.serverIdx,
+    sn: state.serveNumber,
+    bp: isBreakPointSituation(),
+    gp: isGoldenPointNow(),
+    tb: state.inTieBreak || state.inSuperTB,
+    at: state.elapsedSec
+  });
+  state.lastEvent = null;
   state.serveNumber = 1;
   const prevMom = state.momentum[state.momentum.length - 1] || 0;
   state.momentum.push(winningTeam === 0 ? prevMom + 1 : prevMom - 1);
@@ -109,6 +149,8 @@ function scorePointForTeam(winningTeam, shortTag) {
     if (totalPts % 2 === 1) state.serverIdx = (state.serverIdx + 1) % 4;
     if (totalPts > 0 && totalPts % 6 === 0) showToast('🔄 Cambio de lado en pista (6 ptos)');
     if (state.pts[winningTeam] >= 10 && (state.pts[winningTeam] - state.pts[1 - winningTeam]) >= 2) {
+      // El súper tie-break se apunta con sus puntos (p. ej. 10-8) para que cuente como set ganado
+      state.sets[state.currentSet] = [...state.pts];
       winSet(winningTeam);
     }
     return;
@@ -120,6 +162,7 @@ function scorePointForTeam(winningTeam, shortTag) {
     if (totalPts % 2 === 1) state.serverIdx = (state.serverIdx + 1) % 4;
     if (totalPts > 0 && totalPts % 6 === 0) showToast('🔄 Cambio de lado en pista (6 ptos)');
     if (state.pts[winningTeam] >= 7 && (state.pts[winningTeam] - state.pts[1 - winningTeam]) >= 2) {
+      state.sets[state.currentSet][winningTeam]++;
       winSet(winningTeam);
     }
     return;
@@ -160,6 +203,7 @@ function winGame(winningTeam) {
   const gW = state.sets[sIdx][winningTeam];
   const gL = state.sets[sIdx][1 - winningTeam];
   const totalGamesInSet = gW + gL;
+  state.lastEvent = { kind: 'game', pair: winningTeam };
 
   if (gW === 6 && gL === 6) {
     state.inTieBreak = true;
@@ -177,6 +221,7 @@ function winSet(winningTeam) {
   state.inSuperTB = false;
   state.deuceCount = 0;
   state.gamePointLog = [];
+  state.lastEvent = { kind: 'set', pair: winningTeam };
 
   let setsWon0 = 0, setsWon1 = 0;
   for (let i = 0; i <= state.currentSet; i++) {
@@ -187,6 +232,7 @@ function winSet(winningTeam) {
   if (setsWon0 === 2 || setsWon1 === 2) {
     state.matchOver = true;
     state.winnerPair = setsWon0 === 2 ? 0 : 1;
+    state.lastEvent = { kind: 'match', pair: state.winnerPair };
     saveMatchToHistory(false);
     persistActiveMatchState();
     showToast(`¡Partido finalizado! Guardado en Estadísticas e Historial`);

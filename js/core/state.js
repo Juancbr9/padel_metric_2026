@@ -11,7 +11,7 @@ let setupConfig = {
   inputMode: 'tap', // 'tap' o 'swipe'
   initialServer: 0
 };
-let rankingSortBy = 'V';
+let rankingSortBy = 'elo';
 let rankingGenderFilter = 'all';
 let editingOriginalKey = null;
 let pendingAssignSlotAfterCreate = null;

@@ -7,19 +7,16 @@ function clearSetupCourt() {
 
 function updatePreMatchProbability() {
   const { statsMap } = computeAllPlayersStats();
+  // Probabilidad de victoria según el ELO medio de cada pareja
   function getStrength(slotVal) {
-    if (!slotVal || slotVal.startsWith('GEN_') || !statsMap[slotVal]) return 6.5;
-    const st = statsMap[slotVal];
-    if (st.PJ === 0) return 6.5;
-    const avgR = st.ratingSum / st.PJ;
-    const winBonus = (st.V / st.PJ) * 1.5;
-    return avgR + winBonus;
+    if (!slotVal || slotVal.startsWith('GEN_') || !statsMap[slotVal]) return ELO_START;
+    return statsMap[slotVal].elo;
   }
 
-  const p1Str = getStrength(setupConfig.slots[0]) + getStrength(setupConfig.slots[1]);
-  const p2Str = getStrength(setupConfig.slots[2]) + getStrength(setupConfig.slots[3]);
-  const diff = p1Str - p2Str;
-  const p1Prob = Math.min(88, Math.max(12, Math.round(50 + diff * 9)));
+  const p1Str = (getStrength(setupConfig.slots[0]) + getStrength(setupConfig.slots[1])) / 2;
+  const p2Str = (getStrength(setupConfig.slots[2]) + getStrength(setupConfig.slots[3])) / 2;
+  const expected = 1 / (1 + Math.pow(10, (p2Str - p1Str) / 400));
+  const p1Prob = Math.min(95, Math.max(5, Math.round(expected * 100)));
   const p2Prob = 100 - p1Prob;
 
   const t1 = document.getElementById('prob-p1-txt');
@@ -44,7 +41,7 @@ function balancePairsAutomatically() {
   const { statsMap } = computeAllPlayersStats();
   function ratingOf(name) {
     const st = statsMap[name];
-    return (st && st.PJ > 0) ? (st.ratingSum / st.PJ) : 6.5;
+    return st ? st.elo : ELO_START;
   }
 
   const p = [...setupConfig.slots];
@@ -66,7 +63,7 @@ function balancePairsAutomatically() {
 
   setupConfig.slots = bestCombo;
   renderSetupCourt();
-  showToast('Parejas equilibradas según valoración histórica');
+  showToast('Parejas equilibradas según su ELO');
 }
 
 function renderSetupCourt() {

@@ -12,7 +12,29 @@ window.addEventListener('DOMContentLoaded', () => {
   loadCustomCover();
   initAvatarCropperEvents();
   initPlayerCardInteractions();
+  renderVoiceToggle();
   renderSetupCourt();
+});
+
+// Botón "Instalar app": el navegador avisa cuando la app se puede instalar
+let deferredInstallPrompt = null;
+window.addEventListener('beforeinstallprompt', (e) => {
+  e.preventDefault();
+  deferredInstallPrompt = e;
+  document.getElementById('btn-install-pwa')?.classList.remove('hidden');
+});
+
+async function triggerInstallPWA() {
+  if (!deferredInstallPrompt) return;
+  deferredInstallPrompt.prompt();
+  try { await deferredInstallPrompt.userChoice; } catch (e) {}
+  deferredInstallPrompt = null;
+  document.getElementById('btn-install-pwa')?.classList.add('hidden');
+}
+
+window.addEventListener('appinstalled', () => {
+  document.getElementById('btn-install-pwa')?.classList.add('hidden');
+  showToast('¡Padel Metric instalada!');
 });
 
 // App instalable y uso sin conexión

@@ -42,6 +42,7 @@ function renderStats(mode) {
   currentStatsMode = mode;
   const target = posterTargetState || state;
   if (!target) return;
+  document.querySelectorAll('#stats-tabs .sort-chip').forEach(b => b.classList.toggle('active', b.dataset.mode === mode));
 
   const playersData = target.players.map(p => {
     const st = getFilteredPlayerStats(p);
@@ -110,16 +111,9 @@ function renderStats(mode) {
       </div>
     `;
   } else if (mode === 'heatmap') {
-    container.innerHTML = `
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px;">
-        ${playersData.map(p => `
-          <div style="background:var(--bg-obsidian);border:1px solid var(--border-subtle);border-radius:10px;padding:10px;text-align:center;">
-            <div style="font-family:var(--font-display);font-size:1.1rem;font-weight:900;text-transform:uppercase;">${p.name}</div>
-            <div style="font-size:0.7rem;color:var(--text-secondary);margin-top:4px;">Participación: <strong style="color:var(--volt);">${p.fW + p.fENF + p.fEF}</strong> ptos</div>
-          </div>
-        `).join('')}
-      </div>
-    `;
+    container.innerHTML = renderHeatmapPanel(target);
+  } else if (mode === 'clave') {
+    container.innerHTML = renderKeyMomentsPanel(target);
   } else if (mode === 'shots') {
     let rows = target.players.map(p => {
       const sh = p.shots || {};
@@ -140,4 +134,49 @@ function renderStats(mode) {
       </table>
     `;
   }
+}
+
+// ==========================================================
+// MOMENTOS CLAVE, SAQUE / RESTO, ENTRENADOR Y LOGROS DEL PARTIDO
+// ==========================================================
+function renderKeyMomentsPanel(target) {
+  if (!(target.points || []).length) {
+    return `<div class="empty-note">Este partido se jugó con una versión anterior y no tiene registro punto a punto.<br>Los partidos nuevos mostrarán aquí bolas de break, saque, rachas y consejos.</div>`;
+  }
+  const { pair, clutchTop } = computePressureStats(target, currentSetFilter);
+  const row = (label, a, b) => {
+    const tot = (a.n + b.n) || 1;
+    return `
+      <div class="tv-compare-row">
+        <div class="tv-compare-header"><span style="color:var(--cyan);">${a.txt}</span><span>${label}</span><span style="color:var(--coral);">${b.txt}</span></div>
+        <div class="tv-compare-track">
+          <div class="tv-bar-p1" style="width:${(a.n / tot) * 100}%"></div>
+          <div class="tv-bar-p2" style="width:${(b.n / tot) * 100}%"></div>
+        </div>
+      </div>`;
+  };
+  const frac = (x, y) => ({ n: pct(x, y), txt: y ? `${x}/${y} (${pct(x, y)}%)` : '–' });
+  const [A, B] = pair;
+  const tips = generateCoachInsights(target, currentSetFilter);
+  const badges = target.players.map((p, idx) => {
+    const keys = badgesForPlayerInMatch(target, idx);
+    return keys.length ? `<div class="badge-player"><strong>${p.name}</strong>${badgeChipsHTML(keys)}</div>` : '';
+  }).join('');
+
+  return `
+    <div class="sheet-category-label" style="color:var(--volt);">Puntos clave</div>
+    ${row('BOLAS DE BREAK GANADAS', frac(A.bpWon, A.bpChances), frac(B.bpWon, B.bpChances))}
+    ${row('BOLAS DE BREAK SALVADAS', frac(A.bpSaved, A.bpFaced), frac(B.bpSaved, B.bpFaced))}
+    ${row('PUNTOS DE ORO', { n: A.goldWon, txt: A.goldWon }, { n: B.goldWon, txt: B.goldWon })}
+    ${row('PUNTOS EN TIE-BREAK', { n: A.tbWon, txt: A.tbWon }, { n: B.tbWon, txt: B.tbWon })}
+    ${row('RACHA MÁXIMA (PTOS SEGUIDOS)', { n: A.maxRun, txt: A.maxRun }, { n: B.maxRun, txt: B.maxRun })}
+    <div class="sheet-category-label" style="color:var(--volt);">Saque y resto</div>
+    ${row('PUNTOS GANADOS CON 1.ER SAQUE', frac(A.firstWon, A.first), frac(B.firstWon, B.first))}
+    ${row('PUNTOS GANADOS CON 2.º SAQUE', frac(A.secondWon, A.second), frac(B.secondWon, B.second))}
+    ${row('PUNTOS GANADOS AL RESTO', frac(A.returnWon, A.returnPts), frac(B.returnWon, B.returnPts))}
+    ${clutchTop ? `<div class="notes-box" style="margin-top:8px;">🧊 <strong>Sangre fría:</strong> ${clutchTop[0]} hizo ${clutchTop[1]} winner${clutchTop[1] > 1 ? 's' : ''} en puntos decisivos.</div>` : ''}
+    <div class="sheet-category-label" style="color:var(--cyan);">🧠 El entrenador dice</div>
+    <div class="coach-list">${tips.map(t => `<div class="coach-tip"><span>${t.icon}</span><span>${t.text}</span></div>`).join('')}</div>
+    ${badges ? `<div class="sheet-category-label" style="color:var(--amber);">🏅 Logros del partido</div>${badges}` : ''}
+  `;
 }

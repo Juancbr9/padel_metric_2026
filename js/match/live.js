@@ -76,7 +76,7 @@ function startMatch() {
       isGeneric,
       side: FIXED_COURT_SIDES[idx],
       pair: idx < 2 ? 0 : 1,
-      W: 0, ENF: 0, EF: 0, aces: 0, df: 0, streak: 0,
+      W: 0, ENF: 0, EF: 0, aces: 0, df: 0, streak: 0, maxStreak: 0,
       shots: { 'Saque Directo': 0, 'Volea': 0, 'Bandeja/Víbora': 0, 'Remate': 0, 'Fondo/Bajada': 0, 'Red': 0, 'Fondo': 0, 'Defensa': 0 },
       setStats: [
         { W: 0, ENF: 0, EF: 0 },
@@ -108,7 +108,8 @@ function startMatch() {
     timerPaused: false,
     matchOver: false,
     winnerPair: null,
-    savedToHistory: false
+    savedToHistory: false,
+    points: []
   };
 
   historyStack = [];
@@ -349,10 +350,10 @@ function initPlayerCardInteractions() {
       if (state.inputMode === 'swipe') {
         if (dy < -30) {
           selectedSlot = idx;
-          recordAction('W', 'Winner');
+          recordAction('W', 'Winner', { z: null, l: sideToLane(state.players[idx].side) });
         } else if (dy > 30) {
           selectedSlot = idx;
-          recordAction('ENF', 'Error No Forzado');
+          recordAction('ENF', 'Error No Forzado', { z: null, l: sideToLane(state.players[idx].side) });
         } else {
           showToast('Modo Gestos: desliza ↑ Winner o ↓ Error NF');
         }
@@ -382,11 +383,57 @@ function openModal(slotIdx) {
   if (aceBtn) {
     aceBtn.classList.toggle('hidden', state.serverIdx !== slotIdx);
   }
+  modalZone = { z: null, l: sideToLane(p.side) };
+  renderZonePicker();
   document.getElementById('action-modal').classList.remove('hidden');
 }
 
 function closeModal() {
   document.getElementById('action-modal').classList.add('hidden');
+}
+
+// ==========================================================
+// ZONA DEL GOLPE (RED / TRANSICIÓN / FONDO × LADO DRIVE / REVÉS)
+// ==========================================================
+const ZONE_LABELS = { R: 'Red · Volea', T: 'Transición', F: 'Fondo' };
+let modalZone = { z: null, l: 'D' };
+
+function sideToLane(side) {
+  return side === 'Drive' ? 'D' : 'V';
+}
+
+function selectModalZone(z, l) {
+  vibrate(8);
+  // Tocar de nuevo la misma casilla vuelve al modo automático
+  modalZone = (modalZone.z === z && modalZone.l === l) ? { z: null, l } : { z, l };
+  renderZonePicker();
+}
+
+function getModalZone(shotName, player) {
+  return {
+    z: modalZone.z || SHOT_DEFAULT_ZONE[shotName] || null,
+    l: modalZone.l || sideToLane(player.side)
+  };
+}
+
+function renderZonePicker() {
+  const box = document.getElementById('zone-picker');
+  if (!box) return;
+  // Vista desde el jugador mirando a la red: lado revés a la izquierda, drive a la derecha
+  const cells = ['R', 'T', 'F'].map(z => ['V', 'D'].map(l => {
+    const active = modalZone.z === z && modalZone.l === l;
+    const laneHint = modalZone.z === null && modalZone.l === l;
+    return `<button type="button" class="zone-cell ${active ? 'active' : ''} ${laneHint ? 'lane-hint' : ''}" onclick="selectModalZone('${z}','${l}')">
+      <span>${ZONE_LABELS[z]}</span><small>${l === 'D' ? 'Drive' : 'Revés'}</small>
+    </button>`;
+  }).join('')).join('');
+  box.innerHTML = `<div class="zone-net">RED</div><div class="zone-grid">${cells}</div>`;
+  const hint = document.getElementById('zone-picker-hint');
+  if (hint) {
+    hint.innerText = modalZone.z
+      ? `Marcado: ${ZONE_LABELS[modalZone.z]} · lado ${modalZone.l === 'D' ? 'Drive' : 'Revés'}`
+      : 'Automático: la zona se deduce del golpe (toca una casilla para precisar)';
+  }
 }
 
 function exitMatchScreen() {

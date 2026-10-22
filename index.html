@@ -186,7 +186,8 @@
       </div>
 
       <div class="sort-strip">
-        <button type="button" class="sort-chip active" id="sort-V" onclick="setRankingSort('V')">Victorias</button>
+        <button type="button" class="sort-chip active" id="sort-elo" onclick="setRankingSort('elo')">🏆 ELO</button>
+        <button type="button" class="sort-chip" id="sort-V" onclick="setRankingSort('V')">Victorias</button>
         <button type="button" class="sort-chip" id="sort-winPct" onclick="setRankingSort('winPct')">% Éxito</button>
         <button type="button" class="sort-chip" id="sort-avgR" onclick="setRankingSort('avgR')">Valoración</button>
         <button type="button" class="sort-chip" id="sort-W" onclick="setRankingSort('W')">Más Winners</button>
@@ -366,11 +367,12 @@
       </div>
 
       <div class="kpi-trio" id="mvp-highlights"></div>
-      <div style="display:grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap:5px; margin-top:8px;">
-        <button class="btn-icon" onclick="renderStats('ind')">JUGADORES</button>
-        <button class="btn-icon" onclick="renderStats('pair')">PAREJAS</button>
-        <button class="btn-icon" onclick="renderStats('heatmap')">IMPACTO</button>
-        <button class="btn-icon" onclick="renderStats('shots')">GOLPES</button>
+      <div id="stats-tabs" class="sort-strip" style="margin-top:8px;">
+        <button type="button" class="sort-chip active" data-mode="ind" onclick="renderStats('ind')">Jugadores</button>
+        <button type="button" class="sort-chip" data-mode="pair" onclick="renderStats('pair')">Parejas</button>
+        <button type="button" class="sort-chip" data-mode="heatmap" onclick="renderStats('heatmap')">🔥 Mapa de calor</button>
+        <button type="button" class="sort-chip" data-mode="clave" onclick="renderStats('clave')">🧠 Clave</button>
+        <button type="button" class="sort-chip" data-mode="shots" onclick="renderStats('shots')">Golpes</button>
       </div>
       <div id="stats-content" style="overflow-x:auto;"></div>
     </div>
@@ -450,7 +452,25 @@
       </div>
     </div>
 
-    <!-- Grupo 3: Interacción de Registro durante el Partido (Exclusivo) -->
+    <!-- Grupo 3: Narrador de voz -->
+    <div class="settings-group">
+      <div class="settings-group-header">
+        <span class="settings-group-title">Narrador de Voz</span>
+        <span class="settings-group-hint">Canta el marcador tras cada punto</span>
+      </div>
+      <div class="ios-segmented cols-2">
+        <button type="button" class="ios-seg-option" id="voice-off" onclick="if (voiceEnabled) toggleVoiceNarrator()">
+          <span class="opt-main">Silencio</span>
+          <span class="opt-sub">Sin voz</span>
+        </button>
+        <button type="button" class="ios-seg-option" id="voice-on" onclick="if (!voiceEnabled) toggleVoiceNarrator()">
+          <span class="opt-main">🔊 Árbitro</span>
+          <span class="opt-sub">"Quince, nada · Bola de break"</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Grupo 4: Interacción de Registro durante el Partido (Exclusivo) -->
     <div class="settings-group" style="margin-bottom:0;">
       <div class="settings-group-header">
         <span class="settings-group-title">Control de Anotación en Pista</span>
@@ -494,6 +514,10 @@
       <div id="modal-player-title" style="font-family:var(--font-display);font-size:1.55rem;font-weight:900;text-transform:uppercase;color:var(--volt);">JUGADOR</div>
       <button class="btn-icon" onclick="closeModal()">✕</button>
     </div>
+
+    <div class="sheet-category-label" style="color:var(--cyan);"><span style="width:7px;height:7px;border-radius:50%;background:var(--cyan);"></span> Zona del golpe (mapa de calor)</div>
+    <div id="zone-picker" class="zone-picker"></div>
+    <div id="zone-picker-hint" class="zone-picker-hint"></div>
 
     <div class="sheet-category-label" style="color:var(--emerald);"><span style="width:7px;height:7px;border-radius:50%;background:var(--emerald);"></span> Winners (Elegir tipo de golpe)</div>
     <div class="shot-bento-grid">
@@ -651,7 +675,10 @@
 <script src="js/setup.js"></script>
 <script src="js/players.js"></script>
 <script src="js/match/scoring.js"></script>
+<script src="js/match/voice.js"></script>
 <script src="js/match/live.js"></script>
+<script src="js/analysis.js"></script>
+<script src="js/heatmap.js"></script>
 <script src="js/stats.js"></script>
 <script src="js/poster.js"></script>
 <script src="js/ranking.js"></script>

@@ -1,10 +1,17 @@
 // ==========================================================
 // RANKING GLOBAL, CARA A CARA, HISTORIAL Y NAVEGACIÓN
 // ==========================================================
+const ELO_START = 1500;
+const ELO_K = 32;
+
+function emptyPlayerStats(name) {
+  return { name, PJ: 0, V: 0, W: 0, ENF: 0, EF: 0, ratingSum: 0, form: [], elo: ELO_START, eloDelta: 0, badges: {}, zones: {} };
+}
+
 function computeAllPlayersStats() {
   const statsMap = {};
   dbPlayers.forEach(name => {
-    statsMap[name] = { name, PJ: 0, V: 0, W: 0, ENF: 0, EF: 0, ratingSum: 0, form: [] };
+    statsMap[name] = emptyPlayerStats(name);
   });
 
   matchHistory.forEach(m => {
@@ -12,7 +19,7 @@ function computeAllPlayersStats() {
     m.players.forEach((p, idx) => {
       if (p.isGeneric) return;
       if (!statsMap[p.name]) {
-        statsMap[p.name] = { name: p.name, PJ: 0, V: 0, W: 0, ENF: 0, EF: 0, ratingSum: 0, form: [] };
+        statsMap[p.name] = emptyPlayerStats(p.name);
       }
       const st = statsMap[p.name];
       st.PJ++;
@@ -23,10 +30,46 @@ function computeAllPlayersStats() {
       st.EF += (p.EF || 0);
       st.ratingSum += calcPlayerRating(p);
       if (st.form.length < 5) st.form.push(won ? 'W' : 'L');
+      badgesForPlayerInMatch(m, idx).forEach(k => { st.badges[k] = (st.badges[k] || 0) + 1; });
+    });
+    // Zonas de golpeo acumuladas de cada jugador (para su mapa de calor personal)
+    (m.points || []).forEach(pt => {
+      if (!pt.n || !pt.z || !statsMap[pt.n]) return;
+      const key = `${pt.z}-${pt.l || 'D'}`;
+      const z = statsMap[pt.n].zones;
+      z[key] = z[key] || { W: 0, E: 0 };
+      if (pt.t === 'W') z[key].W++;
+      else if (ERROR_TYPES.includes(pt.t)) z[key].E++;
     });
   });
 
+  applyEloRatings(statsMap);
   return { statsMap };
+}
+
+// ELO por parejas: se recorre el historial del más antiguo al más reciente
+function applyEloRatings(statsMap) {
+  const eloOf = (p) => (p.isGeneric || !statsMap[p.name]) ? ELO_START : statsMap[p.name].elo;
+  [...matchHistory].reverse().forEach(m => {
+    if (!m || !m.players || m.winnerPair === null || m.winnerPair === undefined) return;
+    const team = [0, 1].map(t => (eloOf(m.players[t * 2]) + eloOf(m.players[t * 2 + 1])) / 2);
+    const expected0 = 1 / (1 + Math.pow(10, (team[1] - team[0]) / 400));
+    const games = (m.sets || []).reduce((acc, s) => [acc[0] + s[0], acc[1] + s[1]], [0, 0]);
+    const margin = 1 + Math.min(0.5, Math.abs(games[0] - games[1]) / 20);
+    const delta0 = ELO_K * margin * ((m.winnerPair === 0 ? 1 : 0) - expected0);
+    m.players.forEach((p, idx) => {
+      if (p.isGeneric || !statsMap[p.name]) return;
+      const d = idx < 2 ? delta0 : -delta0;
+      statsMap[p.name].elo += d;
+      statsMap[p.name].eloDelta = d;
+    });
+  });
+  Object.values(statsMap).forEach(st => { st.elo = Math.round(st.elo); });
+}
+
+function formDotsHTML(form) {
+  if (!form || !form.length) return '';
+  return `<span class="form-dots">${form.map(r => `<i class="${r}"></i>`).join('')}</span>`;
 }
 
 function setRankingGenderFilter(flt) {
@@ -39,7 +82,7 @@ function setRankingGenderFilter(flt) {
 
 function setRankingSort(sortKey) {
   rankingSortBy = sortKey;
-  ['V', 'winPct', 'avgR', 'W', 'lowENF', 'bal'].forEach(k => {
+  ['elo', 'V', 'winPct', 'avgR', 'W', 'lowENF', 'bal'].forEach(k => {
     document.getElementById(`sort-${k}`)?.classList.toggle('active', k === sortKey);
   });
   renderGlobalRanking();
@@ -66,6 +109,7 @@ function renderGlobalRanking() {
     if (rankingSortBy === 'W') return b.W - a.W;
     if (rankingSortBy === 'lowENF') return (a.PJ ? a.ENF / a.PJ : 99) - (b.PJ ? b.ENF / b.PJ : 99);
     if (rankingSortBy === 'bal') return (b.W - b.ENF) - (a.W - a.ENF);
+    if (rankingSortBy === 'elo') return b.elo - a.elo || b.V - a.V;
     return b.V - a.V || avgRB - avgRA;
   });
 
@@ -85,10 +129,14 @@ function renderGlobalRanking() {
             ${renderAvatarHTML(item.name, 'avatar-p1')}
             <div class="rk-info">
               <div class="rk-name">${item.name}</div>
-              <div class="rk-sub">${prof.club ? prof.club + ' · ' : ''}${item.PJ} PJ · ${item.V} V (${winPct}%)</div>
+              <div class="rk-sub">${prof.club ? prof.club + ' · ' : ''}${item.PJ} PJ · ${item.V} V (${winPct}%)${formDotsHTML(item.form)}</div>
             </div>
           </div>
           <div class="rk-right">
+            <div class="rk-stat-box">
+              <span class="rk-stat-val" style="color:var(--cyan);">${item.elo}</span>
+              <span class="rk-stat-lbl">ELO</span>
+            </div>
             <div class="rk-stat-box">
               <span class="rk-stat-val">${avgR}</span>
               <span class="rk-stat-lbl">VAL MEDIA</span>
@@ -106,7 +154,7 @@ function renderGlobalRanking() {
 function openPlayerProfile(name) {
   const prof = ensureProfile(name);
   const { statsMap } = computeAllPlayersStats();
-  const st = statsMap[name] || { PJ: 0, V: 0, W: 0, ENF: 0, EF: 0, ratingSum: 0 };
+  const st = statsMap[name] || emptyPlayerStats(name);
   const avgR = st.PJ ? (st.ratingSum / st.PJ).toFixed(1) : '6.5';
 
   const avEl = document.getElementById('prof-avatar');
@@ -135,6 +183,13 @@ function openPlayerProfile(name) {
       <div class="kpi-card"><div class="kpi-label">Winners / ENF</div><div class="kpi-value">${st.W} / ${st.ENF}</div></div>
       <div class="kpi-card"><div class="kpi-label">Valoración</div><div class="kpi-value">${avgR}</div></div>
     </div>
+    <div class="kpi-trio" style="margin-top:0;">
+      <div class="kpi-card"><div class="kpi-label">ELO</div><div class="kpi-value" style="color:var(--cyan);">${st.elo}</div></div>
+      <div class="kpi-card"><div class="kpi-label">Último partido</div><div class="kpi-value" style="color:${st.eloDelta >= 0 ? 'var(--emerald)' : 'var(--coral)'};">${st.PJ ? (st.eloDelta >= 0 ? '+' : '') + Math.round(st.eloDelta) : '–'}</div></div>
+      <div class="kpi-card"><div class="kpi-label">Forma</div><div class="kpi-value">${formDotsHTML(st.form) || '–'}</div></div>
+    </div>
+    ${renderProfileZonesHTML(st)}
+    ${Object.keys(st.badges).length ? `<div class="sheet-category-label" style="color:var(--amber);">🏅 Logros</div>${badgeChipsHTML(Object.keys(st.badges), st.badges)}` : ''}
     ${prof.notes ? `<div class="notes-box">${prof.notes}</div>` : ''}
     <button type="button" class="btn-icon" style="width:100%;color:var(--coral);padding:10px;margin-top:8px;" onclick="deletePlayerFromDB('${safeName}')">
       <svg class="icon"><use href="#i-trash"/></svg> ELIMINAR JUGADOR DE LA BD
@@ -142,6 +197,25 @@ function openPlayerProfile(name) {
   `;
 
   document.getElementById('player-profile-modal').classList.remove('hidden');
+}
+
+function renderProfileZonesHTML(st) {
+  const cells = Object.values(st.zones);
+  if (!cells.length) return '';
+  const zoneTot = { R: { W: 0, E: 0 }, T: { W: 0, E: 0 }, F: { W: 0, E: 0 } };
+  Object.entries(st.zones).forEach(([k, v]) => { const z = k[0]; zoneTot[z].W += v.W; zoneTot[z].E += v.E; });
+  const net = z => zoneTot[z].W - zoneTot[z].E;
+  const withW = ZONES.filter(z => zoneTot[z].W > 0);
+  const withE = ZONES.filter(z => zoneTot[z].E > 0);
+  const strong = withW.length ? withW.reduce((a, z) => (net(z) > net(a) ? z : a)) : null;
+  const weak = withE.length ? withE.reduce((a, z) => (net(z) < net(a) ? z : a)) : null;
+  return `
+    <div class="sheet-category-label" style="color:var(--cyan);">🔥 Mapa de calor (todos sus partidos)</div>
+    ${renderHalfCourtHeatSVG(st.zones, 'all')}
+    <div class="coach-list">
+      ${strong ? `<div class="coach-tip"><span>💪</span><span>Zona fuerte: <strong>${ZONE_NAMES[strong]}</strong> (${zoneTot[strong].W} winners, ${zoneTot[strong].E} errores)</span></div>` : ''}
+      ${weak && weak !== strong ? `<div class="coach-tip" style="border-left-color:var(--coral);"><span>🎯</span><span>A mejorar: <strong>${ZONE_NAMES[weak]}</strong> (${zoneTot[weak].E} errores, ${zoneTot[weak].W} winners)</span></div>` : ''}
+    </div>`;
 }
 
 function closePlayerProfile() {
