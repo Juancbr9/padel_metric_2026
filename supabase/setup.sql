@@ -19,13 +19,13 @@ revoke all on public.pm_clubs from anon, authenticated;
 
 create or replace function public.pm_get_club(p_code text)
 returns table (name text, data jsonb, version bigint, updated_at timestamptz)
-language sql security definer set search_path = public as $$
+language sql security definer set search_path = '' as $$
   select c.name, c.data, c.version, c.updated_at from public.pm_clubs c where c.code = p_code;
 $$;
 
 create or replace function public.pm_create_club(p_code text, p_name text, p_data jsonb)
 returns bigint
-language plpgsql security definer set search_path = public as $$
+language plpgsql security definer set search_path = '' as $$
 begin
   if length(p_code) < 20 then
     raise exception 'El código del club es demasiado corto';
@@ -39,7 +39,7 @@ $$;
 -- y la app vuelve a descargar, mezcla y reintenta.
 create or replace function public.pm_save_club(p_code text, p_data jsonb, p_base_version bigint)
 returns bigint
-language plpgsql security definer set search_path = public as $$
+language plpgsql security definer set search_path = '' as $$
 declare
   v bigint;
 begin
@@ -57,6 +57,15 @@ begin
 end;
 $$;
 
+-- Consulta ligera: solo el número de versión, para saber si hay cambios sin descargar todo
+create or replace function public.pm_club_version(p_code text)
+returns bigint
+language sql security definer set search_path = '' as $$
+  select c.version from public.pm_clubs c where c.code = p_code;
+$$;
+
+revoke all on function public.pm_club_version(text) from public;
+grant execute on function public.pm_club_version(text) to anon, authenticated;
 revoke all on function public.pm_get_club(text) from public;
 revoke all on function public.pm_create_club(text, text, jsonb) from public;
 revoke all on function public.pm_save_club(text, jsonb, bigint) from public;

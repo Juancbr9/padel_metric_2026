@@ -1,29 +1,18 @@
 # Sincronizar Padel Metric entre móviles (Supabase)
 
-Solo lo hace **una persona** (quien crea el club). Los demás se unen con el enlace de invitación.
+La base de datos de Padel Metric ya está creada y configurada (proyecto `padel-metric` en Supabase, región París). La app la usa por defecto, así que **no hay que configurar nada**:
 
-## 1. Crear el proyecto (gratis)
+1. Una persona abre el menú → **Sincronizar entre móviles**, escribe el nombre del club y pulsa **Crear club con los datos de este móvil**.
+2. Pulsa **Enviar invitación** y la manda por WhatsApp al grupo.
+3. Cada amigo abre el enlace en su móvil y acepta unirse.
 
-1. Entra en [supabase.com](https://supabase.com) y crea una cuenta (puedes entrar con GitHub).
-2. Pulsa **New project**. Pon un nombre (por ejemplo `padel-metric`), una contraseña para la base de datos (guárdala, aunque la app no la necesita) y la región más cercana (por ejemplo *West EU*).
-3. Espera un par de minutos a que el proyecto esté listo.
+## Usar otro proyecto de Supabase (opcional)
 
-## 2. Preparar la base de datos
-
-1. En el menú de la izquierda abre **SQL Editor** → **New query**.
-2. Copia todo el contenido de [`setup.sql`](setup.sql), pégalo y pulsa **Run**. Debe decir *Success*.
-
-## 3. Crear el club en la app
-
-1. En Supabase ve a **Project Settings → API** (o **Data API**) y copia:
-   - **Project URL** (algo como `https://abcdxyz.supabase.co`)
-   - La clave **anon public**
-2. En Padel Metric: menú → **Sincronizar entre móviles** → pega la URL, la clave y el nombre del club → **Crear club con los datos de este móvil**.
-3. Pulsa **Enviar invitación** y mándala por WhatsApp a tu grupo. Al abrir el enlace en su móvil, la app les pregunta si quieren unirse.
+Si algún día prefieres una base de datos propia: crea un proyecto en [supabase.com](https://supabase.com), abre **SQL Editor**, pega [`setup.sql`](setup.sql) y pulsa **Run**. Después, en la app, despliega **Usar otro proyecto de Supabase** y pega la **Project URL** y la clave **publishable** (`sb_publishable_...`) de **Project Settings → API Keys**.
 
 ## Cómo funciona
 
-- Cada móvil guarda sus datos y funciona **sin conexión**. Cuando hay internet, se sincroniza solo al guardar, al abrir la app y al volver a ella.
+- Cada móvil guarda sus datos y funciona **sin conexión**. Cuando hay internet, se sincroniza solo al guardar, al abrir la app, al volver a ella y, con la app abierta, cada minuto comprueba si hay novedades (una consulta de pocos bytes; solo descarga los datos cuando algo ha cambiado).
 - Al sincronizar se **mezclan** los datos: los partidos, torneos y americanos nuevos de cada móvil se suman, y si dos móviles cambian lo mismo gana el cambio más reciente. Lo que se borra en un móvil se borra en todos.
 - El partido que se está jugando en directo no se comparte hasta que termina y se guarda en el historial.
 - **Seguridad:** la tabla no es accesible directamente; solo se puede leer o escribir un club conociendo su código secreto, que va dentro del enlace de invitación. Compártelo solo con tu grupo.

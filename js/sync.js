@@ -7,6 +7,10 @@ const SYNC_KEY = 'pm_sync_v1';
 const SYNC_META_KEY = 'pm_sync_meta_v1';
 const SYNC_COLLECTIONS = ['matches', 'tournaments', 'americanos'];
 const TOMBSTONE_DAYS = 180;
+// Proyecto de Supabase de Padel Metric. La clave "publishable" es pública por diseño:
+// sin el código secreto del club no permite leer ni escribir nada.
+const DEFAULT_SUPABASE_URL = 'https://ijmxhzdgcwxihfzllnoj.supabase.co';
+const DEFAULT_SUPABASE_KEY = 'sb_publishable_UKoPjQVMqi4ApeXJNkUN9A_swG4xZ0X';
 
 let syncConfig = null;
 let syncMeta = { deleted: { players: {}, matches: {}, tournaments: {}, americanos: {} } };
@@ -161,7 +165,10 @@ function applyMerged(merged) {
 async function syncRpc(fn, body, cfg = syncConfig) {
   const res = await fetch(`${cfg.url.replace(/\/+$/, '')}/rest/v1/rpc/${fn}`, {
     method: 'POST',
-    headers: { apikey: cfg.key, Authorization: `Bearer ${cfg.key}`, 'Content-Type': 'application/json' },
+    // Las claves nuevas (sb_publishable_...) van solo en "apikey"; las antiguas (JWT) también en Authorization
+    headers: cfg.key.startsWith('sb_')
+      ? { apikey: cfg.key, 'Content-Type': 'application/json' }
+      : { apikey: cfg.key, Authorization: `Bearer ${cfg.key}`, 'Content-Type': 'application/json' },
     body: JSON.stringify(body)
   });
   const text = await res.text();
@@ -245,7 +252,7 @@ function refreshCurrentView() {
 
 // ---------- Club: crear, unirse, invitar y salir ----------
 function randomClubCode() {
-  const bytes = new Uint8Array(18);
+  const bytes = new Uint8Array(24);
   crypto.getRandomValues(bytes);
   return [...bytes].map(b => 'abcdefghijkmnpqrstuvwxyz23456789'[b % 32]).join('');
 }
@@ -380,18 +387,24 @@ function openSyncPanel() {
     <input type="text" id="sync-invite" placeholder="Pega aquí el enlace de invitación">
     <button class="btn-volt" style="margin-top:8px;" onclick="joinClubFromForm()">Unirme al club</button>
     <div class="form-label" style="margin-top:20px;">O crea un club nuevo</div>
-    <details class="sync-help">
-      <summary>Cómo preparar Supabase (gratis, 5 minutos)</summary>
-      <ol>
-        <li>Crea una cuenta en <strong>supabase.com</strong> y un proyecto nuevo.</li>
-        <li>Abre <strong>SQL Editor</strong>, pega el contenido de <strong>supabase/setup.sql</strong> (está en el repositorio de la app) y pulsa <strong>Run</strong>.</li>
-        <li>En <strong>Project Settings → API</strong> copia la <strong>Project URL</strong> y la clave <strong>anon public</strong>, y pégalas aquí abajo.</li>
-      </ol>
-    </details>
-    <input type="text" id="sync-url" placeholder="Project URL (https://xxxx.supabase.co)" style="margin-top:8px;">
-    <input type="text" id="sync-key" placeholder="Clave anon public" style="margin-top:8px;">
-    <input type="text" id="sync-name" placeholder="Nombre del club (ej. Pádel de los jueves)" style="margin-top:8px;">
-    <button class="btn-icon" style="width:100%;padding:12px;margin-top:8px;color:var(--volt);" onclick="createClubFromForm()">Crear club con los datos de este móvil</button>`);
+    <input type="text" id="sync-name" placeholder="Nombre del club (ej. Pádel de los jueves)">
+    <button class="btn-icon" style="width:100%;padding:12px;margin-top:8px;color:var(--volt);" onclick="createClubFromForm()">Crear club con los datos de este móvil</button>
+    <details class="sync-help" style="margin-top:10px;">
+      <summary>Usar otro proyecto de Supabase (opcional)</summary>
+      <p style="margin:8px 0;color:var(--text-secondary);">Por defecto se usa la base de datos de Padel Metric. Si prefieres la tuya, ejecuta <strong>supabase/setup.sql</strong> en su SQL Editor y pon aquí su URL y su clave publishable.</p>
+      <input type="text" id="sync-url" value="${escapeHtml(DEFAULT_SUPABASE_URL)}" placeholder="Project URL (https://xxxx.supabase.co)">
+      <input type="text" id="sync-key" value="${escapeHtml(DEFAULT_SUPABASE_KEY)}" placeholder="Clave publishable (sb_publishable_...)" style="margin-top:8px;">
+    </details>`);
+}
+
+async function checkRemoteVersion() {
+  if (!syncConfig || syncRunning || !navigator.onLine || document.visibilityState !== 'visible') return;
+  try {
+    const v = await syncRpc('pm_club_version', { p_code: syncConfig.code });
+    if (typeof v === 'number' && v !== syncConfig.version) syncNow(false);
+  } catch (e) {
+    // Proyectos configurados antes de existir esta función: se sincroniza igualmente al guardar y al abrir
+  }
 }
 
 // ---------- Arranque ----------
@@ -416,5 +429,7 @@ function initSync() {
   // También si la app ya estaba abierta cuando se toca el enlace
   window.addEventListener('hashchange', handleInviteHash);
   window.addEventListener('online', () => scheduleSync(500));
+  // Cada minuto, con la app abierta, mira si otro móvil ha guardado algo (consulta de pocos bytes)
+  setInterval(checkRemoteVersion, 60000);
   document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') scheduleSync(800); });
 }
