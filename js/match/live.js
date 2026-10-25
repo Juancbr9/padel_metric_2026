@@ -446,6 +446,7 @@ function renderZonePicker() {
 function exitMatchScreen() {
   vibrate(15);
   if (timerInterval) clearInterval(timerInterval);
+  if (wakeLockRef) { try { wakeLockRef.release(); } catch (e) {} wakeLockRef = null; }
   document.body.classList.remove('in-live-match');
 
   const link = state ? state.link : null;

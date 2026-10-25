@@ -1,0 +1,45 @@
+plugins { id 'com.android.application' }
+
+// App nativa: lleva dentro los archivos de la web (raíz del repositorio) y los abre en su propia ventana.
+// Al abrirla con conexión descarga la versión publicada en Netlify (ver Web.java), así que no hace falta un APK nuevo
+// para cada cambio de la web; solo al cambiar algo de esta carpeta (subir versionCode).
+android {
+    namespace 'io.github.juancbr9.padelmetric'
+    compileSdk 35
+    defaultConfig {
+        applicationId 'io.github.juancbr9.padelmetric'
+        minSdk 24
+        targetSdk 35
+        versionCode 1
+        versionName '1.0'
+    }
+    signingConfigs {
+        release {
+            // La clave no está en el repositorio: se pasa con variables de entorno al compilar
+            storeFile file(System.getenv('PADEL_KEYSTORE') ?: 'padelmetric.keystore')
+            storePassword System.getenv('PADEL_KEYSTORE_PASS')
+            keyAlias 'padelmetric'
+            keyPassword System.getenv('PADEL_KEYSTORE_PASS')
+        }
+    }
+    buildTypes {
+        release { minifyEnabled false; signingConfig signingConfigs.release }
+    }
+    compileOptions { sourceCompatibility JavaVersion.VERSION_17; targetCompatibility JavaVersion.VERSION_17 }
+    sourceSets { main { assets.srcDirs += "$buildDir/web" } }
+}
+
+// Copia la web dentro del APK (assets/www)
+tasks.register('copiarWeb', Copy) {
+    from(rootProject.file('..')) {
+        include 'index.html', 'manifest.json', 'sw.js'
+        include 'css/**', 'js/**', 'icons/**', 'assets/**'
+    }
+    into "$buildDir/web/www"
+}
+preBuild.dependsOn 'copiarWeb'
+
+dependencies {
+    implementation 'androidx.webkit:webkit:1.12.1'
+    implementation 'androidx.core:core:1.13.1'
+}

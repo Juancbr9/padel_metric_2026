@@ -272,7 +272,9 @@ function decodeInvite(text) {
 }
 
 function inviteLink() {
-  return `${location.origin}${location.pathname}#unirse=${encodeInvite(syncConfig)}`;
+  // Dentro de la app el enlace debe apuntar a la web pública, que abre la app o la web según el móvil
+  const base = window.PadelNative ? PadelNative.urlPublica() : `${location.origin}${location.pathname}`;
+  return `${base}#unirse=${encodeInvite(syncConfig)}`;
 }
 
 async function createClubFromForm() {

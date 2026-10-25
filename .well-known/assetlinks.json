@@ -1,0 +1,14 @@
+[
+  {
+    "relation": [
+      "delegate_permission/common.handle_all_urls"
+    ],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "io.github.juancbr9.padelmetric",
+      "sha256_cert_fingerprints": [
+        "A8:48:AA:EE:C6:AC:56:51:7B:A4:85:D4:1F:E9:79:24:BD:C5:85:3E:7B:FD:54:01:C5:60:F5:37:9C:FA:2D:07"
+      ]
+    }
+  }
+]

@@ -33,7 +33,8 @@ El dueño del proyecto no es programador: explica los cambios en español y en l
   - `app.js`: navegación (`switchMainTab`, `SECTIONS`), menú, ajustes (`appSettings`), exportación CSV, instalación.
   - `history.js` también tiene `applyBackupData`, `loadDemoData` (datos de ejemplo) y `openFactoryReset`/`factoryReset` (borra todas las claves `pm_`).
 - `assets/demo/padel-metric-demo.json`: datos de ejemplo (top 15 masculino y femenino, partidos simulados punto a punto, torneos y americanos). Se regeneran con `tools/generar-datos-demo.mjs`.
-- `sw.js`: service worker (modo sin conexión). **Si añades un archivo JS/CSS, inclúyelo en `APP_FILES` y sube la versión de `CACHE`.**
+- `sw.js`: service worker (modo sin conexión). **Si añades un archivo JS/CSS, inclúyelo en `APP_FILES` y sube la versión de `CACHE`.** La app de Android usa esa misma lista para actualizarse sola.
+- `android/`: app nativa (como la de USAR): WebView que sirve la web desde el APK y se actualiza desde Netlify. Ver `android/README.md`. `js/nativo.js` (se carga el primero) conecta con Android a través de `window.PadelNative`; en el navegador no hace nada. Las medidas de pantalla completa llegan como `--sa-t/--sa-b/--sa-l/--sa-r` en CSS. El APK publicado está en `descargas/PadelMetric.apk` y `/.well-known/assetlinks.json` tiene la huella de la firma.
 
 ## Datos
 

@@ -167,13 +167,16 @@
       <button type="button" class="menu-row menu-row-danger" onclick="openFactoryReset()">
         <svg class="icon"><use href="#i-trash"/></svg><span>Restaurar de fábrica</span><span class="menu-row-hint">›</span>
       </button>
+      <a id="btn-download-apk" class="menu-row hidden" href="descargas/PadelMetric.apk" download="PadelMetric.apk">
+        <svg class="icon"><use href="#i-download"/></svg><span>Descargar la app para Android</span><span class="menu-row-hint">.apk</span>
+      </a>
       <button type="button" id="btn-install-pwa" class="menu-row hidden" onclick="triggerInstallPWA()">
         <svg class="icon"><use href="#i-download"/></svg><span>Instalar la app en este dispositivo</span><span class="menu-row-hint">›</span>
       </button>
     </div>
     <div class="menu-footer">
       <svg class="menu-footer-logo"><use href="#logo-mark"/></svg>
-      <span>Padel Metric · v5.0</span>
+      <span id="app-version-label">Padel Metric · v5.0</span>
     </div>
   </div>
 </div>
@@ -778,6 +781,7 @@
   </div>
 </div>
 
+<script src="js/nativo.js"></script>
 <script src="js/core/state.js"></script>
 <script src="js/core/storage.js"></script>
 <script src="js/core/utils.js"></script>

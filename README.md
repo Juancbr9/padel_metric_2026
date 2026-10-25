@@ -24,6 +24,10 @@ Marcador, estadísticas y competiciones de pádel. Se instala en el móvil y fun
 - **Imágenes para WhatsApp** de clasificaciones de americanos, ligas, grupos y cuadros de torneo.
 - **Sincronizar entre móviles**: un club compartido en Supabase (gratis) para que todo el grupo vea el mismo ranking, partidos, torneos y americanos. Guía en [`supabase/LEEME.md`](supabase/LEEME.md).
 
+## App para Android
+
+`descargas/PadelMetric.apk` (también en el menú de la web desde un móvil Android → **Descargar la app para Android**). Es una app nativa que lleva la web dentro, funciona sin conexión y se actualiza sola cuando se publica una versión nueva de la web. Detalles en [`android/README.md`](android/README.md).
+
 ## Datos de ejemplo
 
 `assets/demo/padel-metric-demo.json` trae 30 jugadores (top 15 masculino y top 15 femenino del circuito profesional), 73 partidos simulados punto a punto (masculinos, femeninos y mixtos), 3 torneos y 6 americanos (Americano, por parejas, Mexicano, Mexicano mixto y Pozo). Se carga desde el menú con **Cargar datos de ejemplo**, o importando el archivo con **Restaurar copia de seguridad**. Los resultados y estadísticas son simulados.

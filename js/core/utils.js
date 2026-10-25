@@ -188,6 +188,12 @@ function toggleThemeMode() {
   localStorage.setItem('pm_theme_light', isLight ? '1' : '0');
   showToast(isLight ? 'Modo claro activado' : 'Modo oscuro activado');
   renderMenuSwitches();
+  syncNativeTheme();
+}
+
+// En la app de Android, los iconos de la barra de estado siguen al tema (oscuros en modo claro)
+function syncNativeTheme() {
+  if (window.PadelNative) PadelNative.temaClaro(document.body.classList.contains('light-mode'));
 }
 
 if (localStorage.getItem('pm_theme_light') === '1') {

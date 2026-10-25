@@ -13,21 +13,23 @@ body.light-mode {
   --amber: #D97706; --emerald: #16A34A;
   --text-primary: #0F172A; --text-secondary: #475569;
 }
+/* Márgenes de pantalla completa (barra de estado, cámara y barra de gestos). En la app de Android los pone js/nativo.js */
+:root { --sa-t: env(safe-area-inset-top, 0px); --sa-b: env(safe-area-inset-bottom, 0px); --sa-l: env(safe-area-inset-left, 0px); --sa-r: env(safe-area-inset-right, 0px); }
 /* Tamaño base fluido: todo lo medido en rem crece en móviles grandes y se ajusta en los pequeños */
 html { font-size: clamp(15px, 4.15vw, 18px); }
 * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; user-select: none; }
 body {
   background-color: var(--bg-obsidian);
   background-image: radial-gradient(circle at 50% 0%, rgba(var(--volt-rgb),0.07), transparent 45%);
-  color: var(--text-primary); font-family: var(--font-sans); padding-bottom: 32px; min-height: 100vh; overflow-x: hidden;
+  color: var(--text-primary); font-family: var(--font-sans); padding-bottom: calc(32px + var(--sa-b)); min-height: 100vh; overflow-x: hidden;
   transition: background-color 0.2s, color 0.2s;
 }
-body.in-live-match { padding-bottom: 0; overflow: hidden; height: 100dvh; }
+body.in-live-match { padding-bottom: var(--sa-b); overflow: hidden; height: 100dvh; }
 .icon { width: 16px; height: 16px; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; fill: none; flex-shrink: 0; }
 .icon-lg { width: 20px; height: 20px; }
 
 #toast-hud {
-  position: fixed; top: 68px; left: 50%; transform: translateX(-50%) translateY(-20px);
+  position: fixed; top: calc(68px + var(--sa-t)); left: 50%; transform: translateX(-50%) translateY(-20px);
   background: rgba(15,21,35,0.96); backdrop-filter: blur(12px); border: 1px solid var(--border-specular);
   color: #F8FAFC; padding: 9px 16px; border-radius: 99px; font-family: var(--font-sans);
   font-size: 0.75rem; font-weight: 700; z-index: 150; box-shadow: 0 12px 32px rgba(0,0,0,0.65);
@@ -37,7 +39,7 @@ body.in-live-match { padding-bottom: 0; overflow: hidden; height: 100dvh; }
 #toast-hud.show { opacity: 1; transform: translateX(-50%) translateY(0); }
 
 header {
-  position: sticky; top: 0; z-index: 40; height: 58px;
+  position: sticky; top: 0; z-index: 40; height: calc(58px + var(--sa-t)); padding-top: var(--sa-t) !important;
   background: rgba(6,9,15,0.92); backdrop-filter: blur(18px); -webkit-backdrop-filter: blur(18px);
   border-bottom: 1px solid var(--border-subtle); padding: 0 14px; display: flex; justify-content: space-between; align-items: center;
 }
@@ -368,7 +370,7 @@ input:focus, select:focus, textarea:focus { border-color: var(--volt); }
 }
 .telemetry-sheet {
   background: var(--bg-carbon); border-top: 1px solid var(--border-specular); border-radius: 22px 22px 0 0;
-  width: 100%; max-width: 480px; padding: 16px 16px 22px; max-height: 92vh; overflow-y: auto;
+  width: 100%; max-width: 480px; padding: 16px 16px calc(22px + var(--sa-b)); max-height: calc(92vh - var(--sa-t)); overflow-y: auto;
   animation: sheetUp 0.2s cubic-bezier(0.16,1,0.3,1);
 }
 .telemetry-sheet.full-top-sheet {
@@ -434,8 +436,8 @@ body.light-mode .bottom-dock { background: rgba(255,255,255,0.95); }
    PANTALLA DE PARTIDO EN VIVO CON ALTURAS 100% FIJAS (CERO SALTOS)
    ========================================================== */
 .match-screen-fixed {
-  height: calc(100dvh - 68px);
-  max-height: calc(100dvh - 68px);
+  height: calc(100dvh - 68px - var(--sa-t) - var(--sa-b));
+  max-height: calc(100dvh - 68px - var(--sa-t) - var(--sa-b));
   display: flex;
   flex-direction: column;
   justify-content: space-between;
@@ -698,10 +700,10 @@ header::after { content: ''; position: absolute; left: 0; right: 0; bottom: -1px
 .menu-btn { padding: 7px 9px; }
 
 /* Menú desplegable superior */
-.app-menu { position: fixed; inset: 58px 0 0 0; z-index: 60; background: rgba(3,5,9,0.6); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); }
+.app-menu { position: fixed; inset: calc(58px + var(--sa-t)) 0 0 0; z-index: 60; background: rgba(3,5,9,0.6); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); }
 .app-menu-panel {
   max-width: 560px; margin: 0 auto; background: var(--bg-carbon); border: 1px solid var(--border-specular); border-top: none;
-  border-radius: 0 0 22px 22px; padding: 6px 14px 14px; max-height: calc(100dvh - 60px); overflow-y: auto;
+  border-radius: 0 0 22px 22px; padding: 6px 14px 14px; max-height: calc(100dvh - 60px - var(--sa-t)); overflow-y: auto; padding-bottom: calc(14px + var(--sa-b));
   box-shadow: 0 24px 48px rgba(0,0,0,0.5); animation: menuDown 0.22s cubic-bezier(0.16,1,0.3,1);
 }
 @keyframes menuDown { from { transform: translateY(-12px); opacity: 0; } to { transform: none; opacity: 1; } }
@@ -1008,3 +1010,6 @@ body.light-mode .home-top-pos { color: #B45309; }
 .sync-help summary { font-weight: 800; cursor: pointer; color: var(--volt); }
 .sync-help ol { padding-left: 18px; margin-top: 8px; line-height: 1.5; color: var(--text-secondary); }
 .sync-help strong { color: var(--text-primary); }
+
+/* Enlace del menú con aspecto de fila */
+a.menu-row { display: flex; align-items: center; color: var(--text-primary); text-decoration: none; }

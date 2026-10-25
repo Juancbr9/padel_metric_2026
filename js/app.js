@@ -95,6 +95,29 @@ function exportHistoryCSV() {
   showToast('Partidos exportados para Excel');
 }
 
+// Botón atrás de Android: cierra lo que esté abierto o vuelve a Inicio. Devuelve false para salir de la app.
+window.__padelAtras = () => {
+  const open = [...document.querySelectorAll('.sheet-backdrop')].filter(el => !el.classList.contains('hidden'));
+  if (open.length) { open.forEach(el => el.classList.add('hidden')); return true; }
+  if (!document.getElementById('app-menu').classList.contains('hidden')) { closeAppMenu(); return true; }
+  if (!document.getElementById('view-stats').classList.contains('hidden')) { toggleStatsView(); return true; }
+  if (document.body.classList.contains('in-live-match')) { showToast('Para salir del partido usa el botón Salir'); return true; }
+  if (currentTab === 'tournaments' && tView.mode !== 'list') { eventDraft = null; showTournamentList(); return true; }
+  if (currentTab === 'americano' && aView.mode !== 'list') { eventDraft = null; showAmericanoList(); return true; }
+  if (currentTab !== 'home') { switchMainTab('home'); return true; }
+  return false;
+};
+
+// Ofrece el APK en los navegadores de Android (fuera de la app)
+function setupAppDownload() {
+  const isAndroid = /Android/i.test(navigator.userAgent);
+  document.getElementById('btn-download-apk')?.classList.toggle('hidden', !isAndroid || !!window.PadelNative);
+  if (window.PadelNative) {
+    const el = document.getElementById('app-version-label');
+    try { if (el) el.innerText = `Padel Metric · app ${PadelNative.versionApp()} · ${PadelNative.version()}`; } catch (e) {}
+  }
+}
+
 window.addEventListener('DOMContentLoaded', () => {
   loadCustomCover();
   initAvatarCropperEvents();
@@ -102,6 +125,8 @@ window.addEventListener('DOMContentLoaded', () => {
   renderVoiceToggle();
   switchMainTab('home');
   initSync();
+  setupAppDownload();
+  syncNativeTheme();
 });
 
 // Botón "Instalar app": el navegador avisa cuando la app se puede instalar

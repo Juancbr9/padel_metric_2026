@@ -21,6 +21,8 @@ function renderVoiceToggle() {
 }
 
 function speak(text) {
+  // En la app de Android habla la voz del sistema (la ventana web no trae voz propia)
+  if (window.PadelNative) { PadelNative.hablar(text); return; }
   if (!('speechSynthesis' in window)) return;
   try {
     window.speechSynthesis.cancel();
