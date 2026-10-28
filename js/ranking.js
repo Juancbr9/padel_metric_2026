@@ -184,7 +184,7 @@ let profileName = null;
 // Detalle de un jugador recorriendo su historial, sus torneos y sus americanos
 function computePlayerDetail(name) {
   const d = {
-    matches: [], shots: {}, aces: 0, df: 0, partners: {}, rivals: {}, curStreak: 0, bestStreak: 0,
+    matches: [], shots: {}, errShots: {}, aces: 0, df: 0, partners: {}, rivals: {}, curStreak: 0, bestStreak: 0,
     titles: [], finals: 0, americanoBest: null, setsWon: 0, setsLost: 0, gamesWon: 0, gamesLost: 0, timeSec: 0
   };
   [...matchHistory].reverse().forEach((m, revIdx) => {
@@ -198,6 +198,7 @@ function computePlayerDetail(name) {
     const won = m.winnerPair === pair;
     d.matches.unshift({ m, histIdx: matchHistory.length - 1 - revIdx, won, partner, rivals, pair });
     Object.entries(p.shots || {}).forEach(([k, v]) => { d.shots[k] = (d.shots[k] || 0) + v; });
+    Object.entries(p.errShots || {}).forEach(([k, v]) => { d.errShots[k] = (d.errShots[k] || 0) + v; });
     d.aces += p.aces || 0;
     d.df += p.df || 0;
     d.timeSec += m.elapsedSec || 0;
@@ -323,7 +324,10 @@ function openPlayerProfile(name, keepTab = false) {
   }
 
   if (profileTab === 'game') {
-    const shotNames = [['Volea', 'Volea'], ['Bandeja/Víbora', 'Bandeja / Víbora'], ['Remate', 'Remate'], ['Fondo/Bajada', 'Fondo / Bajada'], ['Saque Directo', 'Saque directo']];
+    const shotNames = [['Volea', 'Volea'], ['Bandeja/Víbora', 'Bandeja / Víbora'], ['Remate', 'Remate'], ['Fondo/Bajada', 'Fondo / Bajada'], ['Globo', 'Globo'], ['Dejada', 'Dejada'], ['Chiquita', 'Chiquita'], ['Resto', 'Resto'], ['Saque Directo', 'Saque directo']]
+      .filter(([k], i) => i < 4 || d.shots[k]);
+    const errNames = SHOT_CATALOG.filter(s => d.errShots[s.id]).sort((a, b) => d.errShots[b.id] - d.errShots[a.id]);
+    const maxErr = Math.max(1, ...errNames.map(s => d.errShots[s.id]));
     const maxShot = Math.max(1, ...shotNames.map(([k]) => d.shots[k] || 0));
     body = `
       <div class="kpi-trio">
@@ -346,6 +350,13 @@ function openPlayerProfile(name, keepTab = false) {
           <div class="shot-bar-track"><i style="width:${((d.shots[k] || 0) / maxShot) * 100}%"></i></div>
           <strong>${d.shots[k] || 0}</strong>
         </div>`).join('')}
+      ${errNames.length ? `<div class="sheet-category-label" style="color:var(--coral);">Errores por golpe</div>
+      ${errNames.map(s => `
+        <div class="shot-bar err">
+          <span>${s.label}</span>
+          <div class="shot-bar-track"><i style="width:${(d.errShots[s.id] / maxErr) * 100}%"></i></div>
+          <strong>${d.errShots[s.id]}</strong>
+        </div>`).join('')}` : ''}
       ${renderProfileZonesHTML(st)}`;
   }
 

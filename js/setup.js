@@ -107,7 +107,7 @@ function renderSetupCourt() {
 
   const deuceLabels = { adv: 'Ventaja', star: 'Star Point', golden: 'Punto de Oro' };
   const thirdLabels = { normal: '3 Sets', supertb: 'Súper TB' };
-  const inputLabels = { tap: 'Toque', swipe: 'Gestos' };
+  const inputLabels = { tap: 'Elegir golpe', swipe: 'Rápido' };
   const sumEl = document.getElementById('rules-summary-text');
   if (sumEl) {
     sumEl.innerText = `${thirdLabels[setupConfig.thirdSetRule]} · ${deuceLabels[setupConfig.deuceRule]} · ${inputLabels[setupConfig.inputMode]}`;

@@ -1407,3 +1407,43 @@ body.spectator-mode > header, body.spectator-mode .container, body.spectator-mod
 .wl-feat .icon { width: 22px; height: 22px; color: #D4FF2A; margin-top: 2px; }
 .wl-feat strong { display: block; font-size: 0.95rem; margin-bottom: 2px; }
 .wl-feat span { font-size: 0.8rem; color: rgba(255,255,255,0.78); line-height: 1.4; }
+
+/* ==========================================================
+   TARJETAS GRANDES Y PANEL DEL GOLPE CON DIBUJOS
+   ========================================================== */
+.pair-row { align-items: stretch; }
+.hud-player-card { height: 100%; padding: 0.6rem 0.6rem 0.55rem; border-radius: 14px; }
+.hud-player-card.dragging { transition: none; }
+.hud-player-mid { flex: 1; flex-direction: column; justify-content: center; align-items: flex-start; gap: 0.35rem; }
+.hud-player-mid .avatar-circle { width: 2.5rem; height: 2.5rem; font-size: 0.95rem; }
+.hud-player-name { font-size: 1.55rem; width: 100%; }
+.hud-side-label { font-size: 0.66rem; }
+.rating-ring-wrap { width: 2rem; height: 2rem; }
+.rating-ring-val { font-size: 0.6rem; }
+.hud-micro-telemetry { font-size: 0.66rem; gap: 4px; }
+.hud-micro-telemetry span { padding: 3px 0; }
+.swipe-live-badge { flex-direction: column; gap: 2px; font-size: 1.35rem; text-align: center; line-height: 1; padding: 6px; }
+.swipe-live-badge span { font-size: 2rem; }
+.quick-points { height: 2.75rem; }
+.qp { border-radius: 12px; }
+@media (max-height: 700px) { .hud-player-mid .avatar-circle { width: 1.9rem; height: 1.9rem; } .hud-player-name { font-size: 1.3rem; } }
+
+.shot-sheet { padding-top: 14px; }
+.shot-sheet-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+.shot-sheet-head small { font-size: 0.64rem; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-secondary); }
+#modal-player-title { font-family: var(--font-display); font-size: 1.6rem; font-weight: 900; text-transform: uppercase; color: var(--volt); line-height: 1; }
+.shot-type-seg { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; padding: 4px; border-radius: 12px; background: var(--bg-obsidian); border: 1px solid var(--border-subtle); margin-bottom: 10px; }
+.shot-type-seg button { border: none; background: transparent; color: var(--text-secondary); font-size: 0.76rem; padding: 9px 4px; border-radius: 9px; }
+.shot-type-seg button.active.t-w { background: var(--emerald); color: #06090F; }
+.shot-type-seg button.active.t-enf { background: var(--coral); color: #FFFFFF; }
+.shot-type-seg button.active.t-ef { background: var(--amber); color: #06090F; }
+.shot-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+.shot-grid.swap { animation: fxIn 0.35s var(--ease-out); }
+.shot-grid .shot-tile { flex-direction: column; justify-content: center; align-items: center; gap: 4px; padding: 8px 4px 9px; text-align: center; min-height: 0; border-radius: 14px; grid-column: auto; }
+.shot-grid .shot-vec { width: 100%; height: auto; aspect-ratio: 64 / 44; opacity: 1; }
+.shot-grid .shot-tile-title { font-size: 0.9rem; line-height: 1.05; }
+.shot-grid .tile-ef { grid-column: auto; }
+.zone-toggle { width: 100%; justify-content: flex-start; gap: 8px; margin-top: 10px; padding: 10px 12px; font-size: 0.74rem; background: var(--surface-1); color: var(--text-secondary); }
+.zone-toggle span { margin-left: auto; color: var(--volt); }
+#zone-box { margin-top: 8px; }
+.shot-bar.err .shot-bar-track i { background: var(--coral); }

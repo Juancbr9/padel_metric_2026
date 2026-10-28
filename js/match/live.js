@@ -82,7 +82,8 @@ function startMatch(link = null) {
       side: FIXED_COURT_SIDES[idx],
       pair: idx < 2 ? 0 : 1,
       W: 0, ENF: 0, EF: 0, aces: 0, df: 0, streak: 0, maxStreak: 0,
-      shots: { 'Saque Directo': 0, 'Volea': 0, 'Bandeja/Víbora': 0, 'Remate': 0, 'Fondo/Bajada': 0, 'Red': 0, 'Fondo': 0, 'Defensa': 0 },
+      shots: { 'Saque Directo': 0, 'Volea': 0, 'Bandeja/Víbora': 0, 'Remate': 0, 'Fondo/Bajada': 0 },
+      errShots: {},
       setStats: [
         { W: 0, ENF: 0, EF: 0 },
         { W: 0, ENF: 0, EF: 0 },
@@ -340,8 +341,8 @@ function updateUI() {
   setLiveText('qp-b', livePairName(1));
   document.getElementById('btn-live-broadcast')?.classList.toggle('on', !!(state.live && state.live.on));
   setLiveText('live-input-mode-hint', state.inputMode === 'swipe'
-    ? 'Desliza hacia arriba: winner · hacia abajo: error no forzado'
-    : 'Toca a un jugador para anotar su golpe');
+    ? 'Modo rápido · desliza ↑ winner · ↓ error no forzado · toca para más opciones'
+    : 'Desliza ↑ winner · ↓ error no forzado y elige el golpe · toca para más opciones');
 
   // Tarjetas de los jugadores
   const circumference = 2 * Math.PI * 11;
@@ -354,8 +355,8 @@ function updateUI() {
     const pairCls = idx < 2 ? 'pa' : 'pb';
     card.className = `hud-player-card ${pairCls} ${isSrv ? 'is-serving' : ''} ${isFire ? 'is-onfire' : ''}`;
     card.innerHTML = `
-      <div class="swipe-live-badge up">↑ Winner</div>
-      <div class="swipe-live-badge down">↓ Error NF</div>
+      <div class="swipe-live-badge up"><span>↑</span>Winner</div>
+      <div class="swipe-live-badge down"><span>↓</span>Error no forzado</div>
       ${isFire ? `<span class="streak-pill">Racha ${p.streak}</span>` : ''}
       <div class="hud-card-top">
         <span class="hud-side-label">${isSrv ? '<svg class="icon"><use href="#i-ball"/></svg>' : ''}${escapeHtml(p.side)}</span>
@@ -507,7 +508,7 @@ function openMatchOptions() {
   openEventModal(`
     <div class="mo-title">Opciones del partido</div>
     ${row('Tercer set', 'Se puede cambiar mientras no haya empezado', seg([['normal', 'Set normal'], ['supertb', 'Súper tie-break']], state.thirdSetRule, 'setMatchThirdSet'))}
-    ${row('Registro', 'Toque abre el panel de golpes; gestos anota deslizando', seg([['tap', 'Toque'], ['swipe', 'Gestos']], state.inputMode, 'setMatchInputMode'))}
+    ${row('Al deslizar', 'Elegir el golpe con su dibujo o anotar al momento', seg([['tap', 'Elegir golpe'], ['swipe', 'Rápido']], state.inputMode, 'setMatchInputMode'))}
     ${row('Cronómetro', state.timerPaused ? 'En pausa' : 'En marcha', `<button type="button" class="btn-icon" onclick="toggleTimerPause(); openMatchOptions();">${state.timerPaused ? 'Reanudar' : 'Pausar'}</button>`)}
     ${row('Narrador de voz', 'Canta el marcador tras cada punto', `<button type="button" class="btn-icon" onclick="toggleVoiceNarrator(); openMatchOptions();">${voiceEnabled ? 'Desactivar' : 'Activar'}</button>`)}
     ${row('Saque', 'Corrige quién saca si no coincide con la pista', `<button type="button" class="btn-icon" onclick="cycleServerManual(); openMatchOptions();">Siguiente</button>`)}`);
@@ -527,78 +528,114 @@ function setMatchInputMode(mode) {
   openMatchOptions();
 }
 
-// Interacción exclusiva en las tarjetas de jugador según el modo elegido en Ajustes
+// Tarjetas de jugador: deslizar hacia arriba = winner, hacia abajo = error no forzado, tocar = todas las opciones.
+// En el modo "Elegir golpe" el gesto abre el panel con los dibujos de cada golpe; en el modo "Rápido" se anota al momento.
+const SWIPE_MIN = 34;
+
 function initPlayerCardInteractions() {
   for (let idx = 0; idx < 4; idx++) {
     const card = document.getElementById(`pcard-${idx}`);
     if (!card) continue;
+    let startY = null, startX = null;
 
-    let startY = null;
-    let startX = null;
+    const reset = () => {
+      startY = null; startX = null;
+      card.classList.remove('swipe-up-preview', 'swipe-down-preview', 'dragging');
+      card.style.transform = '';
+    };
 
     card.addEventListener('pointerdown', (e) => {
       if (!state || state.matchOver) return;
       startY = e.clientY;
       startX = e.clientX;
-      if (state.inputMode === 'swipe') {
-        card.setPointerCapture(e.pointerId);
-      }
+      card.setPointerCapture(e.pointerId);
     });
 
     card.addEventListener('pointermove', (e) => {
-      if (!state || state.matchOver || state.inputMode !== 'swipe' || startY === null) return;
+      if (!state || state.matchOver || startY === null) return;
       const dy = e.clientY - startY;
-      card.classList.toggle('swipe-up-preview', dy < -26);
-      card.classList.toggle('swipe-down-preview', dy > 26);
+      if (Math.abs(dy) < 6) return;
+      card.classList.add('dragging');
+      // La tarjeta acompaña al dedo (con resistencia) y avisa de lo que se va a anotar
+      card.style.transform = `translateY(${Math.max(-48, Math.min(48, dy * 0.55))}px)`;
+      card.classList.toggle('swipe-up-preview', dy < -SWIPE_MIN);
+      card.classList.toggle('swipe-down-preview', dy > SWIPE_MIN);
     });
 
     card.addEventListener('pointerup', (e) => {
       if (!state || state.matchOver || startY === null) return;
       const dy = e.clientY - startY;
       const dx = e.clientX - startX;
-      startY = null;
-      startX = null;
-      card.classList.remove('swipe-up-preview', 'swipe-down-preview');
-
-      if (state.inputMode === 'swipe') {
-        if (dy < -30) {
-          selectedSlot = idx;
-          recordAction('W', 'Winner', { z: null, l: sideToLane(state.players[idx].side) });
-        } else if (dy > 30) {
-          selectedSlot = idx;
-          recordAction('ENF', 'Error No Forzado', { z: null, l: sideToLane(state.players[idx].side) });
-        } else {
-          showToast('Modo Gestos: desliza ↑ Winner o ↓ Error NF');
-        }
-      } else {
-        if (Math.abs(dy) < 18 && Math.abs(dx) < 18) {
-          openModal(idx);
-        }
-      }
+      reset();
+      if (dy < -SWIPE_MIN) swipeAction(idx, 'W');
+      else if (dy > SWIPE_MIN) swipeAction(idx, 'ENF');
+      else if (Math.abs(dy) < 16 && Math.abs(dx) < 16) openModal(idx);
     });
 
-    card.addEventListener('pointercancel', () => {
-      startY = null;
-      startX = null;
-      card.classList.remove('swipe-up-preview', 'swipe-down-preview');
-    });
+    card.addEventListener('pointercancel', reset);
   }
 }
 
+function swipeAction(idx, type) {
+  if (state.inputMode === 'swipe') {
+    selectedSlot = idx;
+    recordAction(type, type === 'W' ? 'Winner' : 'Error No Forzado', { z: null, l: sideToLane(state.players[idx].side) });
+  } else {
+    openShotSheet(idx, type);
+  }
+}
+
+// ==========================================================
+// PANEL DEL GOLPE: TIPO DE PUNTO Y GOLPE (CON SU DIBUJO)
+// ==========================================================
+const SHOT_TYPES = [['W', 'Winner'], ['ENF', 'Error no forzado'], ['EF', 'Error forzado']];
+let shotSheetType = 'W';
+
 function openModal(slotIdx) {
+  openShotSheet(slotIdx, 'W');
+}
+
+function openShotSheet(slotIdx, type) {
   if (!state || state.matchOver) return;
-  if (state.inputMode !== 'tap') return;
   vibrate(12);
   selectedSlot = slotIdx;
+  shotSheetType = type;
   const p = state.players[slotIdx];
   document.getElementById('modal-player-title').innerText = p.name;
-  const aceBtn = document.getElementById('btn-contextual-ace');
-  if (aceBtn) {
-    aceBtn.classList.toggle('hidden', state.serverIdx !== slotIdx);
-  }
+  document.getElementById('modal-player-side').innerText = `${p.side}${state.serverIdx === slotIdx ? ' · al saque' : ''}`;
   modalZone = { z: null, l: sideToLane(p.side) };
+  document.getElementById('zone-box').classList.add('hidden');
   renderZonePicker();
+  renderShotSheet();
   document.getElementById('action-modal').classList.remove('hidden');
+}
+
+function setShotSheetType(type) {
+  vibrate(8);
+  shotSheetType = type;
+  renderShotSheet();
+}
+
+function renderShotSheet() {
+  const type = shotSheetType;
+  const isServer = state.serverIdx === selectedSlot;
+  document.getElementById('shot-type-seg').innerHTML = SHOT_TYPES.map(([k, label]) =>
+    `<button type="button" class="t-${k.toLowerCase()} ${k === type ? 'active' : ''}" onclick="setShotSheetType('${k}')">${label}</button>`).join('');
+  const tileCls = { W: 'tile-win', ENF: 'tile-enf', EF: 'tile-ef' }[type];
+  const shots = SHOT_CATALOG.filter(s => !(s.winnerOnly && type !== 'W') && !(s.serveOnly && !isServer));
+  document.getElementById('shot-grid').innerHTML = shots.map(s => `
+    <button type="button" class="shot-tile ${tileCls}" onclick="recordAction('${type}', ${jsArg(s.id)})">
+      <svg class="shot-vec"><use href="#${s.icon}"/></svg>
+      <span class="shot-tile-title">${s.label}</span>
+    </button>`).join('');
+  const grid = document.getElementById('shot-grid');
+  grid.dataset.type = type;
+  replayAnim(grid, 'swap');
+}
+
+function toggleZonePicker() {
+  document.getElementById('zone-box').classList.toggle('hidden');
+  renderZonePicker();
 }
 
 function closeModal() {
@@ -647,6 +684,8 @@ function renderZonePicker() {
       ? `Marcado: ${ZONE_LABELS[modalZone.z]} · lado ${modalZone.l === 'D' ? 'Drive' : 'Revés'}`
       : 'Automático: la zona se deduce del golpe (toca una casilla para precisar)';
   }
+  const tg = document.getElementById('zone-toggle');
+  if (tg) tg.innerHTML = `<svg class="icon"><use href="#i-target"/></svg> Zona: ${modalZone.z ? `${ZONE_LABELS[modalZone.z]} · ${modalZone.l === 'D' ? 'drive' : 'revés'}` : 'automática según el golpe'}<span>${document.getElementById('zone-box').classList.contains('hidden') ? 'Cambiar' : 'Ocultar'}</span>`;
 }
 
 function exitMatchScreen() {

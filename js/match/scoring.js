@@ -46,10 +46,28 @@ function isGoldenPointNow() {
   return isGold && state.pts[0] >= 3 && state.pts[0] === state.pts[1];
 }
 
-// Zona de la pista donde se juega cada golpe si no se marca a mano: R = red / volea, T = transición, F = fondo
+// Golpes que se pueden anotar, cada uno con su dibujo y la zona donde se juega si no se marca a mano
+// (R = red / volea, T = transición, F = fondo). "group" es el total por familia de versiones anteriores,
+// que siguen usando las estadísticas y la ficha.
+const SHOT_CATALOG = [
+  { id: 'Volea', label: 'Volea', icon: 'shot-volea', zone: 'R', group: 'Volea' },
+  { id: 'Bandeja', label: 'Bandeja', icon: 'shot-bandeja', zone: 'T', group: 'Bandeja/Víbora' },
+  { id: 'Víbora', label: 'Víbora', icon: 'shot-vibora', zone: 'T', group: 'Bandeja/Víbora' },
+  { id: 'Remate', label: 'Remate', icon: 'shot-remate', zone: 'R', group: 'Remate' },
+  { id: 'Bajada de pared', label: 'Bajada de pared', icon: 'shot-bajada', zone: 'F', group: 'Fondo/Bajada' },
+  { id: 'Golpe de fondo', label: 'Golpe de fondo', icon: 'shot-fondo', zone: 'F', group: 'Fondo/Bajada' },
+  { id: 'Globo', label: 'Globo', icon: 'shot-globo', zone: 'F', group: 'Globo' },
+  { id: 'Dejada', label: 'Dejada', icon: 'shot-dejada', zone: 'R', group: 'Dejada' },
+  { id: 'Chiquita', label: 'Chiquita', icon: 'shot-chiquita', zone: 'T', group: 'Chiquita' },
+  { id: 'Resto', label: 'Resto', icon: 'shot-resto', zone: 'F', group: 'Resto' },
+  { id: 'Saque Directo', label: 'Saque directo', icon: 'shot-saque', zone: 'F', group: 'Saque Directo', serveOnly: true, winnerOnly: true }
+];
+const SHOT_BY_ID = Object.fromEntries(SHOT_CATALOG.map(s => [s.id, s]));
+
 const SHOT_DEFAULT_ZONE = {
-  'Saque Directo': 'F', 'Volea': 'R', 'Bandeja/Víbora': 'T', 'Remate': 'R', 'Fondo/Bajada': 'F',
-  'Red': 'R', 'Fondo': 'F', 'Defensa': 'F'
+  ...Object.fromEntries(SHOT_CATALOG.map(s => [s.id, s.zone])),
+  // Nombres de versiones anteriores
+  'Bandeja/Víbora': 'T', 'Fondo/Bajada': 'F', 'Red': 'R', 'Fondo': 'F', 'Defensa': 'F', 'Winner': null, 'Error No Forzado': null
 };
 
 function recordAction(type, shotName, zoneOverride = null) {
@@ -61,8 +79,15 @@ function recordAction(type, shotName, zoneOverride = null) {
   const zone = zoneOverride || getModalZone(shotName, p);
   const meta = { by: selectedSlot, n: p.name, t: type, sh: shotName, z: zone.z, l: zone.l };
 
-  if (p.shots && p.shots[shotName] !== undefined) {
-    p.shots[shotName]++;
+  // Winners por golpe (y por familia, para las estadísticas de siempre); errores por golpe aparte
+  const shot = SHOT_BY_ID[shotName];
+  if (type === 'W' && shotName !== 'Winner') {
+    p.shots = p.shots || {};
+    p.shots[shotName] = (p.shots[shotName] || 0) + 1;
+    if (shot && shot.group !== shotName) p.shots[shot.group] = (p.shots[shot.group] || 0) + 1;
+  } else if (shot) {
+    p.errShots = p.errShots || {};
+    p.errShots[shotName] = (p.errShots[shotName] || 0) + 1;
   }
 
   if (type === 'W') {
