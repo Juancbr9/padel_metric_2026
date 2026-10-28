@@ -130,6 +130,7 @@ window.addEventListener('DOMContentLoaded', () => {
   switchMainTab('home');
   initSync();
   initLiveSpectator();
+  maybeShowWelcome();
   setupAppDownload();
   syncNativeTheme();
 });

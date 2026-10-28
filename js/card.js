@@ -107,6 +107,7 @@ function playerCardTabHTML(name) {
     <p class="pcard-note">${card.hasPoints ? 'Calculada con todos sus puntos registrados: zonas de golpeo, saque, resto, puntos decisivos y errores. La media incluye su ELO.' : 'Aún no hay partidos con registro punto a punto: la carta se irá afinando al jugar.'}</p>
     <div class="pcard-actions">
       <button class="btn-volt" onclick="sharePlayerCard(${jsArg(name)})"><svg class="icon"><use href="#i-share"/></svg> Compartir carta</button>
+      <button class="btn-icon" onclick="closePlayerProfile(); openWrapped(${jsArg(name)})"><svg class="icon"><use href="#i-play-circle"/></svg> Ver su temporada en historias</button>
       <button class="btn-icon ${isMe ? 'is-me' : ''}" onclick="setMyPlayer(${jsArg(name)})">${isMe ? 'Este eres tú · quitar' : 'Soy yo'}</button>
     </div>`;
 }
@@ -202,5 +203,7 @@ function myHomeCardHTML(statsMap) {
         </div>
         <span class="home-me-form">${formDotsHTML(card.form) || 'Sin partidos todavía'}</span>
       </div>
-    </button>`;
+    </button>
+    ${card.PJ ? `<button type="button" class="home-wrapped" onclick="openWrapped(${jsArg(myPlayerName)})">
+      <svg class="icon icon-lg"><use href="#i-play-circle"/></svg><span><strong>Tu temporada</strong><small>Tu año de pádel en historias</small></span></button>` : ''}`;
 }

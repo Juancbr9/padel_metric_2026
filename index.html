@@ -46,6 +46,7 @@
   <symbol id="i-play-circle" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polygon points="10 8 16 12 10 16 10 8"/></symbol>
   <symbol id="i-volume-x" viewBox="0 0 24 24"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><line x1="23" y1="9" x2="17" y2="15"/><line x1="17" y1="9" x2="23" y2="15"/></symbol>
   <symbol id="i-music" viewBox="0 0 24 24"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></symbol>
+  <symbol id="i-target" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></symbol>
   <symbol id="i-menu" viewBox="0 0 24 24"><line x1="4" y1="7" x2="20" y2="7"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="17" x2="20" y2="17"/></symbol>
   <symbol id="i-close" viewBox="0 0 24 24"><line x1="6" y1="6" x2="18" y2="18"/><line x1="18" y1="6" x2="6" y2="18"/></symbol>
   <symbol id="i-chevron" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></symbol>
@@ -137,6 +138,11 @@
       </button>
       <button type="button" class="menu-tile" data-section="history" id="menu-history" onclick="switchMainTab('history')">
         <svg class="icon icon-lg"><use href="#i-history"/></svg><span class="menu-tile-title">Historial</span><span class="menu-tile-sub">Partidos jugados</span>
+      </button>
+    </div>
+    <div class="menu-list" style="margin-top:8px;">
+      <button type="button" class="menu-row" onclick="closeAppMenu(); openMyWrapped()">
+        <svg class="icon"><use href="#i-play-circle"/></svg><span>Tu temporada en historias</span><span class="menu-row-hint">›</span>
       </button>
     </div>
     <div class="menu-group-title">Ajustes</div>
@@ -784,6 +790,9 @@
 <!-- DIRECTO PARA ESPECTADORES (…/#directo=CÓDIGO) -->
 <div id="view-spectator" class="spectator hidden"></div>
 
+<!-- RESUMEN DE TEMPORADA (HISTORIAS) -->
+<div id="wrapped" class="wrapped hidden"></div>
+
 <!-- CIERRE DEL PARTIDO -->
 <div id="match-end" class="match-end hidden" onclick="closeMatchEnd()">
   <div id="match-end-card" class="me-card" onclick="event.stopPropagation()"></div>
@@ -822,6 +831,7 @@
 <script src="js/poster.js"></script>
 <script src="js/ranking.js"></script>
 <script src="js/card.js"></script>
+<script src="js/wrapped.js"></script>
 <script src="js/history.js"></script>
 <script src="js/events/common.js"></script>
 <script src="js/events/tournament.js"></script>

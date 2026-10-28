@@ -1348,3 +1348,62 @@ body.spectator-mode > header, body.spectator-mode .container, body.spectator-mod
 .home-me-stats b { display: block; font-family: var(--font-mono); font-size: 0.9rem; }
 .home-me-stats span { font-size: 0.54rem; color: var(--text-secondary); font-weight: 700; text-transform: uppercase; }
 .home-me-form { font-size: 0.7rem; color: var(--text-secondary); }
+
+/* ==========================================================
+   RESUMEN DE TEMPORADA (HISTORIAS)
+   ========================================================== */
+.wrapped { position: fixed; inset: 0; z-index: 120; color: #FFFFFF; overflow: hidden; touch-action: none; background: #05080F; }
+.w-bars { position: absolute; top: calc(10px + var(--sa-t)); left: 12px; right: 56px; display: flex; gap: 4px; z-index: 3; }
+.w-bars i { flex: 1; height: 3px; border-radius: 3px; background: rgba(255,255,255,0.28); overflow: hidden; }
+.w-bars b { display: block; height: 100%; width: 0; background: #FFFFFF; }
+.w-close { position: absolute; top: calc(2px + var(--sa-t)); right: 8px; z-index: 4; background: transparent; border: none; color: #FFFFFF; padding: 10px; }
+.w-close .icon { width: 22px; height: 22px; }
+.w-stage { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; padding: calc(40px + var(--sa-t)) 28px calc(30px + var(--sa-b));
+  background: radial-gradient(80% 60% at 20% 10%, var(--wa, rgba(212,255,42,0.35)), transparent 60%), radial-gradient(70% 60% at 90% 90%, var(--wb, rgba(124,58,237,0.45)), transparent 60%), #070A14;
+  transition: background 0.6s; }
+.w-stage::before { content: ''; position: absolute; inset: -30%; background: conic-gradient(from 0deg, transparent, rgba(255,255,255,0.05), transparent 30%); animation: wSpin 14s linear infinite; pointer-events: none; }
+@keyframes wSpin { to { transform: rotate(360deg); } }
+.w-matches { --wa: rgba(0,240,255,0.4); --wb: rgba(212,255,42,0.3); }
+.w-elo { --wa: rgba(245,192,74,0.45); --wb: rgba(232,121,0,0.35); }
+.w-partner { --wa: rgba(0,230,118,0.4); --wb: rgba(0,240,255,0.3); }
+.w-rival { --wa: rgba(255,46,84,0.45); --wb: rgba(124,58,237,0.35); }
+.w-shot { --wa: rgba(212,255,42,0.4); --wb: rgba(0,240,255,0.3); }
+.w-clutch { --wa: rgba(255,224,102,0.45); --wb: rgba(255,46,84,0.3); }
+.w-comeback { --wa: rgba(124,58,237,0.5); --wb: rgba(0,240,255,0.35); }
+.w-streak { --wa: rgba(255,120,0,0.45); --wb: rgba(255,224,102,0.3); }
+.w-final { --wa: rgba(212,255,42,0.3); --wb: rgba(124,58,237,0.5); }
+.w-slide { position: relative; width: 100%; max-width: 440px; display: flex; flex-direction: column; gap: 10px; }
+.w-slide > * { animation: wUp 0.7s var(--ease-out) both; }
+.w-slide > *:nth-child(2) { animation-delay: 0.12s; } .w-slide > *:nth-child(3) { animation-delay: 0.24s; }
+.w-slide > *:nth-child(4) { animation-delay: 0.38s; } .w-slide > *:nth-child(5) { animation-delay: 0.5s; }
+@keyframes wUp { from { opacity: 0; transform: translateY(26px); } to { opacity: 1; transform: none; } }
+.w-logo { width: 64px; height: 64px; color: #D4FF2A; }
+.w-kicker { font-size: 0.78rem; font-weight: 800; letter-spacing: 0.16em; text-transform: uppercase; color: rgba(255,255,255,0.75); }
+.w-huge { font-family: var(--font-display); font-style: italic; font-weight: 900; font-size: 4.6rem; line-height: 0.9; text-transform: uppercase; }
+.w-big { font-family: var(--font-display); font-weight: 900; font-size: 6rem; line-height: 0.9; }
+.w-big b { font-weight: 900; }
+.w-name { font-family: var(--font-display); font-style: italic; font-weight: 900; font-size: 2.6rem; line-height: 0.95; text-transform: uppercase; }
+.w-sub { font-size: 1rem; line-height: 1.45; color: rgba(255,255,255,0.85); }
+.w-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 10px; }
+.w-row div { background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.12); border-radius: 14px; padding: 10px 6px; text-align: center; }
+.w-row b { display: block; font-family: var(--font-display); font-weight: 900; font-size: 1.7rem; }
+.w-row span { font-size: 0.62rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: rgba(255,255,255,0.7); }
+.w-chart { width: 100%; height: auto; margin-top: 8px; overflow: visible; }
+.w-chart path { fill: none; stroke: #FFE066; stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; stroke-dasharray: 1; stroke-dashoffset: 1; animation: wDraw 1.6s var(--ease-out) 0.4s forwards; }
+@keyframes wDraw { to { stroke-dashoffset: 0; } }
+.w-foot { font-size: 0.85rem; color: rgba(255,255,255,0.75); }
+.w-avatar .avatar-circle { width: 96px; height: 96px; font-size: 2.2rem; }
+.w-badges { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+.w-badges span { background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.18); border-radius: 99px; padding: 5px 10px; font-size: 0.72rem; font-weight: 700; }
+.w-cardwrap { display: flex; justify-content: center; padding: 8px 0; }
+.w-actions { display: grid; gap: 8px; }
+.w-actions .btn-icon { background: rgba(255,255,255,0.08); color: #FFFFFF; border-color: rgba(255,255,255,0.18); min-height: 44px; }
+.home-wrapped { width: 100%; justify-content: flex-start; gap: 12px; padding: 12px 14px; margin: -2px 0 10px; border-radius: 14px; text-align: left; color: #FFFFFF;
+  background: linear-gradient(120deg, #7C3AED, #0E7490 60%, #65A30D); border: none; box-shadow: 0 10px 26px rgba(124,58,237,0.3); }
+.home-wrapped span { display: flex; flex-direction: column; }
+.home-wrapped strong { font-family: var(--font-display); font-size: 1.15rem; font-weight: 900; text-transform: uppercase; font-style: italic; }
+.home-wrapped small { font-size: 0.7rem; opacity: 0.85; }
+.wl-feat { display: flex; gap: 12px; align-items: flex-start; background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.12); border-radius: 14px; padding: 12px; }
+.wl-feat .icon { width: 22px; height: 22px; color: #D4FF2A; margin-top: 2px; }
+.wl-feat strong { display: block; font-size: 0.95rem; margin-bottom: 2px; }
+.wl-feat span { font-size: 0.8rem; color: rgba(255,255,255,0.78); line-height: 1.4; }

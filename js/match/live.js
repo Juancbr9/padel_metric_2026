@@ -175,6 +175,7 @@ function undoLast() {
   state = JSON.parse(historyStack.pop());
   persistActiveMatchState();
   document.getElementById('cele-layer').innerHTML = '';
+  fxSound('undo');
   updateUI();
   showToast('Último punto deshecho');
 }

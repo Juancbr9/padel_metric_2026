@@ -105,7 +105,7 @@ function afterPointScored() {
   }
   persistActiveMatchState();
   updateUI();
-  celebrateEvent(state.lastEvent);
+  if (state.lastEvent) celebrateEvent(state.lastEvent); else fxSound('point');
   announceScore();
 }
 
