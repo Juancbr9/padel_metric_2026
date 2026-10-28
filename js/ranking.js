@@ -286,7 +286,7 @@ function openPlayerProfile(name, keepTab = false) {
 
   const per = (v) => (st.PJ ? (v / st.PJ).toFixed(1).replace('.', ',') : '0');
   const winPct = st.PJ ? Math.round((st.V / st.PJ) * 100) : 0;
-  const tabs = [['summary', 'Resumen'], ['game', 'Juego'], ['matches', 'Partidos']];
+  const tabs = [['summary', 'Resumen'], ['card', 'Carta'], ['game', 'Juego'], ['matches', 'Partidos']];
   let body = '';
 
   if (profileTab === 'summary') {
@@ -349,6 +349,8 @@ function openPlayerProfile(name, keepTab = false) {
       ${renderProfileZonesHTML(st)}`;
   }
 
+  if (profileTab === 'card') body = playerCardTabHTML(name);
+
   if (profileTab === 'matches') {
     body = d.matches.length ? `<div class="profile-matches">${d.matches.slice(0, 15).map(x => `
       <button type="button" class="profile-match ${x.won ? 'won' : 'lost'}" onclick="closePlayerProfile(); openHistoryMatchStats(${x.histIdx})">
@@ -370,6 +372,7 @@ function openPlayerProfile(name, keepTab = false) {
   `;
 
   document.getElementById('player-profile-modal').classList.remove('hidden');
+  initCardTilt(document.getElementById('prof-body'));
 }
 
 function renderProfileZonesHTML(st) {

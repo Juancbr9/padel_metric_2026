@@ -93,7 +93,7 @@ function renderHome() {
     <div class="home-hero">
       <svg class="home-hero-mark"><use href="#logo-mark"/></svg>
       <div class="home-hero-date">${today}</div>
-      <div class="home-hero-title">${greetingText()}</div>
+      <div class="home-hero-title">${greetingText()}${myPlayerName && dbPlayers.includes(myPlayerName) ? `, ${escapeHtml(myPlayerName.split(' ')[0])}` : ''}</div>
       <div class="home-hero-stats">
         <div><strong data-count="${matchHistory.length}">0</strong><span>partidos</span></div>
         <div><strong data-count="${thisWeek}">0</strong><span>esta semana</span></div>
@@ -101,6 +101,8 @@ function renderHome() {
         <div><strong data-count="${dbPlayers.length}">0</strong><span>jugadores</span></div>
       </div>
     </div>
+
+    ${myHomeCardHTML(statsMap)}
 
     ${paused ? `
       <button type="button" class="home-resume" onclick="resumeSavedActiveMatch()">
@@ -129,4 +131,5 @@ function renderHome() {
         </ol>
         <button class="btn-icon" style="width:100%;padding:12px;color:var(--volt);" onclick="loadDemoData()">Cargar datos de ejemplo</button>
       </div>` : ''}`;
+  initCardTilt(box);
 }

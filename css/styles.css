@@ -1285,3 +1285,66 @@ body.spectator-mode > header, body.spectator-mode .container, body.spectator-mod
 .spx-player em { position: absolute; top: 8px; right: 10px; font-style: normal; font-family: var(--font-mono); font-weight: 800; font-size: 0.75rem; color: #D4FF2A; }
 .spx-foot { text-align: center; font-size: 0.66rem; color: #64748B; margin-top: auto; }
 @media (max-width: 640px) { .spx-players { grid-template-columns: 1fr 1fr; } }
+
+/* ==========================================================
+   CARTA DE JUGADOR
+   ========================================================== */
+.pcard { --c1: #8A5A36; --c2: #3B2414; --c3: #F5C9A3; --rx: 0deg; --ry: 0deg; --mx: 50%; --my: 30%;
+  position: relative; width: 9.6rem; aspect-ratio: 0.74; padding: 0.7rem 0.75rem 1.1rem; color: var(--c3);
+  background: linear-gradient(150deg, var(--c1), var(--c2));
+  clip-path: polygon(7% 0, 93% 0, 100% 8%, 100% 84%, 50% 100%, 0 84%, 0 8%);
+  transform: perspective(700px) rotateX(var(--rx)) rotateY(var(--ry)); transition: transform 0.25s var(--ease-out);
+  display: flex; flex-direction: column; filter: drop-shadow(0 14px 24px rgba(0,0,0,0.45)); touch-action: pan-y; }
+.pcard.tier-plata { --c1: #A3B0C2; --c2: #2B3442; --c3: #F8FAFC; }
+.pcard.tier-oro { --c1: #E8B931; --c2: #5A3F07; --c3: #FFF4C7; }
+.pcard.tier-elite { --c1: #7C3AED; --c2: #0B1027; --c3: #D4FF2A; }
+.pcard-shine { position: absolute; inset: 0; pointer-events: none; mix-blend-mode: overlay;
+  background: radial-gradient(circle at var(--mx) var(--my), rgba(255,255,255,0.55), transparent 45%),
+              linear-gradient(115deg, transparent 30%, rgba(255,255,255,0.25) 45%, transparent 60%);
+  background-size: 100% 100%, 250% 100%; animation: cardSheen 5s ease-in-out infinite; }
+.pcard.tier-elite .pcard-shine { background: radial-gradient(circle at var(--mx) var(--my), rgba(255,255,255,0.5), transparent 45%),
+  linear-gradient(115deg, rgba(0,240,255,0.25), rgba(212,255,42,0.25) 35%, rgba(255,46,84,0.25) 70%, rgba(124,58,237,0.25)); background-size: 100% 100%, 300% 100%; }
+@keyframes cardSheen { 0%, 100% { background-position: 0 0, 100% 0; } 50% { background-position: 0 0, 0% 0; } }
+.pcard-top { display: flex; justify-content: space-between; align-items: flex-start; }
+.pcard-ovr { display: flex; flex-direction: column; line-height: 0.9; }
+.pcard-ovr strong { font-family: var(--font-display); font-size: 2.3rem; font-weight: 900; }
+.pcard-ovr span { font-size: 0.5rem; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; margin-top: 3px; }
+.pcard-photo { width: 3.6rem; height: 3.6rem; border-radius: 50%; overflow: hidden; background: rgba(0,0,0,0.25); border: 2px solid rgba(255,255,255,0.35);
+  display: flex; align-items: center; justify-content: center; font-family: var(--font-display); font-weight: 900; font-size: 1.4rem; }
+.pcard-photo img { width: 100%; height: 100%; object-fit: cover; }
+.pcard-name { font-family: var(--font-display); font-style: italic; font-weight: 900; font-size: 1.15rem; text-transform: uppercase; text-align: center; margin: 0.35rem 0 0.25rem;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis; border-bottom: 1px solid rgba(255,255,255,0.25); padding-bottom: 0.2rem; }
+.pcard-attrs { display: grid; grid-template-columns: 1fr 1fr; gap: 0.1rem 0.5rem; padding: 0 0.2rem; }
+.pcard-attrs div { display: flex; align-items: baseline; gap: 0.3rem; }
+.pcard-attrs strong { font-family: var(--font-display); font-weight: 900; font-size: 1rem; min-width: 1.2rem; text-align: right; }
+.pcard-attrs span { font-size: 0.56rem; font-weight: 800; letter-spacing: 0.05em; color: rgba(255,255,255,0.85); }
+.pcard-attrs .best strong { text-decoration: underline; text-underline-offset: 3px; }
+.pcard-foot { margin-top: auto; display: flex; justify-content: center; gap: 0.4rem; font-size: 0.48rem; font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase; opacity: 0.85; padding-bottom: 0.2rem; }
+.pcard.big { width: 14rem; padding: 1rem 1.1rem 1.6rem; }
+.pcard.big .pcard-ovr strong { font-size: 3.4rem; } .pcard.big .pcard-ovr span { font-size: 0.66rem; }
+.pcard.big .pcard-photo { width: 5.2rem; height: 5.2rem; font-size: 2rem; }
+.pcard.big .pcard-name { font-size: 1.7rem; }
+.pcard.big .pcard-attrs strong { font-size: 1.45rem; } .pcard.big .pcard-attrs span { font-size: 0.72rem; }
+.pcard.big .pcard-foot { font-size: 0.6rem; }
+.pcard-stage { display: flex; justify-content: center; padding: 14px 0 6px; animation: cardIn 0.8s var(--ease-spring); }
+@keyframes cardIn { from { transform: translateY(30px) rotateY(-50deg) scale(0.8); opacity: 0; } to { transform: none; opacity: 1; } }
+.pcard-legend { display: grid; gap: 6px; margin: 10px 0; }
+.pcard-legend > div { display: grid; grid-template-columns: 6.5rem 1fr 2rem; align-items: center; gap: 8px; font-size: 0.74rem; }
+.pcard-legend strong { font-family: var(--font-mono); text-align: right; }
+.pcard-note { font-size: 0.7rem; color: var(--text-secondary); line-height: 1.4; margin-bottom: 10px; }
+.pcard-actions { display: grid; grid-template-columns: 1fr; gap: 8px; }
+.pcard-actions .btn-volt { font-size: 1.05rem; padding: 12px; }
+.pcard-actions .is-me { color: var(--volt); border-color: rgba(var(--volt-rgb),0.4); }
+.home-me { display: flex !important; flex-direction: row !important; align-items: center; gap: 14px; text-align: left; }
+.home-me-card .pcard { width: 7.4rem; }
+.home-me-card .pcard-ovr strong { font-size: 1.8rem; } .home-me-card .pcard-photo { width: 2.7rem; height: 2.7rem; font-size: 1rem; }
+.home-me-card .pcard-name { font-size: 0.92rem; } .home-me-card .pcard-attrs strong { font-size: 0.8rem; } .home-me-card .pcard-attrs span { font-size: 0.46rem; }
+.home-me-card .pcard-foot { display: none; }
+.home-me-info { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 4px; }
+.home-me-info small { font-size: 0.62rem; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; color: var(--volt); }
+.home-me-info > strong { font-family: var(--font-display); font-size: 1.35rem; font-weight: 900; text-transform: uppercase; line-height: 1; }
+.home-me-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin: 4px 0; }
+.home-me-stats div { background: var(--bg-obsidian); border-radius: 9px; padding: 5px 4px; text-align: center; }
+.home-me-stats b { display: block; font-family: var(--font-mono); font-size: 0.9rem; }
+.home-me-stats span { font-size: 0.54rem; color: var(--text-secondary); font-weight: 700; text-transform: uppercase; }
+.home-me-form { font-size: 0.7rem; color: var(--text-secondary); }

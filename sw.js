@@ -23,6 +23,7 @@ const APP_FILES = [
   './js/stats.js',
   './js/poster.js',
   './js/ranking.js',
+  './js/card.js',
   './js/history.js',
   './js/events/common.js',
   './js/events/tournament.js',
