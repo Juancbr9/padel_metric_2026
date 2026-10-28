@@ -129,6 +129,7 @@ window.addEventListener('DOMContentLoaded', () => {
   renderVoiceToggle();
   switchMainTab('home');
   initSync();
+  initLiveSpectator();
   setupAppDownload();
   syncNativeTheme();
 });
