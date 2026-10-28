@@ -1,9 +1,19 @@
-// Orden de saque del pádel: las parejas se alternan en cada juego y dentro de cada pareja también los jugadores
-// (A1, B1, A2, B2). Índices: 0 y 1 = pareja 1, 2 y 3 = pareja 2 → 0 → 2 → 1 → 3 → 0
-const NEXT_SERVER = [2, 3, 1, 0];
+// Orden de saque: tras el primer sacador saca el jugador del mismo lado de la otra pareja, después el compañero
+// del primero y por último el compañero del segundo. Empezando el drive de la pareja 1:
+// drive pareja 1 → drive pareja 2 → revés pareja 1 → revés pareja 2 (índices 0 → 3 → 1 → 2 → 0)
+function firstServePairOf(st) {
+  if (st.firstServePair === 0 || st.firstServePair === 1) return st.firstServePair;
+  const first = st.points && st.points.length ? st.points[0].sv : st.serverIdx;
+  return first < 2 ? 0 : 1;
+}
 
 function nextServer(idx) {
-  return NEXT_SERVER[idx] ?? 0;
+  const pair = idx < 2 ? 0 : 1;
+  const side = FIXED_COURT_SIDES[idx];
+  // La pareja que abrió el saque pasa al mismo lado; la otra, al lado contrario
+  const target = pair === firstServePairOf(state) ? side : (side === 'Drive' ? 'Revés' : 'Drive');
+  const next = [0, 1, 2, 3].find(i => (i < 2 ? 0 : 1) !== pair && FIXED_COURT_SIDES[i] === target);
+  return next ?? 0;
 }
 
 function formatPointLabel(teamIdx) {
@@ -312,6 +322,8 @@ function swapSides(pairIdx) {
 function cycleServerManual() {
   if (!state) return;
   state.serverIdx = (state.serverIdx + 1) % 4;
+  // Antes del primer punto, cambiar el sacador también cambia qué pareja abre el orden de saque
+  if (!state.points || !state.points.length) state.firstServePair = state.serverIdx < 2 ? 0 : 1;
   persistActiveMatchState();
   updateUI();
 }

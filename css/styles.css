@@ -583,8 +583,8 @@ body.light-mode .match-screen-fixed { --qa: #0369A1; --qb: #BE123C; }
 }
 .court-bg-svg { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 1; }
 .court-overlay { position: relative; z-index: 2; padding: 0.45rem; flex: 1; min-height: 0; display: flex; flex-direction: column; gap: 0.3rem; }
-.pair-row { flex: 1; min-height: 0; display: grid; grid-template-columns: minmax(0, 1fr) 1.9rem minmax(0, 1fr); gap: 0.3rem; }
-.pair-row > * { min-width: 0; }
+.court-pair-row { flex: 1; min-height: 0; display: grid; grid-template-columns: minmax(0, 1fr) 1.9rem minmax(0, 1fr); gap: 0.3rem; align-items: stretch; }
+.court-pair-row > * { min-width: 0; }
 .btn-swap-center {
   align-self: center; width: 1.9rem; height: 1.9rem; border-radius: 50%; padding: 0;
   background: rgba(6,9,15,0.85); border: 1.5px solid rgba(255,255,255,0.26); color: #F8FAFC; box-shadow: 0 4px 12px rgba(0,0,0,0.6);
@@ -1411,7 +1411,6 @@ body.spectator-mode > header, body.spectator-mode .container, body.spectator-mod
 /* ==========================================================
    TARJETAS GRANDES Y PANEL DEL GOLPE CON DIBUJOS
    ========================================================== */
-.pair-row { align-items: stretch; }
 .hud-player-card { height: 100%; padding: 0.6rem 0.6rem 0.55rem; border-radius: 14px; }
 .hud-player-card.dragging { transition: none; }
 .hud-player-mid { flex: 1; flex-direction: column; justify-content: center; align-items: flex-start; gap: 0.35rem; }

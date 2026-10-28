@@ -107,6 +107,7 @@ function startMatch(link = null) {
     deuceCount: 0,
     goldReceiveSide: 'Drive',
     serverIdx: setupConfig.initialServer,
+    firstServePair: setupConfig.initialServer < 2 ? 0 : 1,
     serveNumber: 1,
     gamePointLog: [],
     momentum: [0],
