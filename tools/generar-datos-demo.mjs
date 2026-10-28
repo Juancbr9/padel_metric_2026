@@ -11,14 +11,23 @@ const errs = [];
 p.on('pageerror', e => errs.push(e.message));
 p.on('dialog', d => d.accept());
 await p.goto('http://localhost:8765/');
-await p.evaluate(() => localStorage.clear());
+await p.evaluate(() => { localStorage.clear(); localStorage.setItem('pm_bienvenida_v1', '1'); });
 await p.reload();
 await p.waitForTimeout(400);
 const payload = await p.evaluate(() => {
   // ---------- Semilla aleatoria reproducible ----------
-  let seed = 20261022;
-  const rnd = () => { seed = (seed * 1103515245 + 12345) % 2147483648; return seed / 2147483648; };
+  // mulberry32: generador pequeño con buena calidad estadística (el congruencial anterior perdía precisión)
+  let seed = 20261028;
+  const rnd = () => {
+    seed = (seed + 0x6D2B79F5) | 0;
+    let t = Math.imul(seed ^ (seed >>> 15), 1 | seed);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
   Math.random = rnd;
+  // Sin celebraciones ni ventanas durante la simulación
+  fxConfetti = () => {};
+  openMatchEnd = () => {};
   const pick = arr => arr[Math.floor(rnd() * arr.length)];
 
   const MEN = [
@@ -81,7 +90,8 @@ const payload = await p.evaluate(() => {
     while (!state.matchOver && guard++ < 600) {
       state.elapsedSec += 25 + Math.floor(rnd() * 30);
       if (rnd() < 0.09) { handleServeFault(); if (state.matchOver) break; if (state.serveNumber === 1) continue; }
-      const winTeam = rnd() < pA ? 0 : 1;
+      // Quien saca tiene ventaja (~6 puntos porcentuales), como en el modelo de probabilidad de victoria
+      const winTeam = rnd() < pA + (state.serverIdx < 2 ? 0.06 : -0.06) ? 0 : 1;
       const r = rnd();
       if (r < 0.46) {
         const idx = winTeam * 2 + (rnd() < 0.5 ? 0 : 1);
@@ -212,7 +222,7 @@ const payload = await p.evaluate(() => {
 
   tView = { mode: 'list', tid: null, tab: null };
   setupConfig.slots = ['GEN_0', 'GEN_1', 'GEN_2', 'GEN_3'];
-  return { app: 'Padel Metric', version: 5, exportedAt: new Date().toISOString(), dbPlayers, dbProfiles, matchHistory, tournaments, americanos };
+  return { app: 'Padel Metric', version: 6, exportedAt: new Date().toISOString(), dbPlayers, dbProfiles, matchHistory, tournaments, americanos };
 });
 fs.writeFileSync('assets/demo/padel-metric-demo.json', JSON.stringify(payload));
 const summary = {

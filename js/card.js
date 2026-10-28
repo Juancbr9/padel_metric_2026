@@ -44,7 +44,7 @@ function computePlayerCard(name, statsMap = computeAllPlayersStats().statsMap) {
     red: cardScale(c.R[0], c.R[1], 0.4, 0.8, 0.6),
     fondo: cardScale(c.F[0], c.F[1], 0.25, 0.65, 0.45),
     saque: cardScale(c.serve[0], c.serve[1], 0.45, 0.7, 0.57),
-    resto: cardScale(c.ret[0], c.ret[1], 0.3, 0.55, 0.43),
+    resto: cardScale(c.ret[0], c.ret[1], 0.36, 0.6, 0.45),
     presion: cardScale(c.clutch[0], c.clutch[1], 0.35, 0.65, 0.5),
     regularidad: Math.round(Math.max(30, Math.min(99, 95 - (enfPerMatch - 2) * 5 * (st.PJ / (st.PJ + 2)) - (2 / (st.PJ + 2)) * 25)))
   };

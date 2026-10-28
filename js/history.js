@@ -123,11 +123,30 @@ async function loadDemoData() {
   if (hasAnyData() && !confirm('Se sustituirán los datos actuales por los datos de ejemplo. ¿Continuar?')) return;
   try {
     const res = await fetch('assets/demo/padel-metric-demo.json', { cache: 'no-store' });
-    applyBackupData(await res.json());
+    const data = await res.json();
+    shiftDemoDates(data);
+    applyBackupData(data);
     showToast('Datos de ejemplo cargados');
   } catch (e) {
     showToast('No se pudieron cargar los datos de ejemplo');
   }
+}
+
+// Los datos de ejemplo se mueven en el tiempo (días completos) para que el último partido sea reciente
+function shiftDemoDates(data) {
+  const DAY = 864e5;
+  const ids = (data.matchHistory || []).map(m => m.id).filter(Number.isFinite);
+  if (!ids.length) return;
+  const shift = Math.floor((Date.now() - DAY / 2 - Math.max(...ids)) / DAY) * DAY;
+  if (shift <= 0) return;
+  data.matchHistory.forEach(m => {
+    m.id += shift;
+    m.date = new Date(m.id).toLocaleDateString('es-ES', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' });
+  });
+  [...(data.tournaments || []), ...(data.americanos || [])].forEach(ev => {
+    if (ev.createdAt) ev.createdAt += shift;
+    (ev.matches || []).forEach(x => { if (x.historyId) x.historyId += shift; });
+  });
 }
 
 // Restaurar de fábrica: borra todo lo que guarda la app en este dispositivo

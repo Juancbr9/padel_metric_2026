@@ -112,7 +112,7 @@ function wrapSlides(w) {
     slides.push({ cls: 'w-comeback', html: `
       <div class="w-kicker">Tu mejor remontada</div>
       <div class="w-big">${Math.round(w.comeback.low * 100)} %</div>
-      <div class="w-sub">era tu probabilidad de ganar en el peor momento contra ${escapeHtml(pairLabel([m.players[(1 - pr) * 2].name, m.players[(1 - pr) * 2 + 1].name]))}. Y ganaste ${m.sets.filter(s => s[0] + s[1]).map(s => `${s[pr]}-${s[1 - pr]}`).join(' ')}.</div>` });
+      <div class="w-sub">era tu probabilidad de ganar en el peor momento contra ${escapeHtml(pairLabel([m.players[(1 - pr) * 2].name, m.players[(1 - pr) * 2 + 1].name]))}, y ganaste ${m.sets.filter(s => s[0] + s[1]).map(s => `${s[pr]}-${s[1 - pr]}`).join(' ')}.</div>` });
   }
   slides.push({ cls: 'w-streak', html: `
     <div class="w-kicker">Racha</div>

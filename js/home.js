@@ -97,7 +97,7 @@ function renderHome() {
       <div class="home-hero-stats">
         <div><strong data-count="${matchHistory.length}">0</strong><span>partidos</span></div>
         <div><strong data-count="${thisWeek}">0</strong><span>esta semana</span></div>
-        <div><strong ${hours >= 1 ? `data-count="${hours.toFixed(1)}" data-dec="1" data-suffix=" h"` : `data-count="${Math.round(hours * 60)}" data-suffix=" min"`}>0</strong><span>en pista</span></div>
+        <div><strong ${hours >= 1 ? `data-count="${hours.toFixed(1)}" data-dec="${hours >= 100 ? 0 : 1}" data-suffix=" h"` : `data-count="${Math.round(hours * 60)}" data-suffix=" min"`}>0</strong><span>en pista</span></div>
         <div><strong data-count="${dbPlayers.length}">0</strong><span>jugadores</span></div>
       </div>
     </div>
