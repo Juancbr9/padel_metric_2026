@@ -85,7 +85,7 @@ function renderHome() {
           <span class="home-top-pos">${i + 1}</span>
           ${renderAvatarHTML(st.name, 'avatar-p1', 'width:28px;height:28px;font-size:0.7rem;')}
           <span class="home-top-name">${escapeHtml(st.name)}</span>
-          <span class="home-top-elo">${st.elo}</span>
+          <span class="home-top-elo" data-count="${st.elo}">${st.elo}</span>
         </div>`).join('')}
     </button>` : '';
 
@@ -95,10 +95,10 @@ function renderHome() {
       <div class="home-hero-date">${today}</div>
       <div class="home-hero-title">${greetingText()}</div>
       <div class="home-hero-stats">
-        <div><strong>${matchHistory.length}</strong><span>partidos</span></div>
-        <div><strong>${thisWeek}</strong><span>esta semana</span></div>
-        <div><strong>${hours >= 1 ? hours.toFixed(1).replace('.', ',') + ' h' : Math.round(hours * 60) + ' min'}</strong><span>en pista</span></div>
-        <div><strong>${dbPlayers.length}</strong><span>jugadores</span></div>
+        <div><strong data-count="${matchHistory.length}">0</strong><span>partidos</span></div>
+        <div><strong data-count="${thisWeek}">0</strong><span>esta semana</span></div>
+        <div><strong ${hours >= 1 ? `data-count="${hours.toFixed(1)}" data-dec="1" data-suffix=" h"` : `data-count="${Math.round(hours * 60)}" data-suffix=" min"`}>0</strong><span>en pista</span></div>
+        <div><strong data-count="${dbPlayers.length}">0</strong><span>jugadores</span></div>
       </div>
     </div>
 

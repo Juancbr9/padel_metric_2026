@@ -7,6 +7,8 @@ function toggleStatsView() {
   if (statsView.classList.contains('hidden')) {
     statsSourceIsHistory = false;
     posterTargetState = state;
+    clearTimeout(matchEndTimer);
+    closeMatchEnd();
     document.body.classList.remove('in-live-match');
     matchView.classList.add('hidden');
     statsView.classList.remove('hidden');
@@ -114,6 +116,7 @@ function renderStats(mode) {
     container.innerHTML = renderHeatmapPanel(target);
   } else if (mode === 'clave') {
     container.innerHTML = renderKeyMomentsPanel(target);
+    attachWpChartHover(container, target);
   } else if (mode === 'shots') {
     let rows = target.players.map(p => {
       const sh = p.shots || {};
@@ -164,6 +167,7 @@ function renderKeyMomentsPanel(target) {
   }).join('');
 
   return `
+    ${wpPanelHTML(target)}
     <div class="sheet-category-label" style="color:var(--volt);">Puntos clave</div>
     ${row('BOLAS DE BREAK GANADAS', frac(A.bpWon, A.bpChances), frac(B.bpWon, B.bpChances))}
     ${row('BOLAS DE BREAK SALVADAS', frac(A.bpSaved, A.bpFaced), frac(B.bpSaved, B.bpFaced))}
@@ -179,4 +183,64 @@ function renderKeyMomentsPanel(target) {
     <div class="coach-list">${tips.map(t => `<div class="coach-tip"><span class="coach-tag">${t.tag}</span><span>${t.text}</span></div>`).join('')}</div>
     ${badges ? `<div class="sheet-category-label" style="color:var(--amber);">Hitos del partido</div>${badges}` : ''}
   `;
+}
+
+// ==========================================================
+// PROBABILIDAD DE VICTORIA A LO LARGO DEL PARTIDO
+// ==========================================================
+const WP_TYPE_TXT = { W: 'winner', ENF: 'error no forzado', EF: 'error forzado', DF: 'doble falta', N: 'punto' };
+
+function pairShortLabel(target, pair) {
+  return `${shortName(target.players[pair * 2].name)} / ${shortName(target.players[pair * 2 + 1].name)}`;
+}
+
+// Describe un punto del registro: marcador antes de jugarlo, quién sacaba y cómo terminó
+function describeWpPoint(target, pt) {
+  if (!pt) return '';
+  const score = pt.g ? `${pt.g[0]}-${pt.g[1]}${pt.pl ? ` · ${pt.pl[0]}-${pt.pl[1]}` : ''}` : '';
+  const how = pt.n ? `${WP_TYPE_TXT[pt.t] || 'punto'} de ${escapeHtml(pt.n)}${pt.sh && pt.t === 'W' ? ` (${escapeHtml(pt.sh.toLowerCase())})` : ''}` : `punto para ${escapeHtml(pairShortLabel(target, pt.w))}`;
+  return `Set ${pt.s + 1}${score ? ` · ${score}` : ''}${pt.svn ? ` · saca ${escapeHtml(pt.svn)}` : ''} → ${how}`;
+}
+
+function wpPanelHTML(target) {
+  const chart = wpChartSVG(target, { w: 320, h: 110, idPrefix: 'st' });
+  if (!chart) return '';
+  const key = wpKeyMoment(target);
+  const series = wpSeries(target);
+  let keyHtml = '';
+  if (key) {
+    const before = Math.round(series[key.k - 1].wp * 100), after = Math.round(series[key.k].wp * 100);
+    keyHtml = `<div class="wp-key"><b>Momento clave</b>${describeWpPoint(target, key.point).replace(/\.$/, '')}. La probabilidad de ${escapeHtml(pairShortLabel(target, 0))} pasó del ${before} % al ${after} %.</div>`;
+  }
+  return `
+    <div class="sheet-category-label" style="color:var(--volt);">Probabilidad de victoria</div>
+    <div class="wp-panel">
+      <div class="wp-panel-head"><span>Pareja 1 arriba · pareja 2 abajo</span>
+        <span class="wp-legend"><span><i style="background:#00F0FF"></i>P1</span><span><i style="background:#FF2E54"></i>P2</span></span></div>
+      ${chart}
+      <div class="wp-readout" id="wp-readout">Toca o desliza sobre el gráfico para ver cada punto.</div>
+      ${keyHtml}
+    </div>`;
+}
+
+// Al tocar o pasar el dedo por el gráfico se ve el punto y la probabilidad de cada momento
+function attachWpChartHover(container, target) {
+  const svg = container.querySelector('.wp-chart');
+  const out = container.querySelector('#wp-readout');
+  if (!svg || !out) return;
+  const series = wpSeries(target);
+  const cursor = svg.querySelector('.wpc-cursor');
+  const vb = svg.viewBox.baseVal;
+  const show = e => {
+    const r = svg.getBoundingClientRect();
+    const k = Math.max(0, Math.min(series.length - 1, Math.round(((e.clientX - r.left) / r.width) * (series.length - 1))));
+    const x = (k / (series.length - 1)) * vb.width;
+    cursor.setAttribute('x1', x); cursor.setAttribute('x2', x); cursor.style.display = '';
+    const pa = Math.round(series[k].wp * 100);
+    out.innerHTML = k === 0
+      ? `<strong>Antes de empezar</strong> · ${escapeHtml(pairShortLabel(target, 0))} ${pa} % · ${escapeHtml(pairShortLabel(target, 1))} ${100 - pa} %`
+      : `<strong>Punto ${k}</strong> · ${describeWpPoint(target, target.points[series[k].i])}<br>Tras el punto: ${escapeHtml(pairShortLabel(target, 0))} ${pa} % · ${escapeHtml(pairShortLabel(target, 1))} ${100 - pa} %`;
+  };
+  svg.addEventListener('pointerdown', show);
+  svg.addEventListener('pointermove', show);
 }

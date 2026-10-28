@@ -36,6 +36,16 @@
   <symbol id="i-edit" viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></symbol>
   <symbol id="i-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></symbol>
   <symbol id="i-tap" viewBox="0 0 24 24"><path d="M18 11V6a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v0"/><path d="M14 10V4a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v2"/><path d="M10 10.5V6a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v8"/><path d="M18 8a2 2 0 1 1 4 0v6a8 8 0 0 1-8 8h-2c-2.8 0-4.5-.86-5.99-2.34l-3.6-3.6a2 2 0 0 1 2.83-2.82L7 15"/></symbol>
+  <symbol id="i-broadcast" viewBox="0 0 24 24"><circle cx="12" cy="12" r="2"/><path d="M16.24 7.76a6 6 0 0 1 0 8.49"/><path d="M7.76 16.24a6 6 0 0 1 0-8.49"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/><path d="M4.93 19.07a10 10 0 0 1 0-14.14"/></symbol>
+  <symbol id="i-flag" viewBox="0 0 24 24"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/></symbol>
+  <symbol id="i-exit" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></symbol>
+  <symbol id="i-qr" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><path d="M14 14h3v3h-3z"/><path d="M20 14v7h-6"/></symbol>
+  <symbol id="i-copy" viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></symbol>
+  <symbol id="i-tv" viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="13" rx="2"/><polyline points="17 2 12 7 7 2"/></symbol>
+  <symbol id="i-star" viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></symbol>
+  <symbol id="i-play-circle" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polygon points="10 8 16 12 10 16 10 8"/></symbol>
+  <symbol id="i-volume-x" viewBox="0 0 24 24"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><line x1="23" y1="9" x2="17" y2="15"/><line x1="17" y1="9" x2="23" y2="15"/></symbol>
+  <symbol id="i-music" viewBox="0 0 24 24"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></symbol>
   <symbol id="i-menu" viewBox="0 0 24 24"><line x1="4" y1="7" x2="20" y2="7"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="17" x2="20" y2="17"/></symbol>
   <symbol id="i-close" viewBox="0 0 24 24"><line x1="6" y1="6" x2="18" y2="18"/><line x1="18" y1="6" x2="6" y2="18"/></symbol>
   <symbol id="i-chevron" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></symbol>
@@ -142,6 +152,9 @@
       </button>
       <button type="button" class="menu-row" onclick="toggleAppSetting('wakeLock')">
         <svg class="icon"><use href="#i-screen"/></svg><span>Pantalla siempre encendida en partido</span><span class="switch" id="sw-wakeLock"></span>
+      </button>
+      <button type="button" class="menu-row" onclick="toggleAppSetting('sound')">
+        <svg class="icon"><use href="#i-music"/></svg><span>Sonidos en juegos, sets y partido</span><span class="switch" id="sw-sound"></span>
       </button>
       <button type="button" class="menu-row" onclick="closeAppMenu(); openRulesModal()">
         <svg class="icon"><use href="#i-sliders"/></svg><span>Reglas y modo de anotación</span><span class="menu-row-hint">›</span>
@@ -353,59 +366,62 @@
 
   <!-- PANTALLA 4: PARTIDO EN VIVO (ALTURA 100% FIJA SIN DESPLAZAMIENTOS) -->
   <div id="view-match" class="match-screen-fixed hidden">
-    <div id="scoreboard-box" class="tv-scoreboard">
-      <div id="status-banner" class="tv-status-bar" onclick="if(state && state.matchOver) openPosterModal()">
-        <span><span class="live-dot"></span><span id="banner-text">SET 1</span></span>
-        <span id="match-timer" onclick="event.stopPropagation(); toggleTimerPause();">00:00</span>
+    <!-- MARCADOR DE RETRANSMISIÓN -->
+    <div id="scoreboard-box" class="sb">
+      <div id="status-banner" class="sb-status" onclick="if(state && state.matchOver) openMatchEnd()">
+        <span class="sb-status-left"><span class="live-dot"></span><span id="banner-text">SET 1</span></span>
+        <button type="button" id="match-timer" class="sb-timer" onclick="event.stopPropagation(); toggleTimerPause();">00:00</button>
       </div>
-      <div class="score-grid">
-        <div class="score-team-row">
-          <div class="team-color-pill" style="background:var(--cyan);"></div>
-          <div class="tv-team-names" id="t1-label">PAREJA 1</div>
-          <div class="tv-set-cell" id="t1-s0">0</div><div class="tv-set-cell" id="t1-s1">0</div><div class="tv-set-cell" id="t1-s2">0</div>
-          <div class="tv-game-pts" id="t1-pts">0</div>
-          <button class="btn-neutral-pt" onclick="addNeutralPoint(0)">+PTO</button>
+      <div class="sb-rows">
+        <div class="sb-row pair-a" id="sb-row-0">
+          <span class="sb-serve" id="sb-serve-0"></span>
+          <div class="sb-names" id="t1-label">PAREJA 1</div>
+          <div class="sb-sets"><span class="sb-set" id="t1-s0">0</span><span class="sb-set" id="t1-s1">0</span><span class="sb-set" id="t1-s2">0</span></div>
+          <div class="sb-pts-wrap"><div class="sb-pts" id="t1-pts">0</div></div>
         </div>
-        <div class="score-team-row">
-          <div class="team-color-pill" style="background:var(--coral);"></div>
-          <div class="tv-team-names" id="t2-label">PAREJA 2</div>
-          <div class="tv-set-cell" id="t2-s0">0</div><div class="tv-set-cell" id="t2-s1">0</div><div class="tv-set-cell" id="t2-s2">0</div>
-          <div class="tv-game-pts" id="t2-pts">0</div>
-          <button class="btn-neutral-pt" onclick="addNeutralPoint(1)">+PTO</button>
+        <div class="sb-row pair-b" id="sb-row-1">
+          <span class="sb-serve" id="sb-serve-1"></span>
+          <div class="sb-names" id="t2-label">PAREJA 2</div>
+          <div class="sb-sets"><span class="sb-set" id="t2-s0">0</span><span class="sb-set" id="t2-s1">0</span><span class="sb-set" id="t2-s2">0</span></div>
+          <div class="sb-pts-wrap"><div class="sb-pts" id="t2-pts">0</div></div>
         </div>
       </div>
-
-      <!-- Barra Fija de Secuencia de Puntos + Recepción Punto Decisivo (Nunca cambia de alto) -->
+      <div class="sb-wp" title="Probabilidad de victoria">
+        <span class="sb-wp-val a" id="wp-a">50%</span>
+        <div class="sb-wp-mid">
+          <div class="sb-wp-track"><i class="a" id="wp-bar-a"></i><i class="b" id="wp-bar-b"></i></div>
+          <svg id="momentum-svg" class="sb-spark" viewBox="0 0 400 26" preserveAspectRatio="none"></svg>
+        </div>
+        <span class="sb-wp-val b" id="wp-b">50%</span>
+      </div>
       <div class="fixed-ticker-row">
         <div id="game-log-strip" class="ticker-scroll"></div>
         <div id="gold-receive-bar" class="gold-inline-selector hidden">
-          <span style="font-size:0.58rem;font-weight:800;color:var(--amber);">RESTO:</span>
-          <button type="button" id="gold-side-D" class="btn-icon" style="padding:2px 6px;font-size:0.6rem;" onclick="setGoldReceiveSide('Drive')">Drive</button>
-          <button type="button" id="gold-side-R" class="btn-icon" style="padding:2px 6px;font-size:0.6rem;" onclick="setGoldReceiveSide('Revés')">Revés</button>
+          <span class="gold-label">RESTO</span>
+          <button type="button" id="gold-side-D" class="btn-icon gold-btn" onclick="setGoldReceiveSide('Drive')">Drive</button>
+          <button type="button" id="gold-side-R" class="btn-icon gold-btn" onclick="setGoldReceiveSide('Revés')">Revés</button>
         </div>
       </div>
+    </div>
 
-      <div class="momentum-panel">
-        <svg id="momentum-svg" class="momentum-svg" viewBox="0 0 400 22" preserveAspectRatio="none"></svg>
+    <!-- SAQUE -->
+    <div class="serve-strip">
+      <div class="serve-who">
+        <span class="serve-ball" id="serve-ball"><svg class="icon"><use href="#i-ball"/></svg></span>
+        <div class="serve-text"><small>Saca</small><strong id="server-name">-</strong></div>
+        <span id="serve-badge" class="serve-pill serve-1">1.er saque</span>
+      </div>
+      <div class="serve-actions">
+        <button class="btn-icon serve-fault" onclick="handleServeFault()">Falta</button>
+        <button class="btn-icon" onclick="cycleServerManual()" title="Cambiar quién saca" aria-label="Cambiar quién saca"><svg class="icon"><use href="#i-swap"/></svg></button>
       </div>
     </div>
 
-    <div class="telemetry-serve-bar">
-      <div class="serve-status-left">
-        <svg class="icon" style="color:var(--volt);"><use href="#i-ball"/></svg>
-        <strong id="server-name" style="font-family:var(--font-display);font-size:1.05rem;letter-spacing:0.5px;text-transform:uppercase;">-</strong>
-        <span id="serve-badge" class="serve-pill serve-1">1.er Saque</span>
-      </div>
-      <div style="display:flex; gap:6px;">
-        <button class="btn-icon" style="color:var(--amber);border-color:rgba(255,184,0,0.35);" onclick="handleServeFault()">FALTA SAQUE</button>
-        <button class="btn-icon" onclick="cycleServerManual()" title="Rotar sacador"><svg class="icon"><use href="#i-swap"/></svg></button>
-      </div>
-    </div>
-
+    <!-- PISTA -->
     <div class="court-arena">
       <svg class="court-bg-svg" viewBox="0 0 400 500" preserveAspectRatio="none">
         <defs>
-          <radialGradient id="turfGlow" cx="50%" cy="50%" r="60%"><stop offset="0%" stop-color="#1D4ED8" stop-opacity="0.45"/><stop offset="100%" stop-color="#0A1936" stop-opacity="0.95"/></radialGradient>
+          <radialGradient id="turfGlow" cx="50%" cy="50%" r="65%"><stop offset="0%" stop-color="#2563EB" stop-opacity="0.42"/><stop offset="100%" stop-color="#0A1936" stop-opacity="0.96"/></radialGradient>
         </defs>
         <rect width="400" height="500" fill="#0E2756"/><rect width="400" height="500" fill="url(#turfGlow)"/>
         <rect x="16" y="16" width="368" height="468" fill="none" stroke="rgba(255,255,255,0.26)" stroke-width="2.5"/>
@@ -415,14 +431,10 @@
       </svg>
 
       <div class="court-overlay">
-        <div class="pair-row-wrap">
-          <div class="players-pair-grid">
-            <div class="hud-player-card" id="pcard-0"></div>
-            <div class="hud-player-card" id="pcard-1"></div>
-          </div>
-          <button class="btn-swap-center" onclick="swapSides(0)" title="Intercambiar lado Pareja 1">
-            <svg class="icon" style="width:14px;height:14px;"><use href="#i-swap"/></svg>
-          </button>
+        <div class="pair-row">
+          <div class="hud-player-card" id="pcard-0"></div>
+          <button class="btn-swap-center" onclick="swapSides(0)" title="Intercambiar lados de la pareja 1" aria-label="Intercambiar lados de la pareja 1"><svg class="icon"><use href="#i-swap"/></svg></button>
+          <div class="hud-player-card" id="pcard-1"></div>
         </div>
 
         <div class="premier-net-container">
@@ -431,25 +443,29 @@
           <div class="premier-net-post right"></div>
         </div>
 
-        <div class="pair-row-wrap">
-          <div class="players-pair-grid">
-            <div class="hud-player-card" id="pcard-2"></div>
-            <div class="hud-player-card" id="pcard-3"></div>
-          </div>
-          <button class="btn-swap-center" onclick="swapSides(1)" title="Intercambiar lado Pareja 2">
-            <svg class="icon" style="width:14px;height:14px;"><use href="#i-swap"/></svg>
-          </button>
+        <div class="pair-row">
+          <div class="hud-player-card" id="pcard-2"></div>
+          <button class="btn-swap-center" onclick="swapSides(1)" title="Intercambiar lados de la pareja 2" aria-label="Intercambiar lados de la pareja 2"><svg class="icon"><use href="#i-swap"/></svg></button>
+          <div class="hud-player-card" id="pcard-3"></div>
         </div>
-        <div id="live-input-mode-hint" class="gesture-hint">MODO TOQUE: Pulsa sobre un jugador para registrar su acción</div>
+        <div id="live-input-mode-hint" class="gesture-hint">Toca a un jugador para anotar su golpe</div>
       </div>
     </div>
 
-    <div class="match-bottom-actions">
-      <button class="btn-icon" id="btn-toggle-stb" onclick="toggleSuperTBHot()">3.er: Normal</button>
-      <button class="btn-icon" style="color:var(--volt);" onclick="openPosterModal()"><svg class="icon"><use href="#i-share"/></svg> Póster</button>
-      <button class="btn-icon" style="color:var(--cyan);" onclick="finishMatchManually()"><svg class="icon"><use href="#i-save"/></svg> Finalizar</button>
-      <button class="btn-icon" style="color:var(--coral);" onclick="exitMatchScreen()">Salir</button>
+    <!-- PUNTO RÁPIDO -->
+    <div class="quick-points">
+      <button type="button" class="qp a" onclick="addNeutralPoint(0)"><small>+1 punto</small><strong id="qp-a">Pareja 1</strong></button>
+      <button type="button" class="qp b" onclick="addNeutralPoint(1)"><small>+1 punto</small><strong id="qp-b">Pareja 2</strong></button>
     </div>
+
+    <div class="match-bottom-actions">
+      <button class="mba" id="btn-live-broadcast" onclick="openBroadcastPanel()"><svg class="icon"><use href="#i-broadcast"/></svg><span>Emitir</span></button>
+      <button class="mba" onclick="openPosterModal()"><svg class="icon"><use href="#i-share"/></svg><span>Póster</span></button>
+      <button class="mba" id="btn-match-options" onclick="openMatchOptions()"><svg class="icon"><use href="#i-sliders"/></svg><span>Opciones</span></button>
+      <button class="mba" onclick="finishMatchManually()"><svg class="icon"><use href="#i-flag"/></svg><span>Finalizar</span></button>
+      <button class="mba danger" onclick="exitMatchScreen()"><svg class="icon"><use href="#i-exit"/></svg><span>Salir</span></button>
+    </div>
+    <div id="cele-layer" class="cele-layer"></div>
   </div>
 
   <!-- PANTALLA 5: ESTADÍSTICAS DEL PARTIDO -->
@@ -765,6 +781,11 @@
   </div>
 </div>
 
+<!-- CIERRE DEL PARTIDO -->
+<div id="match-end" class="match-end hidden" onclick="closeMatchEnd()">
+  <div id="match-end-card" class="me-card" onclick="event.stopPropagation()"></div>
+</div>
+
 <!-- MODAL DE PÓSTER HD -->
 <div id="poster-modal" class="sheet-backdrop hidden" onclick="closePosterModal()">
   <div class="telemetry-sheet" onclick="event.stopPropagation()">
@@ -785,8 +806,10 @@
 <script src="js/core/state.js"></script>
 <script src="js/core/storage.js"></script>
 <script src="js/core/utils.js"></script>
+<script src="js/fx.js"></script>
 <script src="js/setup.js"></script>
 <script src="js/players.js"></script>
+<script src="js/winprob.js"></script>
 <script src="js/match/scoring.js"></script>
 <script src="js/match/voice.js"></script>
 <script src="js/match/live.js"></script>

@@ -7,7 +7,7 @@ let tournaments = JSON.parse(localStorage.getItem('pm_torneos_v1')) || [];
 let americanos = JSON.parse(localStorage.getItem('pm_americanos_v1')) || [];
 
 // Preferencias de la app (menú de ajustes)
-let appSettings = Object.assign({ vibration: true, wakeLock: true }, JSON.parse(localStorage.getItem('pm_ajustes_v1') || '{}'));
+let appSettings = Object.assign({ vibration: true, wakeLock: true, sound: false }, JSON.parse(localStorage.getItem('pm_ajustes_v1') || '{}'));
 
 let setupConfig = {
   slots: ['GEN_0', 'GEN_1', 'GEN_2', 'GEN_3'],

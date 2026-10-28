@@ -37,6 +37,8 @@ function resumeSavedActiveMatch() {
   if (!raw) return;
   try {
     state = JSON.parse(raw);
+    if (state.wp === undefined) initMatchWinProb(state);
+    liveUiPrev = { players: {}, server: null };
     historyStack = [];
     requestWakeLock();
     document.body.classList.add('in-live-match');
@@ -115,6 +117,8 @@ function startMatch(link = null) {
     points: [],
     link
   };
+  initMatchWinProb(state);
+  liveUiPrev = { players: {}, server: null };
 
   historyStack = [];
   requestWakeLock();
@@ -151,6 +155,8 @@ function startMatchTimer() {
 function toggleTimerPause() {
   if (!state || state.matchOver) return;
   state.timerPaused = !state.timerPaused;
+  persistActiveMatchState();
+  updateUI();
   showToast(state.timerPaused ? 'Cronómetro en pausa' : 'Cronómetro reanudado');
 }
 
@@ -168,100 +174,191 @@ function undoLast() {
   vibrate(20);
   state = JSON.parse(historyStack.pop());
   persistActiveMatchState();
+  document.getElementById('cele-layer').innerHTML = '';
   updateUI();
   showToast('Último punto deshecho');
 }
 
+// ==========================================================
+// PANTALLA DEL PARTIDO: MARCADOR DE RETRANSMISIÓN, PISTA Y CELEBRACIONES
+// ==========================================================
+
+// Apellidos para el marcador ("COELLO / TAPIA"); los jugadores sin ficha se muestran como J1, J2...
+function liveSurname(p) {
+  if (!p) return '';
+  if (p.isGeneric) return String(p.name).replace(/^Jugador\s+/, 'J');
+  const parts = String(p.name).trim().split(/\s+/);
+  return parts.length > 1 ? parts.slice(1).join(' ') : parts[0];
+}
+
+function livePairName(pair, st = state) {
+  const a = st.players[pair * 2], b = st.players[pair * 2 + 1];
+  if (a.isGeneric && b.isGeneric) return `Pareja ${pair + 1}`;
+  return `${liveSurname(a)} / ${liveSurname(b)}`;
+}
+
+// Vuelve a lanzar una animación CSS aunque ya se haya usado
+function replayAnim(el, cls) {
+  if (!el) return;
+  el.classList.remove(cls);
+  void el.offsetWidth;
+  el.classList.add(cls);
+}
+
+// Cambia un texto y lo anima solo si ha cambiado
+function setLiveText(id, text, anim) {
+  const el = document.getElementById(id);
+  if (!el) return false;
+  const t = String(text);
+  if (el.textContent === t && !el.children.length) return false;
+  el.textContent = t;
+  if (anim) replayAnim(el, anim);
+  return true;
+}
+
+// Situación del punto que se va a jugar: bola de partido, de set o de break (y cuántas seguidas)
+const CHANCE_LABEL = { match: ['BOLA DE PARTIDO', 'BOLAS DE PARTIDO'], set: ['BOLA DE SET', 'BOLAS DE SET'], break: ['BOLA DE BREAK', 'BOLAS DE BREAK'] };
+const CHANCE_RANK = { match: 3, set: 2, break: 1 };
+
+function liveChance(st = state) {
+  if (!st || st.matchOver) return null;
+  const isGold = st.deuceRule === 'golden' || (st.deuceRule === 'star' && st.deuceCount >= 2);
+  const setsWon = t => st.sets.slice(0, st.currentSet).filter(s => s[t] > s[1 - t]).length;
+  const srvPair = st.serverIdx < 2 ? 0 : 1;
+  let best = null;
+  for (const t of [0, 1]) {
+    const me = st.pts[t], op = st.pts[1 - t];
+    let winsGame, count = 1;
+    if (st.inSuperTB || st.inTieBreak) {
+      const target = st.inSuperTB ? 10 : 7;
+      winsGame = me + 1 >= target && me + 1 - op >= 2;
+      if (winsGame) count = Math.max(1, me - op);
+    } else {
+      winsGame = me + 1 >= 4 && ((isGold && op === 3) || me + 1 - op >= 2);
+      if (winsGame && me === 3 && op < 3) count = 3 - op;
+    }
+    if (!winsGame) continue;
+    let kind = null;
+    if (st.inSuperTB) kind = 'match';
+    else {
+      const g = st.sets[st.currentSet][t] + 1, gl = st.sets[st.currentSet][1 - t];
+      const winsSet = st.inTieBreak || (g >= 6 && g - gl >= 2) || g === 7;
+      if (winsSet) kind = setsWon(t) + 1 >= 2 ? 'match' : 'set';
+      else if (t !== srvPair) kind = 'break';
+    }
+    if (kind && (!best || CHANCE_RANK[kind] > CHANCE_RANK[best.kind])) best = { kind, pair: t, count };
+  }
+  return best;
+}
+
+function liveStatus() {
+  if (state.matchOver) return { cls: 'is-over', html: `Final · ganan ${escapeHtml(livePairName(state.winnerPair))}` };
+  const setLbl = state.inSuperTB ? 'Súper tie-break' : `Set ${state.currentSet + 1}${state.inTieBreak ? ' · tie-break' : ''}`;
+  const ch = liveChance();
+  const chTxt = ch ? `<i class="sb-chance-dot ${ch.pair ? 'b' : 'a'}"></i>${ch.count > 1 ? `${ch.count} ` : ''}${CHANCE_LABEL[ch.kind][ch.count > 1 ? 1 : 0]}` : '';
+  if (isGoldenPointNow()) {
+    return { cls: ch && ch.kind === 'match' ? 'is-match' : 'is-gold', html: `Punto de oro${ch && ch.kind !== 'break' ? ` · ${chTxt}` : ''}` };
+  }
+  if (ch) return { cls: `is-${ch.kind}`, html: `${setLbl} · ${chTxt}` };
+  if (state.inTieBreak || state.inSuperTB) return { cls: 'is-tb', html: setLbl };
+  return { cls: '', html: `${setLbl} · en juego` };
+}
+
+// Lo último que se ha dibujado, para animar solo lo que cambia
+let liveUiPrev = { players: {}, server: null };
+
 function updateUI() {
   if (!state) return;
+  const over = state.matchOver;
+  const srvPair = state.serverIdx < 2 ? 0 : 1;
+  const ch = liveChance();
 
-  document.getElementById('t1-label').innerText = `${state.players[0].name} / ${state.players[1].name}`;
-  document.getElementById('t2-label').innerText = `${state.players[2].name} / ${state.players[3].name}`;
-
-  for (let s = 0; s < 3; s++) {
-    const c1 = document.getElementById(`t1-s${s}`);
-    const c2 = document.getElementById(`t2-s${s}`);
-    c1.innerText = state.sets[s][0];
-    c2.innerText = state.sets[s][1];
-    c1.classList.toggle('current', s === state.currentSet);
-    c2.classList.toggle('current', s === state.currentSet);
-  }
-
-  document.getElementById('t1-pts').innerText = formatPointLabel(0);
-  document.getElementById('t2-pts').innerText = formatPointLabel(1);
-
-  const isDeuce = !state.inTieBreak && !state.inSuperTB && state.pts[0] >= 3 && state.pts[1] >= 3 && state.pts[0] === state.pts[1];
-  const isGoldenPointActive = isDeuce && (state.deuceRule === 'golden' || (state.deuceRule === 'star' && state.deuceCount >= 2));
-  const isBreakPt = isBreakPointSituation();
-
+  // Franja de estado
+  const st = liveStatus();
   const banner = document.getElementById('status-banner');
+  banner.className = `sb-status ${st.cls}`;
   const bannerTxt = document.getElementById('banner-text');
-  banner.className = 'tv-status-bar';
+  if (bannerTxt.innerHTML !== st.html) bannerTxt.innerHTML = st.html;
+  document.getElementById('match-timer').classList.toggle('paused', !!state.timerPaused && !over);
 
-  if (state.matchOver) {
-    bannerTxt.innerText = `FINALIZADO · GANAN PAREJA ${state.winnerPair + 1} (VER PÓSTER)`;
-    banner.classList.add('gold-mode');
-  } else if (isGoldenPointActive) {
-    bannerTxt.innerText = 'PUNTO DE ORO DECISIVO';
-    banner.classList.add('gold-mode');
-  } else if (isBreakPt) {
-    bannerTxt.innerText = `SET ${state.currentSet + 1} · BOLA DE BREAK`;
-    banner.classList.add('break-mode');
-  } else if (state.inSuperTB) {
-    bannerTxt.innerText = 'SÚPER TIE-BREAK (A 10 PTOS)';
-  } else if (state.inTieBreak) {
-    bannerTxt.innerText = `SET ${state.currentSet + 1} · TIE-BREAK`;
-  } else {
-    bannerTxt.innerText = `SET ${state.currentSet + 1} · EN JUEGO`;
+  // Filas de las parejas
+  for (const t of [0, 1]) {
+    const row = document.getElementById(`sb-row-${t}`);
+    row.classList.toggle('winner', over && state.winnerPair === t);
+    row.classList.toggle('loser', over && state.winnerPair !== t);
+    row.classList.toggle('has-chance', !!ch && ch.pair === t);
+    document.getElementById(`sb-serve-${t}`).classList.toggle('on', !over && srvPair === t);
+    setLiveText(`t${t + 1}-label`, livePairName(t));
+    for (let s = 0; s < 3; s++) {
+      const cell = document.getElementById(`t${t + 1}-s${s}`);
+      const finished = s < state.currentSet || (over && s === state.currentSet);
+      setLiveText(cell.id, state.sets[s][t], 'bump');
+      cell.classList.toggle('off', s > state.currentSet || (s === 2 && state.inSuperTB && !over));
+      cell.classList.toggle('current', s === state.currentSet && !over);
+      cell.classList.toggle('won', finished && state.sets[s][t] > state.sets[s][1 - t]);
+    }
+    const pts = document.getElementById(`t${t + 1}-pts`);
+    const wrap = pts.parentElement;
+    if (over) {
+      const html = state.winnerPair === t ? '<svg class="icon"><use href="#i-trophy"/></svg>' : '';
+      if (pts.innerHTML !== html) pts.innerHTML = html;
+      wrap.classList.remove('gold');
+    } else {
+      const lbl = formatPointLabel(t);
+      setLiveText(pts.id, lbl, 'flip');
+      wrap.classList.toggle('gold', lbl === 'ORO');
+    }
   }
 
+  // Probabilidad de victoria
+  if (state.wp === undefined) state.wp = currentWinProb(state);
+  const pa = Math.round((state.wp ?? 0.5) * 100);
+  setLiveText('wp-a', `${pa}%`);
+  setLiveText('wp-b', `${100 - pa}%`);
+  document.getElementById('wp-bar-a').style.flexBasis = `${state.wp * 100}%`;
+  renderWinProbSpark();
+
+  // Resto en el punto de oro
   const goldBar = document.getElementById('gold-receive-bar');
-  if (isGoldenPointActive && !state.matchOver) {
-    goldBar.classList.remove('hidden');
-    document.getElementById('gold-side-D').style.borderColor = state.goldReceiveSide === 'Drive' ? '#D4FF2A' : '';
-    document.getElementById('gold-side-R').style.borderColor = state.goldReceiveSide === 'Revés' ? '#D4FF2A' : '';
-  } else {
-    goldBar.classList.add('hidden');
-  }
-
+  goldBar.classList.toggle('hidden', !(isGoldenPointNow() && !over));
+  document.getElementById('gold-side-D').classList.toggle('active', state.goldReceiveSide === 'Drive');
+  document.getElementById('gold-side-R').classList.toggle('active', state.goldReceiveSide === 'Revés');
   renderGameTicker();
-  renderMomentumChart();
 
+  // Saque
   const srvPlayer = state.players[state.serverIdx];
-  document.getElementById('server-name').innerText = srvPlayer ? srvPlayer.name : '-';
+  document.getElementById('server-name').textContent = srvPlayer ? srvPlayer.name : '-';
+  const srvKey = `${state.serverIdx}|${srvPlayer ? srvPlayer.name : ''}`;
+  if (liveUiPrev.server !== null && liveUiPrev.server !== srvKey) replayAnim(document.getElementById('serve-ball'), 'spin');
+  liveUiPrev.server = srvKey;
   const srvBadge = document.getElementById('serve-badge');
-  srvBadge.innerText = state.serveNumber === 1 ? '1.er Saque' : '2.º Saque';
+  srvBadge.textContent = state.serveNumber === 1 ? '1.er saque' : '2.º saque';
   srvBadge.className = `serve-pill ${state.serveNumber === 1 ? 'serve-1' : 'serve-2'}`;
 
-  document.getElementById('btn-toggle-stb').innerText = state.thirdSetRule === 'supertb' ? '3.er: Súper TB' : '3.er: Normal';
+  setLiveText('qp-a', livePairName(0));
+  setLiveText('qp-b', livePairName(1));
+  document.getElementById('btn-live-broadcast')?.classList.toggle('on', !!(state.live && state.live.on));
+  setLiveText('live-input-mode-hint', state.inputMode === 'swipe'
+    ? 'Desliza hacia arriba: winner · hacia abajo: error no forzado'
+    : 'Toca a un jugador para anotar su golpe');
 
-  const hintEl = document.getElementById('live-input-mode-hint');
-  if (state.inputMode === 'swipe') {
-    hintEl.innerText = 'MODO GESTOS: Desliza ↑ para Winner o ↓ para Error No Forzado';
-  } else {
-    hintEl.innerText = 'MODO TOQUE: Pulsa sobre un jugador para elegir su golpe';
-  }
-
+  // Tarjetas de los jugadores
   const circumference = 2 * Math.PI * 11;
   state.players.forEach((p, idx) => {
     const card = document.getElementById(`pcard-${idx}`);
-    const isSrv = (state.serverIdx === idx && !state.matchOver);
-    const isFire = (p.streak >= 3);
+    const isSrv = state.serverIdx === idx && !over;
+    const isFire = p.streak >= 3;
     const rating = calcPlayerRating(p);
     const dashOffset = circumference * (1 - rating / 10);
-    const avClass = idx < 2 ? 'avatar-p1' : 'avatar-p2';
-
-    card.className = `hud-player-card ${isSrv ? 'is-serving' : ''} ${isFire ? 'is-onfire' : ''}`;
+    const pairCls = idx < 2 ? 'pa' : 'pb';
+    card.className = `hud-player-card ${pairCls} ${isSrv ? 'is-serving' : ''} ${isFire ? 'is-onfire' : ''}`;
     card.innerHTML = `
-      <div class="swipe-live-badge up">↑ WINNER</div>
-      <div class="swipe-live-badge down">↓ ERROR NF</div>
-      ${isFire ? `<span class="streak-pill">RACHA ×${p.streak}</span>` : ''}
+      <div class="swipe-live-badge up">↑ Winner</div>
+      <div class="swipe-live-badge down">↓ Error NF</div>
+      ${isFire ? `<span class="streak-pill">Racha ${p.streak}</span>` : ''}
       <div class="hud-card-top">
-        <span class="hud-side-label">
-          ${isSrv ? '<svg class="icon" style="width:11px;height:11px;"><use href="#i-ball"/></svg>' : ''}
-          ${p.side}
-        </span>
-        <div class="rating-ring-wrap">
+        <span class="hud-side-label">${isSrv ? '<svg class="icon"><use href="#i-ball"/></svg>' : ''}${escapeHtml(p.side)}</span>
+        <div class="rating-ring-wrap" title="Valoración del partido">
           <svg class="rating-ring-svg" viewBox="0 0 28 28">
             <circle cx="14" cy="14" r="11" stroke="rgba(255,255,255,0.12)" stroke-width="2.5" fill="none"/>
             <circle cx="14" cy="14" r="11" stroke="${idx < 2 ? '#00F0FF' : '#FF2E54'}" stroke-width="2.5" fill="none"
@@ -271,54 +368,162 @@ function updateUI() {
         </div>
       </div>
       <div class="hud-player-mid">
-        ${renderAvatarHTML(p.name, avClass, 'width:26px;height:26px;font-size:0.72rem;', p.isGeneric, `J${idx+1}`)}
-        <div class="hud-player-name">${p.name}</div>
+        ${renderAvatarHTML(p.name, idx < 2 ? 'avatar-p1' : 'avatar-p2', '', p.isGeneric, liveSurname(p).slice(0, 2).toUpperCase())}
+        <div class="hud-player-name">${escapeHtml(liveSurname(p))}</div>
       </div>
       <div class="hud-micro-telemetry">
-        <span style="color:var(--emerald);">W:${p.W}</span>
-        <span style="color:var(--coral);">ENF:${p.ENF}</span>
-        <span style="color:var(--amber);">EF:${p.EF}</span>
-      </div>
-    `;
+        <span class="w">W ${p.W}</span><span class="enf">ENF ${p.ENF}</span><span class="ef">EF ${p.EF}</span>
+      </div>`;
+    const prev = liveUiPrev.players[p.name];
+    if (prev) {
+      if (p.W > prev.W) replayAnim(card, 'scored');
+      else if (p.ENF + p.EF > prev.ENF + prev.EF) replayAnim(card, 'erred');
+    }
+    liveUiPrev.players[p.name] = { W: p.W, ENF: p.ENF, EF: p.EF };
   });
+
+  if (!over) closeMatchEnd(true);
+  if (typeof scheduleLivePublish === 'function') scheduleLivePublish();
 }
 
 function renderGameTicker() {
   const strip = document.getElementById('game-log-strip');
   if (!strip || !state) return;
   if (!state.gamePointLog || state.gamePointLog.length === 0) {
-    strip.innerHTML = `<span style="opacity:0.65;">Juego en curso: 0-0 (Esperando primer punto)</span>`;
+    strip.innerHTML = `<span>${state.matchOver ? 'Partido terminado' : 'Juego en curso · esperando el primer punto'}</span>`;
     return;
   }
-  strip.innerHTML = state.gamePointLog.map(item => `<span class="game-pt-pill">${item}</span>`).join('');
+  strip.innerHTML = state.gamePointLog.map(item => {
+    const m = /^(.*?) \((.*)\)$/.exec(item);
+    return m ? `<span class="game-pt-pill"><b>${escapeHtml(m[1])}</b>${escapeHtml(m[2])}</span>` : `<span class="game-pt-pill">${escapeHtml(item)}</span>`;
+  }).join('');
   strip.scrollLeft = strip.scrollWidth;
 }
 
-function renderMomentumChart() {
+// Evolución de la probabilidad de victoria: por encima de la línea manda la pareja 1, por debajo la pareja 2
+function renderWinProbSpark() {
   const svg = document.getElementById('momentum-svg');
   if (!svg || !state) return;
-  const data = state.momentum && state.momentum.length > 0 ? state.momentum : [0];
-  const w = 400, h = 22, mid = 11;
-  const maxAbs = Math.max(4, ...data.map(v => Math.abs(v)));
-
-  let pointsStr = data.map((val, i) => {
-    const x = data.length === 1 ? 0 : (i / (data.length - 1)) * w;
-    const y = mid - (val / maxAbs) * (mid - 3);
-    return `${x.toFixed(1)},${y.toFixed(1)}`;
-  }).join(' ');
-
-  if (data.length === 1) pointsStr = `0,${mid} 400,${mid}`;
-
+  const series = [state.wpStart ?? 0.5, ...(state.points || []).filter(p => p.wp !== undefined).map(p => p.wp)];
+  const w = 400, h = 26, mid = h / 2;
+  const xy = series.map((v, i) => [series.length === 1 ? 0 : (i / (series.length - 1)) * w, mid - (v - 0.5) * 2 * (mid - 1.5)]);
+  if (xy.length === 1) xy.push([w, xy[0][1]]);
+  const line = xy.map(([x, y], i) => `${i ? 'L' : 'M'}${x.toFixed(1)} ${y.toFixed(1)}`).join('');
+  const area = `${line}L${w} ${mid}L0 ${mid}Z`;
   svg.innerHTML = `
-    <line x1="0" y1="${mid}" x2="${w}" y2="${mid}" stroke="rgba(255,255,255,0.14)" stroke-width="1" stroke-dasharray="3 3"/>
-    <polyline fill="none" stroke="#D4FF2A" stroke-width="2" points="${pointsStr}" stroke-linecap="round" stroke-linejoin="round"/>
-  `;
+    <defs><clipPath id="spk-top"><rect width="${w}" height="${mid}"/></clipPath><clipPath id="spk-bot"><rect y="${mid}" width="${w}" height="${mid}"/></clipPath></defs>
+    <line x1="0" y1="${mid}" x2="${w}" y2="${mid}" class="sb-spark-mid"/>
+    <path d="${area}" clip-path="url(#spk-top)" class="sb-spark-a"/>
+    <path d="${area}" clip-path="url(#spk-bot)" class="sb-spark-b"/>
+    <path d="${line}" class="sb-spark-line"/>`;
 }
 
 function setGoldReceiveSide(side) {
   if (!state) return;
+  vibrate(8);
   state.goldReceiveSide = side;
+  persistActiveMatchState();
   updateUI();
+}
+
+// Juego, break y set: rótulo sobre la pista; el partido abre el cierre con confeti
+let celeTimer = null, matchEndTimer = null;
+function celebrateEvent(ev) {
+  if (!ev || !state) return;
+  const layer = document.getElementById('cele-layer');
+  if (ev.kind === 'match') {
+    fxSound('match');
+    fxConfetti({ colors: ev.pair ? ['#FF2E54', '#FFE066', '#FFFFFF'] : ['#00F0FF', '#D4FF2A', '#FFFFFF'], count: 160 });
+    clearTimeout(matchEndTimer);
+    matchEndTimer = setTimeout(openMatchEnd, 900);
+    return;
+  }
+  let kind = 'Juego', score;
+  if (ev.kind === 'set') {
+    const s = state.sets[Math.max(0, state.currentSet - 1)];
+    kind = 'Set';
+    score = `${s[0]}-${s[1]}`;
+    fxSound('set');
+    fxConfetti({ colors: ev.pair ? ['#FF2E54', '#FFFFFF'] : ['#00F0FF', '#FFFFFF'], count: 70 });
+  } else {
+    const last = state.points[state.points.length - 1];
+    if (last && last.sv != null && (last.sv < 2 ? 0 : 1) !== ev.pair) kind = 'Break';
+    const g = state.sets[state.currentSet];
+    score = `${g[0]}-${g[1]}`;
+    fxSound('game');
+  }
+  layer.innerHTML = `<div class="cele-banner ${ev.pair ? 'b' : 'a'} ${ev.kind === 'set' ? 'big' : ''}">
+    <span class="cele-kind">${kind}</span><span class="cele-who">${escapeHtml(livePairName(ev.pair))}</span><span class="cele-score">${score}</span></div>`;
+  clearTimeout(celeTimer);
+  celeTimer = setTimeout(() => { layer.innerHTML = ''; }, 2000);
+}
+
+function formatMatchDuration(sec) {
+  const m = Math.round((sec || 0) / 60);
+  return m >= 60 ? `${Math.floor(m / 60)} h ${String(m % 60).padStart(2, '0')} min` : `${m} min`;
+}
+
+// Cierre del partido: ganadores, sets, duración, mejor jugador y la curva de la probabilidad de victoria
+function openMatchEnd() {
+  // Solo si se sigue en la pantalla del partido (puede llegar con retraso tras el confeti)
+  if (!state || !state.matchOver || document.getElementById('view-match').classList.contains('hidden')) return;
+  const w = state.winnerPair, l = 1 - w;
+  const full = pair => `${state.players[pair * 2].name} / ${state.players[pair * 2 + 1].name}`;
+  const sets = state.sets.map((s, i) => ({ s, i })).filter(({ s, i }) => i <= state.currentSet && (s[0] || s[1]));
+  const mvp = [...state.players].sort((a, b) => calcPlayerRating(b) - calcPlayerRating(a))[0];
+  const chart = wpChartSVG(state, { w: 320, h: 92, idPrefix: 'me' });
+  document.getElementById('match-end-card').innerHTML = `
+    <div class="me-trophy"><svg class="icon"><use href="#i-trophy"/></svg></div>
+    <div class="me-kicker">Partido finalizado</div>
+    <div class="me-winners ${w ? 'b' : 'a'}">${escapeHtml(livePairName(w))}</div>
+    <div class="me-losers">${escapeHtml(full(w))} ganan a ${escapeHtml(full(l))}</div>
+    <div class="me-sets">${sets.map(({ s, i }) => `<div class="me-set"><small>${i === 2 && state.thirdSetRule === 'supertb' ? 'STB' : `SET ${i + 1}`}</small>${s[0]}-${s[1]}</div>`).join('')}</div>
+    <div class="me-stats">
+      <div class="me-stat"><strong>${formatMatchDuration(state.elapsedSec)}</strong><span>Duración</span></div>
+      <div class="me-stat"><strong>${(state.points || []).length || '-'}</strong><span>Puntos</span></div>
+      <div class="me-stat"><strong>${escapeHtml(liveSurname(mvp))}</strong><span>Mejor · ${calcPlayerRating(mvp).toFixed(1)}</span></div>
+    </div>
+    ${chart ? `<div class="me-chart"><div class="me-chart-title"><span>Probabilidad de victoria</span><span>${escapeHtml(livePairName(0))}</span></div>${chart}</div>` : ''}
+    <div class="me-actions">
+      <button class="btn-volt" onclick="closeMatchEnd(); toggleStatsView();">Ver estadísticas</button>
+      <button class="btn-icon" onclick="openPosterModal()"><svg class="icon"><use href="#i-share"/></svg> Póster</button>
+      <button class="btn-icon" onclick="closeMatchEnd(); exitMatchScreen();"><svg class="icon"><use href="#i-exit"/></svg> Salir</button>
+    </div>`;
+  document.getElementById('match-end').classList.remove('hidden');
+}
+
+function closeMatchEnd(silent) {
+  const el = document.getElementById('match-end');
+  if (el && !el.classList.contains('hidden')) el.classList.add('hidden');
+}
+
+// Opciones del partido: tercer set, cronómetro, narrador y modo de registro
+function openMatchOptions() {
+  if (!state) return;
+  vibrate(10);
+  const row = (label, sub, control) => `<div class="mo-row"><div><strong>${label}</strong><small>${sub}</small></div>${control}</div>`;
+  const seg = (opts, current, fn) => `<div class="mo-seg">${opts.map(([v, t]) => `<button type="button" class="${v === current ? 'active' : ''}" onclick="${fn}(${jsArg(v)})">${t}</button>`).join('')}</div>`;
+  openEventModal(`
+    <div class="mo-title">Opciones del partido</div>
+    ${row('Tercer set', 'Se puede cambiar mientras no haya empezado', seg([['normal', 'Set normal'], ['supertb', 'Súper tie-break']], state.thirdSetRule, 'setMatchThirdSet'))}
+    ${row('Registro', 'Toque abre el panel de golpes; gestos anota deslizando', seg([['tap', 'Toque'], ['swipe', 'Gestos']], state.inputMode, 'setMatchInputMode'))}
+    ${row('Cronómetro', state.timerPaused ? 'En pausa' : 'En marcha', `<button type="button" class="btn-icon" onclick="toggleTimerPause(); openMatchOptions();">${state.timerPaused ? 'Reanudar' : 'Pausar'}</button>`)}
+    ${row('Narrador de voz', 'Canta el marcador tras cada punto', `<button type="button" class="btn-icon" onclick="toggleVoiceNarrator(); openMatchOptions();">${voiceEnabled ? 'Desactivar' : 'Activar'}</button>`)}
+    ${row('Saque', 'Corrige quién saca si no coincide con la pista', `<button type="button" class="btn-icon" onclick="cycleServerManual(); openMatchOptions();">Siguiente</button>`)}`);
+}
+
+function setMatchThirdSet(rule) {
+  if (!state) return;
+  if (state.thirdSetRule !== rule) toggleSuperTBHot();
+  openMatchOptions();
+}
+
+function setMatchInputMode(mode) {
+  if (!state) return;
+  state.inputMode = mode;
+  persistActiveMatchState();
+  updateUI();
+  openMatchOptions();
 }
 
 // Interacción exclusiva en las tarjetas de jugador según el modo elegido en Ajustes
@@ -445,6 +650,8 @@ function renderZonePicker() {
 
 function exitMatchScreen() {
   vibrate(15);
+  clearTimeout(matchEndTimer);
+  closeMatchEnd();
   if (timerInterval) clearInterval(timerInterval);
   if (wakeLockRef) { try { wakeLockRef.release(); } catch (e) {} wakeLockRef = null; }
   document.body.classList.remove('in-live-match');

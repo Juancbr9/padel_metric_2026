@@ -19,6 +19,7 @@ function setSectionIdentity(section, label) {
 
 function switchMainTab(tab) {
   closeAppMenu();
+  closeMatchEnd();
   currentTab = tab;
   Object.entries(SECTIONS).forEach(([key, cfg]) => {
     document.getElementById(cfg.view)?.classList.toggle('hidden', key !== tab);
@@ -32,6 +33,7 @@ function switchMainTab(tab) {
   if (tab === 'history') renderHistoryList();
   if (tab === 'tournaments') renderTournamentsView();
   if (tab === 'americano') renderAmericanoView();
+  fxEnter(document.getElementById(SECTIONS[tab].view));
 }
 
 function toggleAppMenu() {
@@ -58,6 +60,7 @@ function renderMenuSwitches() {
   document.getElementById('sw-voice')?.classList.toggle('on', voiceEnabled);
   document.getElementById('sw-vibration')?.classList.toggle('on', appSettings.vibration);
   document.getElementById('sw-wakeLock')?.classList.toggle('on', appSettings.wakeLock);
+  document.getElementById('sw-sound')?.classList.toggle('on', appSettings.sound);
 }
 
 function toggleAppSetting(key) {
@@ -65,6 +68,7 @@ function toggleAppSetting(key) {
   try { localStorage.setItem('pm_ajustes_v1', JSON.stringify(appSettings)); } catch (e) {}
   renderMenuSwitches();
   vibrate(12);
+  if (key === 'sound' && appSettings.sound) fxSound('game');
 }
 
 // Exporta todos los partidos a un CSV que abre Excel o Google Sheets

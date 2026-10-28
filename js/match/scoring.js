@@ -1,3 +1,11 @@
+// Orden de saque del pádel: las parejas se alternan en cada juego y dentro de cada pareja también los jugadores
+// (A1, B1, A2, B2). Índices: 0 y 1 = pareja 1, 2 y 3 = pareja 2 → 0 → 2 → 1 → 3 → 0
+const NEXT_SERVER = [2, 3, 1, 0];
+
+function nextServer(idx) {
+  return NEXT_SERVER[idx] ?? 0;
+}
+
 function formatPointLabel(teamIdx) {
   if (state.inTieBreak || state.inSuperTB) return String(state.pts[teamIdx]);
   const map = ['0', '15', '30', '40'];
@@ -85,13 +93,19 @@ function addNeutralPoint(teamIdx) {
   if (!state || state.matchOver) return;
   cloneStateForUndo();
   vibrate(15);
-  scorePointForTeam(teamIdx, `P${teamIdx + 1} +Pto`, { by: -1, t: 'N' });
+  scorePointForTeam(teamIdx, `Punto P${teamIdx + 1}`, { by: -1, t: 'N' });
   afterPointScored();
 }
 
 function afterPointScored() {
+  // Probabilidad de victoria tras el punto (se guarda en el punto para el gráfico del partido)
+  if (state.points && state.points.length) {
+    state.wp = currentWinProb(state);
+    state.points[state.points.length - 1].wp = state.wp;
+  }
   persistActiveMatchState();
   updateUI();
+  celebrateEvent(state.lastEvent);
   announceScore();
 }
 
@@ -134,7 +148,10 @@ function scorePointForTeam(winningTeam, shortTag, meta = {}) {
     bp: isBreakPointSituation(),
     gp: isGoldenPointNow(),
     tb: state.inTieBreak || state.inSuperTB,
-    at: state.elapsedSec
+    at: state.elapsedSec,
+    svn: state.players[state.serverIdx] ? state.players[state.serverIdx].name : null,
+    g: [...state.sets[state.currentSet]],
+    pl: [formatPointLabel(0), formatPointLabel(1)]
   });
   state.lastEvent = null;
   state.serveNumber = 1;
@@ -146,7 +163,7 @@ function scorePointForTeam(winningTeam, shortTag, meta = {}) {
   if (state.inSuperTB) {
     state.gamePointLog.push(`${state.pts[0]}-${state.pts[1]} (${shortTag})`);
     const totalPts = state.pts[0] + state.pts[1];
-    if (totalPts % 2 === 1) state.serverIdx = (state.serverIdx + 1) % 4;
+    if (totalPts % 2 === 1) state.serverIdx = nextServer(state.serverIdx);
     if (totalPts > 0 && totalPts % 6 === 0) showToast('Cambio de lado (6 puntos)');
     if (state.pts[winningTeam] >= 10 && (state.pts[winningTeam] - state.pts[1 - winningTeam]) >= 2) {
       // El súper tie-break se apunta con sus puntos (p. ej. 10-8) para que cuente como set ganado
@@ -159,10 +176,13 @@ function scorePointForTeam(winningTeam, shortTag, meta = {}) {
   if (state.inTieBreak) {
     state.gamePointLog.push(`${state.pts[0]}-${state.pts[1]} (${shortTag})`);
     const totalPts = state.pts[0] + state.pts[1];
-    if (totalPts % 2 === 1) state.serverIdx = (state.serverIdx + 1) % 4;
+    if (totalPts % 2 === 1) state.serverIdx = nextServer(state.serverIdx);
     if (totalPts > 0 && totalPts % 6 === 0) showToast('Cambio de lado (6 puntos)');
     if (state.pts[winningTeam] >= 7 && (state.pts[winningTeam] - state.pts[1 - winningTeam]) >= 2) {
       state.sets[state.currentSet][winningTeam]++;
+      // Tras el tie-break empieza sacando la pareja que restó el primer punto del tie-break
+      if (state.tbFirstServer !== undefined && state.tbFirstServer !== null) state.serverIdx = nextServer(state.tbFirstServer);
+      state.tbFirstServer = null;
       winSet(winningTeam);
     }
     return;
@@ -198,7 +218,7 @@ function winGame(winningTeam) {
   state.pts = [0, 0];
   state.deuceCount = 0;
   state.gamePointLog = [];
-  state.serverIdx = (state.serverIdx + 1) % 4;
+  state.serverIdx = nextServer(state.serverIdx);
 
   const gW = state.sets[sIdx][winningTeam];
   const gL = state.sets[sIdx][1 - winningTeam];
@@ -207,6 +227,7 @@ function winGame(winningTeam) {
 
   if (gW === 6 && gL === 6) {
     state.inTieBreak = true;
+    state.tbFirstServer = state.serverIdx;
     showToast('6-6 · ¡Comienza el Tie-Break!');
   } else if ((gW >= 6 && (gW - gL) >= 2) || gW === 7) {
     winSet(winningTeam);
@@ -276,6 +297,8 @@ function toggleSuperTBHot() {
   if (state.currentSet === 2 && state.sets[2][0] === 0 && state.sets[2][1] === 0) {
     state.inSuperTB = (state.thirdSetRule === 'supertb');
   }
+  state.wp = currentWinProb(state);
+  persistActiveMatchState();
   updateUI();
 }
 
@@ -295,10 +318,14 @@ function finishMatchManually() {
     state.winnerPair = s0 > s1 ? 0 : 1;
   }
   state.matchOver = true;
+  if (state.wp !== undefined) state.wp = state.winnerPair === 0 ? 1 : 0;
   saveMatchToHistory(false);
   persistActiveMatchState();
   updateUI();
   showToast('Partido finalizado y guardado en estadísticas');
+  fxConfetti({ colors: state.winnerPair ? ['#FF2E54', '#FFE066', '#FFFFFF'] : ['#00F0FF', '#D4FF2A', '#FFFFFF'], count: 140 });
+  clearTimeout(matchEndTimer);
+  matchEndTimer = setTimeout(openMatchEnd, 700);
 }
 
 function saveMatchToHistory(manualClick = false) {
