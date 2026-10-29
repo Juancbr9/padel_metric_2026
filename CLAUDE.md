@@ -1,12 +1,12 @@
 # Padel Metric — guía para Claude
 
-App web (PWA) de marcador y estadísticas de pádel en directo. Sin servidor ni dependencias: HTML, CSS y JavaScript puro. Se publica en Netlify desde la rama `main` y se empaqueta para Google Play con PWABuilder.
+App web (PWA) de marcador y estadísticas de pádel en directo. Sin servidor ni dependencias: HTML, CSS y JavaScript puro. Se publica en Netlify desde la rama `main` (y está preparada para GitHub Pages: rutas relativas y `.nojekyll`). Se instala desde el navegador en Android e iPhone (ver `js/install.js`) y hay APK de Android.
 
 El dueño del proyecto no es programador: explica los cambios en español y en lenguaje sencillo.
 
 ## Estructura
 
-- `index.html`: solo el marcado (pantallas y modales). Los botones llaman a funciones globales con `onclick`. La navegación es un menú desplegable superior (`#app-menu`) que se abre tocando el logo y el nombre de la app; no hay barra inferior ni botón ☰. Durante un partido en directo el menú queda bloqueado (se oculta el chevron `#main-nav`).
+- `index.html`: solo el marcado (pantallas y modales). Los botones llaman a funciones globales con `onclick`. La navegación es un menú lateral (`#app-menu`) que se abre con el botón ☰ de arriba a la izquierda (`#main-nav`); tocar el logo lleva al inicio (`brandTap`). El menú agrupa Jugar, Analizar, Mi pádel, Compartir y Aplicación; los ajustes (`openSettingsSheet`) y los datos y copias (`openDataSheet`) se abren en hojas aparte. Durante un partido en directo el menú queda bloqueado (se oculta `#main-nav`).
 - El tamaño base es fluido (`html { font-size: clamp(...) }`): mide en `rem` para que todo escale con la pantalla.
 - El sprite de iconos de `index.html` no puede usar `display:none` (rompería la máscara del logo).
 - `assets/logo.svg` y `assets/logo-mark.svg`: logo vectorial (monograma "P." con pala perforada). Los PNG de `icons/` se generan a partir de él; el logo también está como `<symbol id="logo-mark">` en `index.html`.
@@ -26,7 +26,7 @@ El dueño del proyecto no es programador: explica los cambios en español y en l
   - `match/voice.js`: narrador de voz del marcador.
   - `analysis.js`: cálculos a partir del registro punto a punto (zonas, puntos clave, saque, entrenador, logros).
   - `heatmap.js`: dibujo SVG del mapa de calor.
-  - `stats.js` (incluye el panel de probabilidad de victoria y el momento clave en Puntos clave), `poster.js`, `ranking.js` (incluye ELO, podio y la ficha con la pestaña Carta), `history.js` (historial, copias de seguridad).
+  - `stats.js` (incluye el panel de probabilidad de victoria y el momento clave en Puntos clave), `poster.js`, `ranking.js` (incluye ELO, podio y la ficha con la pestaña Carta), `history.js` (historial con tarjetas por mes, búsqueda y filtros `historyFilter`, acciones `openHistoryActions`; copias de seguridad). El ranking tiene pestañas (`setRankingTab`: jugadores, parejas y cara a cara visual con `renderH2H`).
   - `card.js`: carta de jugador (`computePlayerCard`, `playerCardHTML`, inclinación con `initCardTilt`, imagen con `sharePlayerCard`) y perfil propio "Soy yo" (`myPlayerName`, `pm_yo_v1`) que personaliza el inicio.
   - `wrapped.js`: historias a pantalla completa (`openStories`): resumen de temporada (`openWrapped`) y bienvenida la primera vez (`maybeShowWelcome`, `pm_bienvenida_v1`).
   - `events/common.js`: utilidades de competición (selector de jugadores, modal de resultados, `escapeHtml`/`jsArg` están en `core/utils.js`).
@@ -34,6 +34,7 @@ El dueño del proyecto no es programador: explica los cambios en español y en l
   - `events/americano.js`: Americano, Americano por parejas, Mexicano, Mexicano mixto y Pozo (ganadores suben de pista, perdedores bajan; sin empates; múltiplo de 4 jugadores). Tipo de partido en `ev.matchType` (`points`, `games` = total fijo; `time` con cronómetro de ronda; `set` a 4, 6 o 9 con validación). Los eventos antiguos solo tienen `ev.points`: usa siempre `matchTypeOf(ev)`.
   - `share.js`: imágenes 1080×1350 para compartir clasificaciones y cuadros (usa el lienzo y el modal del póster).
   - `qr.js`: generador de códigos QR sin dependencias (`QR.svg(texto)`).
+  - `install.js`: instalar y compartir la app (`openInstallSheet`: enlace público `appPublicUrl()`, QR, imagen del QR y pasos para Android, iPhone y ordenador; `installBannerHTML()` en el inicio, que se oculta con `appSettings.installHintHidden`).
   - `directo.js`: directo para espectadores. El anotador publica `livePayload()` con `pm_live_publish` (código público + clave secreta en `state.live`, agrupando cambios y con latido cada 30 s); la vista `#directo=CÓDIGO` (`handleLiveHash`, `body.spectator-mode`) consulta `pm_live_get` cada 2,5 s.
   - `sync.js`: sincronización entre móviles con Supabase (club compartido). `saveDB()` llama a `trackChanges()` (pone `updatedAt` a lo que cambia y anota borrados en `syncMeta.deleted`) y a `scheduleSync()`. La fusión es por id con `updatedAt` y respeta los borrados. Al importar datos hay que poner `entityHashes = null` antes de `saveDB()` para no generar borrados. El SQL está en `supabase/setup.sql` y la guía en `supabase/LEEME.md`. Proyecto por defecto: `padel-metric` (ref `ijmxhzdgcwxihfzllnoj`, constantes `DEFAULT_SUPABASE_URL`/`DEFAULT_SUPABASE_KEY`); las claves `sb_publishable_` se envían solo en la cabecera `apikey`. Funciones RPC: `pm_get_club`, `pm_create_club` (código ≥ 20 caracteres), `pm_save_club` (control de versión, devuelve -1 si hay conflicto) y `pm_club_version` (consulta ligera cada minuto). Directo: tabla `pm_live` con `pm_live_publish` (solo con la clave secreta, 64 KB máx., borra directos de más de 3 días) y `pm_live_get`. Cualquier cambio de SQL hay que aplicarlo también en ese proyecto.
   - `home.js`: página de inicio (sección por defecto): resumen, partido en pausa, accesos rápidos, competiciones en juego, último partido y top 3.

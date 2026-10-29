@@ -47,6 +47,8 @@
   <symbol id="i-volume-x" viewBox="0 0 24 24"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><line x1="23" y1="9" x2="17" y2="15"/><line x1="17" y1="9" x2="23" y2="15"/></symbol>
   <symbol id="i-music" viewBox="0 0 24 24"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></symbol>
   <symbol id="i-target" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></symbol>
+  <symbol id="i-home" viewBox="0 0 24 24"><path d="M3 10.5 12 3l9 7.5"/><path d="M5 9.5V21h14V9.5"/><path d="M10 21v-6h4v6"/></symbol>
+  <symbol id="i-ios-share" viewBox="0 0 24 24"><path d="M8 7l4-4 4 4"/><line x1="12" y1="3" x2="12" y2="15"/><path d="M7 10H5v11h14V10h-2"/></symbol>
   <symbol id="i-menu" viewBox="0 0 24 24"><line x1="4" y1="7" x2="20" y2="7"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="17" x2="20" y2="17"/></symbol>
   <symbol id="i-close" viewBox="0 0 24 24"><line x1="6" y1="6" x2="18" y2="18"/><line x1="18" y1="6" x2="6" y2="18"/></symbol>
   <symbol id="i-chevron" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></symbol>
@@ -110,106 +112,89 @@
 </div>
 
 <header>
-  <button type="button" class="brand-trigger" onclick="toggleAppMenu()" aria-label="Abrir menú">
-    <span class="brand-emblem"><svg><use href="#logo-mark"/></svg></span>
-    <span class="brand-text">
-      <span class="brand-title">PADEL METRIC</span>
-      <span id="section-label" class="section-label">Partido</span>
-    </span>
-    <svg id="main-nav" class="icon brand-chevron"><use href="#i-chevron"/></svg>
-  </button>
+  <div class="header-left">
+    <button type="button" id="main-nav" class="nav-burger" onclick="toggleAppMenu()" aria-label="Abrir menú"><span></span><span></span><span></span></button>
+    <button type="button" class="brand-trigger" onclick="brandTap()" aria-label="Ir al inicio">
+      <span class="brand-emblem"><svg><use href="#logo-mark"/></svg></span>
+      <span class="brand-text">
+        <span class="brand-title">PADEL METRIC</span>
+        <span id="section-label" class="section-label">Inicio</span>
+      </span>
+    </button>
+  </div>
   <div class="header-actions">
     <button id="btn-undo" class="btn-icon hidden" onclick="undoLast()" title="Deshacer"><svg class="icon"><use href="#i-undo"/></svg></button>
     <button id="btn-stats" class="btn-icon hidden" onclick="toggleStatsView()"><svg class="icon"><use href="#i-chart"/></svg> DATOS</button>
   </div>
 </header>
 
-<!-- MENÚ DESPLEGABLE SUPERIOR -->
+<!-- MENÚ LATERAL (☰) -->
 <div id="app-menu" class="app-menu hidden" onclick="closeAppMenu()">
-  <div class="app-menu-panel" onclick="event.stopPropagation()">
-    <button type="button" class="menu-home" id="menu-home" onclick="switchMainTab('home')">
-      <svg class="menu-home-mark"><use href="#logo-mark"/></svg>
-      <span><strong>Inicio</strong><small>Resumen, partidos en juego y accesos rápidos</small></span>
-    </button>
+  <nav class="app-menu-panel" onclick="event.stopPropagation()" aria-label="Menú principal">
+    <div class="drawer-head">
+      <svg class="drawer-logo"><use href="#logo-mark"/></svg>
+      <span class="drawer-brand">PADEL METRIC</span>
+      <button type="button" class="btn-icon drawer-close" onclick="closeAppMenu()" aria-label="Cerrar menú"><svg class="icon"><use href="#i-close"/></svg></button>
+    </div>
+    <div id="drawer-me"></div>
+    <div class="drawer-group">
+      <button type="button" class="drawer-item" id="menu-home" data-section="home" onclick="switchMainTab('home')">
+        <span class="drawer-ico"><svg class="icon"><use href="#i-home"/></svg></span><span class="drawer-txt"><strong>Inicio</strong><small>Resumen y accesos rápidos</small></span>
+      </button>
+    </div>
     <div class="menu-group-title">Jugar</div>
-    <div class="menu-tiles">
-      <button type="button" class="menu-tile" data-section="match" id="menu-setup" onclick="switchMainTab('setup')">
-        <svg class="icon icon-lg"><use href="#i-ball"/></svg><span class="menu-tile-title">Partido</span><span class="menu-tile-sub">Marcador en directo</span>
+    <div class="drawer-group">
+      <button type="button" class="drawer-item" id="menu-setup" data-section="match" onclick="switchMainTab('setup')">
+        <span class="drawer-ico"><svg class="icon"><use href="#i-ball"/></svg></span><span class="drawer-txt"><strong>Partido</strong><small>Marcador en directo y estadísticas</small></span>
       </button>
-      <button type="button" class="menu-tile" data-section="events" id="menu-tournaments" onclick="switchMainTab('tournaments')">
-        <svg class="icon icon-lg"><use href="#i-bracket"/></svg><span class="menu-tile-title">Torneos</span><span class="menu-tile-sub">Cuadro, liga o grupos</span>
+      <button type="button" class="drawer-item" id="menu-tournaments" data-section="events" onclick="switchMainTab('tournaments')">
+        <span class="drawer-ico"><svg class="icon"><use href="#i-bracket"/></svg></span><span class="drawer-txt"><strong>Torneos</strong><small>Cuadro, liga o grupos</small></span>
       </button>
-      <button type="button" class="menu-tile" data-section="events" id="menu-americano" onclick="switchMainTab('americano')">
-        <svg class="icon icon-lg"><use href="#i-shuffle"/></svg><span class="menu-tile-title">Americano</span><span class="menu-tile-sub">Americano y Mexicano</span>
+      <button type="button" class="drawer-item" id="menu-americano" data-section="events" onclick="switchMainTab('americano')">
+        <span class="drawer-ico"><svg class="icon"><use href="#i-shuffle"/></svg></span><span class="drawer-txt"><strong>Americanos</strong><small>Americano, Mexicano y Pozo</small></span>
       </button>
     </div>
     <div class="menu-group-title">Analizar</div>
-    <div class="menu-tiles">
-      <button type="button" class="menu-tile" data-section="ranking" id="menu-ranking" onclick="switchMainTab('ranking')">
-        <svg class="icon icon-lg"><use href="#i-trophy"/></svg><span class="menu-tile-title">Ranking</span><span class="menu-tile-sub">ELO y jugadores</span>
+    <div class="drawer-group">
+      <button type="button" class="drawer-item" id="menu-ranking" data-section="ranking" onclick="switchMainTab('ranking')">
+        <span class="drawer-ico"><svg class="icon"><use href="#i-trophy"/></svg></span><span class="drawer-txt"><strong>Ranking</strong><small>Jugadores, parejas y cara a cara</small></span>
       </button>
-      <button type="button" class="menu-tile" data-section="history" id="menu-history" onclick="switchMainTab('history')">
-        <svg class="icon icon-lg"><use href="#i-history"/></svg><span class="menu-tile-title">Historial</span><span class="menu-tile-sub">Partidos jugados</span>
-      </button>
-    </div>
-    <div class="menu-list" style="margin-top:8px;">
-      <button type="button" class="menu-row" onclick="closeAppMenu(); openMyWrapped()">
-        <svg class="icon"><use href="#i-play-circle"/></svg><span>Tu temporada en historias</span><span class="menu-row-hint">›</span>
+      <button type="button" class="drawer-item" id="menu-history" data-section="history" onclick="switchMainTab('history')">
+        <span class="drawer-ico"><svg class="icon"><use href="#i-history"/></svg></span><span class="drawer-txt"><strong>Historial</strong><small>Partidos, resultados y estadísticas</small></span>
       </button>
     </div>
-    <div class="menu-group-title">Ajustes</div>
-    <div class="menu-list">
-      <button type="button" class="menu-row" onclick="toggleThemeMode()">
-        <svg class="icon"><use href="#i-moon"/></svg><span>Modo claro</span><span class="switch" id="sw-theme"></span>
+    <div class="menu-group-title">Mi pádel</div>
+    <div class="drawer-group">
+      <button type="button" class="drawer-item"  data-section="me" onclick="closeAppMenu(); openMyCard()">
+        <span class="drawer-ico"><svg class="icon"><use href="#i-star"/></svg></span><span class="drawer-txt"><strong>Mi carta</strong><small>Tus atributos y tu nivel</small></span>
       </button>
-      <button type="button" class="menu-row" onclick="toggleVoiceNarrator()">
-        <svg class="icon"><use href="#i-volume"/></svg><span>Narrador de voz</span><span class="switch" id="sw-voice"></span>
-      </button>
-      <button type="button" class="menu-row" onclick="toggleAppSetting('vibration')">
-        <svg class="icon"><use href="#i-vibrate"/></svg><span>Vibración al anotar</span><span class="switch" id="sw-vibration"></span>
-      </button>
-      <button type="button" class="menu-row" onclick="toggleAppSetting('wakeLock')">
-        <svg class="icon"><use href="#i-screen"/></svg><span>Pantalla siempre encendida en partido</span><span class="switch" id="sw-wakeLock"></span>
-      </button>
-      <button type="button" class="menu-row" onclick="toggleAppSetting('sound')">
-        <svg class="icon"><use href="#i-music"/></svg><span>Sonidos en juegos, sets y partido</span><span class="switch" id="sw-sound"></span>
-      </button>
-      <button type="button" class="menu-row" onclick="closeAppMenu(); openRulesModal()">
-        <svg class="icon"><use href="#i-sliders"/></svg><span>Reglas y modo de anotación</span><span class="menu-row-hint">›</span>
+      <button type="button" class="drawer-item"  data-section="me" onclick="closeAppMenu(); openMyWrapped()">
+        <span class="drawer-ico"><svg class="icon"><use href="#i-play-circle"/></svg></span><span class="drawer-txt"><strong>Mi temporada</strong><small>Tu año de pádel en historias</small></span>
       </button>
     </div>
-    <div class="menu-group-title">Datos</div>
-    <div class="menu-list">
-      <button type="button" class="menu-row" onclick="openSyncPanel()">
-        <svg class="icon"><use href="#i-users"/></svg><span>Sincronizar entre móviles</span><span id="sync-hint" class="menu-row-hint">Desactivado</span>
+    <div class="menu-group-title">Compartir</div>
+    <div class="drawer-group">
+      <button type="button" class="drawer-item"  data-section="share" onclick="closeAppMenu(); openInstallSheet()">
+        <span class="drawer-ico"><svg class="icon"><use href="#i-qr"/></svg></span><span class="drawer-txt"><strong>Instalar y compartir la app</strong><small>Enlace y QR para Android e iPhone</small></span>
       </button>
-      <button type="button" class="menu-row" onclick="exportBackupJSON()">
-        <svg class="icon"><use href="#i-download"/></svg><span>Exportar copia de seguridad</span><span class="menu-row-hint">.json</span>
+      <button type="button" class="drawer-item" data-section="share" onclick="closeAppMenu(); openSyncPanel()">
+        <span class="drawer-ico"><svg class="icon"><use href="#i-users"/></svg></span><span class="drawer-txt"><strong>Club compartido</strong><small id="sync-hint">Desactivado</small></span>
       </button>
-      <button type="button" class="menu-row" onclick="document.getElementById('import-file').click()">
-        <svg class="icon"><use href="#i-upload"/></svg><span>Restaurar copia de seguridad</span><span class="menu-row-hint">.json</span>
+    </div>
+    <div class="menu-group-title">Aplicación</div>
+    <div class="drawer-group">
+      <button type="button" class="drawer-item"  data-section="app" onclick="closeAppMenu(); openSettingsSheet()">
+        <span class="drawer-ico"><svg class="icon"><use href="#i-sliders"/></svg></span><span class="drawer-txt"><strong>Ajustes</strong><small>Tema, voz, vibración, sonidos y reglas</small></span>
       </button>
-      <button type="button" class="menu-row" onclick="exportHistoryCSV()">
-        <svg class="icon"><use href="#i-file"/></svg><span>Exportar partidos a Excel</span><span class="menu-row-hint">.csv</span>
-      </button>
-      <button type="button" class="menu-row" onclick="loadDemoData()">
-        <svg class="icon"><use href="#i-users"/></svg><span>Cargar datos de ejemplo</span><span class="menu-row-hint">top 15</span>
-      </button>
-      <button type="button" class="menu-row menu-row-danger" onclick="openFactoryReset()">
-        <svg class="icon"><use href="#i-trash"/></svg><span>Restaurar de fábrica</span><span class="menu-row-hint">›</span>
-      </button>
-      <a id="btn-download-apk" class="menu-row hidden" href="descargas/PadelMetric.apk" download="PadelMetric.apk">
-        <svg class="icon"><use href="#i-download"/></svg><span>Descargar la app para Android</span><span class="menu-row-hint">.apk</span>
-      </a>
-      <button type="button" id="btn-install-pwa" class="menu-row hidden" onclick="triggerInstallPWA()">
-        <svg class="icon"><use href="#i-download"/></svg><span>Instalar la app en este dispositivo</span><span class="menu-row-hint">›</span>
+      <button type="button" class="drawer-item"  data-section="app" onclick="closeAppMenu(); openDataSheet()">
+        <span class="drawer-ico"><svg class="icon"><use href="#i-save"/></svg></span><span class="drawer-txt"><strong>Datos y copias de seguridad</strong><small>Exportar, importar, Excel y restaurar</small></span>
       </button>
     </div>
     <div class="menu-footer">
       <svg class="menu-footer-logo"><use href="#logo-mark"/></svg>
-      <span id="app-version-label">Padel Metric · v5.0</span>
+      <span id="app-version-label">Padel Metric · v7</span>
     </div>
-  </div>
+  </nav>
 </div>
 
 <div class="container">
@@ -310,6 +295,12 @@
       <div id="ranking-podium" class="podium"></div>
     </div>
 
+    <div class="rk-tabs" id="rk-tabs">
+      <button type="button" class="active" data-tab="players" onclick="setRankingTab('players')">Jugadores</button>
+      <button type="button" data-tab="pairs" onclick="setRankingTab('pairs')">Parejas</button>
+      <button type="button" data-tab="h2h" onclick="setRankingTab('h2h')">Cara a cara</button>
+    </div>
+    <div id="rk-panel-players">
     <div class="bento-card">
       <div class="section-header">
         <div class="section-title"><svg class="icon" style="color:var(--volt);"><use href="#i-users"/></svg> Jugadores</div>
@@ -337,26 +328,25 @@
       </div>
 
       <div class="kpi-trio" id="global-leaders"></div>
-      <div id="ranking-table-wrap" style="max-height:520px; overflow-y:auto;"></div>
+      <div id="ranking-table-wrap"></div>
     </div>
 
-    <div class="bento-card">
-      <div class="section-header">
-        <div class="section-title">Cara a cara</div>
-      </div>
-      <div class="input-row" style="margin-bottom:4px;">
-        <select id="h2h-p1" onchange="renderH2H()"></select>
-        <span style="font-family:var(--font-display);font-weight:900;color:var(--volt);">VS</span>
-        <select id="h2h-p2" onchange="renderH2H()"></select>
-      </div>
-      <div id="h2h-content"></div>
     </div>
-
-    <div class="bento-card">
-      <div class="section-header">
-        <div class="section-title">Rendimiento por parejas</div>
+    <div id="rk-panel-pairs" class="hidden">
+      <div class="bento-card">
+        <div class="section-header"><div class="section-title">Rendimiento por parejas</div></div>
+        <div id="pairs-ranking-wrap"></div>
       </div>
-      <div id="pairs-ranking-wrap" style="overflow-x:auto;"></div>
+    </div>
+    <div id="rk-panel-h2h" class="hidden">
+      <div class="bento-card">
+        <div class="h2h-pick">
+          <select id="h2h-p1" onchange="renderH2H()"></select>
+          <span>VS</span>
+          <select id="h2h-p2" onchange="renderH2H()"></select>
+        </div>
+        <div id="h2h-content"></div>
+      </div>
     </div>
   </div>
 
@@ -367,13 +357,11 @@
       <div class="section-hero-title">Historial</div>
       <div id="history-summary" class="hero-stats"></div>
     </div>
-    <div class="bento-card">
-      <div class="section-header">
-        <div class="section-title"><svg class="icon" style="color:var(--volt);"><use href="#i-history"/></svg> Partidos</div>
-        <button class="btn-icon" style="color:var(--coral);" onclick="clearAllHistory()"><svg class="icon"><use href="#i-trash"/></svg> VACIAR</button>
-      </div>
-      <div id="history-list"></div>
+    <div class="hist-tools">
+      <div class="hist-search"><svg class="icon"><use href="#i-target"/></svg><input type="search" id="history-search" placeholder="Buscar jugador o pareja" oninput="renderHistoryList()"></div>
+      <div id="history-filters" class="sort-strip"></div>
     </div>
+    <div id="history-list"></div>
   </div>
 
   <!-- PANTALLA 6: TORNEOS (IDENTIDAD VIOLETA) -->
@@ -814,6 +802,7 @@
 <script src="js/sync.js"></script>
 <script src="js/qr.js"></script>
 <script src="js/directo.js"></script>
+<script src="js/install.js"></script>
 <script src="js/home.js"></script>
 <script src="js/app.js"></script>
 </body>

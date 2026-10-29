@@ -6,6 +6,10 @@ Marcador, estadísticas y competiciones de pádel. Se instala en el móvil y fun
 
 ## Qué hace
 
+**Navegación**: menú ☰ arriba a la izquierda con todas las secciones (Jugar, Analizar, Mi pádel, Compartir y Aplicación). Ajustes y copias de seguridad en hojas propias.
+
+**Instalar y compartir**: menú → **Instalar y compartir la app**. Enlace, código QR (también como imagen para WhatsApp) y pasos para instalarla desde el navegador en Android y en iPhone (Safari → Compartir → Añadir a pantalla de inicio). En iPhone el inicio muestra un aviso para instalarla.
+
 **Inicio**: resumen de actividad, tu carta y tu temporada (si eliges tu perfil con **Soy yo**), partido en pausa, competiciones en juego, último partido y top 3 del ranking. La primera vez se muestra una bienvenida.
 
 **Jugar**
@@ -21,7 +25,8 @@ Marcador, estadísticas y competiciones de pádel. Se instala en el móvil y fun
 - **Carta de jugador**: media y seis atributos (red, fondo, saque, resto, presión y regularidad) calculados con sus puntos, nivel bronce, plata, oro o élite, y imagen para compartir.
 - **Tu temporada en historias**: resumen del año en pantallas que pasan solas (partidos, ELO, mejor pareja, rival, golpe, presión, remontada, racha y carta).
 - **Ficha de jugador**: evolución del ELO, rachas, sets y juegos, mejor compañero, rival más difícil, golpes ganadores, mapa de calor y últimos partidos.
-- **Historial** con resumen de actividad, póster para WhatsApp y exportación a Excel.
+- **Historial** en tarjetas agrupadas por mes, con búsqueda por jugador, filtros (mis partidos, torneo, masculino, femenino, mixto), mini gráfico de probabilidad, póster para WhatsApp y exportación a Excel.
+- **Ranking** por pestañas: jugadores, parejas y cara a cara (enfrentamientos, comparación con barras y partidos entre ellos).
 
 **Compartir**
 - **Imágenes para WhatsApp** de clasificaciones de americanos, ligas, grupos y cuadros de torneo.
@@ -42,3 +47,10 @@ Para empezar de cero: menú → **Restaurar de fábrica** (permite exportar una 
 ## Estructura del código
 
 Consulta [`CLAUDE.md`](CLAUDE.md).
+
+## Publicar desde GitHub (como USAR)
+
+La web ya está lista para GitHub Pages (rutas relativas y archivo `.nojekyll`). En GitHub:
+1. **Settings → General → Danger Zone → Change visibility → Public** (GitHub Pages gratis solo funciona con repositorios públicos; las claves de firma del APK no están en el repositorio).
+2. **Settings → Pages → Build and deployment → Source: Deploy from a branch → Branch: `main` / `(root)` → Save**.
+3. En un par de minutos estará en `https://juancbr9.github.io/padel_metric_2026/`. La app usa como enlace para compartir la dirección desde la que se abre.

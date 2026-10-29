@@ -122,15 +122,14 @@ function renderGlobalRanking() {
       const prof = ensureProfile(item.name);
       const avgR = item.PJ ? (item.ratingSum / item.PJ).toFixed(1) : '6.5';
       const winPct = item.PJ ? Math.round((item.V / item.PJ) * 100) : 0;
-      const safeName = item.name.replace(/'/g, "\\'");
       return `
-        <div class="rk-player-row" onclick="openPlayerProfile('${safeName}')">
+        <div class="rk-player-row" onclick="openPlayerProfile(${jsArg(item.name)})">
           <div class="rk-left">
             <span class="rk-rank-num">${i + 1}</span>
             ${renderAvatarHTML(item.name, 'avatar-p1')}
             <div class="rk-info">
-              <div class="rk-name">${item.name}</div>
-              <div class="rk-sub">${prof.club ? prof.club + ' · ' : ''}${item.PJ} PJ · ${item.V} V (${winPct}%)${formDotsHTML(item.form)}</div>
+              <div class="rk-name">${escapeHtml(item.name)}</div>
+              <div class="rk-sub">${prof.club ? escapeHtml(prof.club) + ' · ' : ''}${item.PJ} PJ · ${item.V} V (${winPct}%)${formDotsHTML(item.form)}</div>
             </div>
           </div>
           <div class="rk-right">
@@ -420,14 +419,29 @@ function deletePlayerFromDB(name) {
   showToast(`"${name}" eliminado`);
 }
 
+// ---------- Pestañas del ranking ----------
+let rankingTab = 'players';
+
+function setRankingTab(tab) {
+  rankingTab = tab;
+  document.querySelectorAll('#rk-tabs button').forEach(b => b.classList.toggle('active', b.dataset.tab === tab));
+  ['players', 'pairs', 'h2h'].forEach(t => document.getElementById(`rk-panel-${t}`)?.classList.toggle('hidden', t !== tab));
+  fxEnter(document.getElementById(`rk-panel-${tab}`));
+}
+
+// ---------- Cara a cara ----------
 function renderH2HSelectors() {
   const s1 = document.getElementById('h2h-p1');
   const s2 = document.getElementById('h2h-p2');
   if (!s1 || !s2) return;
-  const opts = dbPlayers.map(p => `<option value="${p}">${p}</option>`).join('');
+  const prev = [s1.value, s2.value];
+  const opts = dbPlayers.map(p => `<option value="${escapeHtml(p)}">${escapeHtml(p)}</option>`).join('');
   s1.innerHTML = opts;
   s2.innerHTML = opts;
-  if (dbPlayers.length > 1) s2.selectedIndex = 1;
+  if (dbPlayers.includes(prev[0])) s1.value = prev[0];
+  else if (myPlayerName && dbPlayers.includes(myPlayerName)) s1.value = myPlayerName;
+  if (dbPlayers.includes(prev[1]) && prev[1] !== s1.value) s2.value = prev[1];
+  else s2.value = dbPlayers.find(p => p !== s1.value) || '';
   renderH2H();
 }
 
@@ -435,52 +449,88 @@ function renderH2H() {
   const p1 = document.getElementById('h2h-p1')?.value;
   const p2 = document.getElementById('h2h-p2')?.value;
   const box = document.getElementById('h2h-content');
-  if (!box || !p1 || !p2) return;
+  if (!box) return;
+  if (!p1 || !p2 || p1 === p2) { box.innerHTML = '<div class="empty-note">Elige dos jugadores distintos.</div>'; return; }
   const { statsMap } = computeAllPlayersStats();
-  const a = statsMap[p1] || { PJ: 0, V: 0, W: 0, ENF: 0 };
-  const b = statsMap[p2] || { PJ: 0, V: 0, W: 0, ENF: 0 };
+  const A = statsMap[p1] || emptyPlayerStats(p1), B = statsMap[p2] || emptyPlayerStats(p2);
+  // Partidos entre ellos (en parejas contrarias) y juntos
+  let winsA = 0, winsB = 0, together = 0, togetherWon = 0;
+  const direct = [];
+  matchHistory.forEach((m, idx) => {
+    if (!m || !m.players) return;
+    const ia = m.players.findIndex(p => p.name === p1), ib = m.players.findIndex(p => p.name === p2);
+    if (ia === -1 || ib === -1) return;
+    const pa = ia < 2 ? 0 : 1, pb = ib < 2 ? 0 : 1;
+    if (pa === pb) { together++; if (m.winnerPair === pa) togetherWon++; return; }
+    if (m.winnerPair === pa) winsA++; else if (m.winnerPair === pb) winsB++;
+    direct.push({ m, idx, pa });
+  });
+  const per = (v, st) => (st.PJ ? v / st.PJ : 0);
+  const avgR = st => (st.PJ ? st.ratingSum / st.PJ : 6.5);
+  const cA = computePlayerCard(p1, statsMap), cB = computePlayerCard(p2, statsMap);
+  const metrics = [
+    ['ELO', A.elo, B.elo, v => v],
+    ['Carta (media)', cA.overall, cB.overall, v => v],
+    ['% de victorias', per(A.V, A) * 100, per(B.V, B) * 100, v => `${Math.round(v)} %`],
+    ['Winners por partido', per(A.W, A), per(B.W, B), v => v.toFixed(1).replace('.', ',')],
+    ['Errores NF por partido', per(A.ENF, A), per(B.ENF, B), v => v.toFixed(1).replace('.', ','), true],
+    ['Valoración media', avgR(A), avgR(B), v => v.toFixed(1).replace('.', ',')]
+  ];
+  const bar = ([label, a, b, fmt, lowBetter]) => {
+    const tot = Math.abs(a) + Math.abs(b) || 1;
+    const better = a === b ? 0 : (lowBetter ? a < b : a > b) ? 1 : 2;
+    return `<div class="h2h-metric">
+      <div class="h2h-mhead"><strong class="${better === 1 ? 'lead' : ''}">${fmt(a)}</strong><span>${label}</span><strong class="${better === 2 ? 'lead' : ''}">${fmt(b)}</strong></div>
+      <div class="h2h-track"><i class="a" style="flex-basis:${(Math.abs(a) / tot) * 100}%"></i><i class="b"></i></div>
+    </div>`;
+  };
+  const side = (name, st, wins, cls) => `<button type="button" class="h2h-side ${cls}" onclick="openPlayerProfile(${jsArg(name)})">
+    ${renderAvatarHTML(name, cls === 'a' ? 'avatar-p1' : 'avatar-p2', 'width:58px;height:58px;font-size:1.2rem;')}
+    <strong>${escapeHtml(liveSurname({ name }))}</strong><small>${st.PJ} PJ · ELO ${st.elo}</small>
+    <span class="h2h-wins" data-count="${wins}">0</span></button>`;
   box.innerHTML = `
-    <table>
-      <thead><tr><th>Métrica</th><th>${p1}</th><th>${p2}</th></tr></thead>
-      <tbody>
-        <tr><td>Victorias</td><td>${a.V}</td><td>${b.V}</td></tr>
-        <tr><td>Winners</td><td>${a.W}</td><td>${b.W}</td></tr>
-        <tr><td>Errores No Forzados</td><td>${a.ENF}</td><td>${b.ENF}</td></tr>
-      </tbody>
-    </table>
-  `;
+    <div class="h2h-head">${side(p1, A, winsA, 'a')}<div class="h2h-mid"><span>Enfrentados</span><b>${winsA + winsB}</b><small>${together ? `Juntos: ${togetherWon} de ${together}` : 'Nunca juntos'}</small></div>${side(p2, B, winsB, 'b')}</div>
+    ${metrics.map(bar).join('')}
+    ${direct.length ? `<div class="menu-group-title">Partidos entre ellos</div>${direct.slice(0, 8).map(({ m, idx, pa }) => `
+      <button type="button" class="h2h-match" onclick="openHistoryMatchStats(${idx})">
+        <span class="h2h-res ${m.winnerPair === pa ? 'a' : 'b'}">${m.winnerPair === pa ? escapeHtml(liveSurname({ name: p1 })) : escapeHtml(liveSurname({ name: p2 }))}</span>
+        <span class="h2h-mdate">${escapeHtml(m.date || '')}</span>
+        <span class="h2h-msets">${m.sets.filter(s => s[0] + s[1] > 0).map(s => `${s[pa]}-${s[1 - pa]}`).join(' ')}</span>
+      </button>`).join('')}` : '<div class="empty-note">Todavía no se han enfrentado.</div>'}`;
 }
 
+// ---------- Parejas ----------
 function renderPairsRanking() {
   const wrap = document.getElementById('pairs-ranking-wrap');
   if (!wrap) return;
   const pairs = {};
   matchHistory.forEach(m => {
     if (!m || !m.players) return;
-    const k1 = [m.players[0].name, m.players[1].name].sort().join(' / ');
-    const k2 = [m.players[2].name, m.players[3].name].sort().join(' / ');
-    if (!pairs[k1]) pairs[k1] = { name: k1, PJ: 0, V: 0 };
-    if (!pairs[k2]) pairs[k2] = { name: k2, PJ: 0, V: 0 };
-    pairs[k1].PJ++;
-    pairs[k2].PJ++;
-    if (m.winnerPair === 0) pairs[k1].V++;
-    else if (m.winnerPair === 1) pairs[k2].V++;
+    [0, 1].forEach(t => {
+      const names = [m.players[t * 2].name, m.players[t * 2 + 1].name].sort();
+      const k = names.join(' / ');
+      if (!pairs[k]) pairs[k] = { name: k, names, PJ: 0, V: 0, games: 0, gamesAg: 0 };
+      pairs[k].PJ++;
+      if (m.winnerPair === t) pairs[k].V++;
+      (m.sets || []).forEach(s => { pairs[k].games += s[t] || 0; pairs[k].gamesAg += s[1 - t] || 0; });
+    });
   });
-  const list = Object.values(pairs).sort((a, b) => b.V - a.V || (b.V / b.PJ) - (a.V / a.PJ));
+  const list = Object.values(pairs).sort((a, b) => b.V - a.V || (b.V / b.PJ) - (a.V / a.PJ) || (b.games - b.gamesAg) - (a.games - a.gamesAg));
+  if (!list.length) { wrap.innerHTML = '<div class="empty-note">Sin partidos registrados aún.</div>'; return; }
   const shown = showAllPairs ? list : list.slice(0, 10);
-  if (list.length === 0) {
-    wrap.innerHTML = `<div style="font-size:0.76rem;color:var(--text-secondary);">Sin partidos registrados aún.</div>`;
-    return;
-  }
-  wrap.innerHTML = `
-    <table>
-      <thead><tr><th>Pareja</th><th>PJ</th><th>V</th><th>%</th></tr></thead>
-      <tbody>
-        ${shown.map(p => `<tr><td>${escapeHtml(p.name)}</td><td>${p.PJ}</td><td style="color:var(--volt);font-weight:800;">${p.V}</td><td>${Math.round((p.V/p.PJ)*100)}%</td></tr>`).join('')}
-      </tbody>
-    </table>
-    ${list.length > 10 ? `<button type="button" class="btn-icon" style="width:100%;padding:10px;margin-top:8px;" onclick="showAllPairs = !showAllPairs; renderPairsRanking()">${showAllPairs ? 'Ver solo las 10 mejores' : `Ver las ${list.length} parejas`}</button>` : ''}
-  `;
+  wrap.innerHTML = `<div class="pr-list">${shown.map((p, i) => {
+    const pct = Math.round((p.V / p.PJ) * 100);
+    const diff = p.games - p.gamesAg;
+    return `<div class="pr-row">
+      <span class="pr-pos ${i < 3 ? `top${i + 1}` : ''}">${i + 1}</span>
+      <span class="hm-avs">${p.names.map(n => renderAvatarHTML(n, 'avatar-p1')).join('')}</span>
+      <span class="pr-info"><strong>${p.names.map(n => escapeHtml(liveSurname({ name: n }))).join(' / ')}</strong>
+        <small>${p.V} de ${p.PJ} ganados · juegos ${diff > 0 ? '+' : ''}${diff}</small>
+        <span class="pr-bar"><i style="width:${pct}%"></i></span></span>
+      <span class="pr-pct">${pct}<small>%</small></span>
+    </div>`;
+  }).join('')}</div>
+    ${list.length > 10 ? `<button type="button" class="btn-icon" style="width:100%;padding:10px;margin-top:8px;" onclick="showAllPairs = !showAllPairs; renderPairsRanking()">${showAllPairs ? 'Ver solo las 10 mejores' : `Ver las ${list.length} parejas`}</button>` : ''}`;
 }
 
 let showAllPairs = false;

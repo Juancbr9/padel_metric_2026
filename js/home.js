@@ -102,6 +102,7 @@ function renderHome() {
       </div>
     </div>
 
+    ${installBannerHTML()}
     ${myHomeCardHTML(statsMap)}
 
     ${paused ? `

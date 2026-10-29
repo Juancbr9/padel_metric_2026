@@ -20,6 +20,8 @@ function setSectionIdentity(section, label) {
 function switchMainTab(tab) {
   closeAppMenu();
   closeMatchEnd();
+  // Las estadísticas de un partido del historial se cierran al ir a otra sección
+  if (!document.body.classList.contains('in-live-match')) document.getElementById('view-stats')?.classList.add('hidden');
   currentTab = tab;
   Object.entries(SECTIONS).forEach(([key, cfg]) => {
     document.getElementById(cfg.view)?.classList.toggle('hidden', key !== tab);
@@ -41,7 +43,8 @@ function toggleAppMenu() {
   if (document.getElementById('main-nav')?.classList.contains('hidden')) return;
   const menu = document.getElementById('app-menu');
   if (menu.classList.contains('hidden')) {
-    renderMenuSwitches();
+    renderDrawerMe();
+    renderSyncHint();
     menu.classList.remove('hidden');
     document.body.classList.add('menu-open');
     vibrate(8);
@@ -53,6 +56,80 @@ function toggleAppMenu() {
 function closeAppMenu() {
   document.getElementById('app-menu')?.classList.add('hidden');
   document.body.classList.remove('menu-open');
+}
+
+// Tocar el logo lleva al inicio (salvo durante un partido en directo)
+function brandTap() {
+  if (document.body.classList.contains('in-live-match') || document.getElementById('main-nav')?.classList.contains('hidden')) return;
+  if (currentTab !== 'home') switchMainTab('home');
+}
+
+// Cabecera del menú lateral: tu perfil si has elegido "Soy yo"
+function renderDrawerMe() {
+  const box = document.getElementById('drawer-me');
+  if (!box) return;
+  if (!myPlayerName || !dbPlayers.includes(myPlayerName)) {
+    box.innerHTML = `<button type="button" class="drawer-me empty" onclick="closeAppMenu(); openMyCard()">
+      <span class="drawer-ico"><svg class="icon"><use href="#i-users"/></svg></span>
+      <span class="drawer-txt"><strong>Elige tu perfil</strong><small>Para ver tu carta, tu ELO y tu temporada</small></span></button>`;
+    return;
+  }
+  const { statsMap } = computeAllPlayersStats();
+  const st = statsMap[myPlayerName] || emptyPlayerStats(myPlayerName);
+  box.innerHTML = `<button type="button" class="drawer-me" onclick="closeAppMenu(); openMyCard()">
+    ${renderAvatarHTML(myPlayerName, 'avatar-p1', 'width:40px;height:40px;font-size:0.9rem;')}
+    <span class="drawer-txt"><strong>${escapeHtml(myPlayerName)}</strong><small>ELO ${st.elo} · ${st.PJ} partidos · ${st.PJ ? Math.round((st.V / st.PJ) * 100) : 0} % victorias</small></span></button>`;
+}
+
+function openMyCard() {
+  if (myPlayerName && dbPlayers.includes(myPlayerName)) {
+    openPlayerProfile(myPlayerName);
+    setProfileTab('card');
+    return;
+  }
+  switchMainTab('ranking');
+  showToast('Toca tu nombre, abre la pestaña Carta y pulsa "Soy yo"');
+}
+
+// Ajustes: interruptores y reglas en una sola hoja
+function openSettingsSheet() {
+  const sw = (id, icon, label, action) => `<button type="button" class="menu-row" onclick="${action}">
+    <svg class="icon"><use href="#${icon}"/></svg><span>${label}</span><span class="switch" id="sw-${id}"></span></button>`;
+  openEventModal(`
+    <div class="mo-title">Ajustes</div>
+    <div class="menu-list">
+      ${sw('theme', 'i-moon', 'Modo claro', 'toggleThemeMode()')}
+      ${sw('voice', 'i-volume', 'Narrador de voz', 'toggleVoiceNarrator()')}
+      ${sw('vibration', 'i-vibrate', 'Vibración al anotar', "toggleAppSetting('vibration')")}
+      ${sw('wakeLock', 'i-screen', 'Pantalla siempre encendida en partido', "toggleAppSetting('wakeLock')")}
+      ${sw('sound', 'i-music', 'Sonidos en juegos, sets y partido', "toggleAppSetting('sound')")}
+    </div>
+    <div class="menu-group-title">Partido</div>
+    <div class="menu-list">
+      <button type="button" class="menu-row" onclick="closeEventModal(); openRulesModal()">
+        <svg class="icon"><use href="#i-sliders"/></svg><span>Reglas y modo de anotación</span><span class="menu-row-hint">›</span></button>
+    </div>`);
+  renderMenuSwitches();
+}
+
+// Datos: copias de seguridad, Excel, datos de ejemplo y borrar
+function openDataSheet() {
+  const row = (icon, label, hint, action, cls = '') => `<button type="button" class="menu-row ${cls}" onclick="${action}">
+    <svg class="icon"><use href="#${icon}"/></svg><span>${label}</span><span class="menu-row-hint">${hint}</span></button>`;
+  openEventModal(`
+    <div class="mo-title">Datos y copias de seguridad</div>
+    <p class="bc-intro">Todo se guarda en este dispositivo. Exporta una copia de vez en cuando o activa el club compartido para tenerlo también en la nube.</p>
+    <div class="menu-list">
+      ${row('i-download', 'Exportar copia de seguridad', '.json', 'exportBackupJSON()')}
+      ${row('i-upload', 'Restaurar copia de seguridad', '.json', "closeEventModal(); document.getElementById('import-file').click()")}
+      ${row('i-file', 'Exportar partidos a Excel', '.csv', 'exportHistoryCSV()')}
+    </div>
+    <div class="menu-group-title">Pruebas</div>
+    <div class="menu-list">
+      ${row('i-users', 'Cargar datos de ejemplo', 'top 15', 'closeEventModal(); loadDemoData()')}
+      ${row('i-trash', 'Vaciar el historial de partidos', '›', 'closeEventModal(); clearAllHistory()', 'menu-row-danger')}
+      ${row('i-trash', 'Restaurar de fábrica', '›', 'closeEventModal(); openFactoryReset()', 'menu-row-danger')}
+    </div>`);
 }
 
 function renderMenuSwitches() {
@@ -114,8 +191,6 @@ window.__padelAtras = () => {
 
 // Ofrece el APK en los navegadores de Android (fuera de la app)
 function setupAppDownload() {
-  const isAndroid = /Android/i.test(navigator.userAgent);
-  document.getElementById('btn-download-apk')?.classList.toggle('hidden', !isAndroid || !!window.PadelNative);
   if (window.PadelNative) {
     const el = document.getElementById('app-version-label');
     try { if (el) el.innerText = `Padel Metric · app ${PadelNative.versionApp()} · ${PadelNative.version()}`; } catch (e) {}
@@ -140,7 +215,7 @@ let deferredInstallPrompt = null;
 window.addEventListener('beforeinstallprompt', (e) => {
   e.preventDefault();
   deferredInstallPrompt = e;
-  document.getElementById('btn-install-pwa')?.classList.remove('hidden');
+  if (currentTab === 'home') renderHome();
 });
 
 async function triggerInstallPWA() {
@@ -148,11 +223,10 @@ async function triggerInstallPWA() {
   deferredInstallPrompt.prompt();
   try { await deferredInstallPrompt.userChoice; } catch (e) {}
   deferredInstallPrompt = null;
-  document.getElementById('btn-install-pwa')?.classList.add('hidden');
+  closeEventModal();
 }
 
 window.addEventListener('appinstalled', () => {
-  document.getElementById('btn-install-pwa')?.classList.add('hidden');
   showToast('Padel Metric instalada');
 });
 

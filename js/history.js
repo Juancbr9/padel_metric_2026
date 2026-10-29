@@ -8,35 +8,112 @@ function renderHistorySummary() {
     [matchHistory.length, 'Partidos'],
     [hours, 'En pista'],
     [pts, 'Puntos registrados']
-  ].map(([v, l]) => `<div class="hero-stat"><div class="hero-stat-val">${v}</div><div class="hero-stat-lbl">${l}</div></div>`).join('');
+  ].map(([v, l]) => `<div class="hero-stat"><div class="hero-stat-val" ${typeof v === 'number' ? `data-count="${v}"` : ''}>${v}</div><div class="hero-stat-lbl">${l}</div></div>`).join('');
+}
+
+// ---------- Lista del historial: tarjetas por mes, búsqueda y filtros ----------
+let historyFilter = 'all';
+const HISTORY_FILTERS = [['all', 'Todos'], ['me', 'Mis partidos'], ['tournament', 'Torneo'], ['M', 'Masculino'], ['F', 'Femenino'], ['X', 'Mixto']];
+const DEUCE_NAMES = { adv: 'Ventaja', golden: 'Punto de oro', star: 'Star point' };
+
+function setHistoryFilter(f) {
+  historyFilter = f;
+  renderHistoryList();
+}
+
+function matchGenderOf(m) {
+  const g = new Set(m.players.filter(p => !p.isGeneric).map(p => ensureProfile(p.name).gender || 'M'));
+  return g.size === 2 ? 'X' : g.has('F') ? 'F' : 'M';
+}
+
+function historyMatchPasses(m, q) {
+  if (!m || !m.players) return false;
+  if (historyFilter === 'me' && !m.players.some(p => p.name === myPlayerName)) return false;
+  if (historyFilter === 'tournament' && !m.link) return false;
+  if (['M', 'F', 'X'].includes(historyFilter) && matchGenderOf(m) !== historyFilter) return false;
+  return !q || m.players.map(p => p.name).join(' ').toLowerCase().includes(q);
+}
+
+function historyPairRow(m, pair) {
+  const a = m.players[pair * 2], b = m.players[pair * 2 + 1];
+  const won = m.winnerPair === pair;
+  const sets = (m.sets || []).filter(s => s[0] + s[1] > 0);
+  return `<div class="hm-row ${won ? 'won' : ''} ${pair ? 'b' : 'a'}">
+    <span class="hm-avs">${renderAvatarHTML(a.name, pair ? 'avatar-p2' : 'avatar-p1', '', a.isGeneric, a.isGeneric ? 'J' : '')}${renderAvatarHTML(b.name, pair ? 'avatar-p2' : 'avatar-p1', '', b.isGeneric, b.isGeneric ? 'J' : '')}</span>
+    <span class="hm-names">${escapeHtml(liveSurname(a))} / ${escapeHtml(liveSurname(b))}</span>
+    ${won ? '<svg class="icon hm-trophy"><use href="#i-trophy"/></svg>' : ''}
+    <span class="hm-sets">${sets.map(s => `<i class="${s[pair] > s[1 - pair] ? 'w' : ''}">${s[pair]}</i>`).join('')}</span>
+  </div>`;
+}
+
+function historySpark(m) {
+  const series = wpSeries(m);
+  if (!series || series.length < 3) return '';
+  const w = 120, h = 22, mid = h / 2;
+  const line = series.map((p, i) => `${i ? 'L' : 'M'}${((i / (series.length - 1)) * w).toFixed(1)} ${(mid - (p.wp - 0.5) * 2 * (mid - 1.5)).toFixed(1)}`).join('');
+  return `<svg class="hm-spark" viewBox="0 0 ${w} ${h}" preserveAspectRatio="none" aria-label="Probabilidad de victoria"><line x1="0" y1="${mid}" x2="${w}" y2="${mid}"/><path d="${line}"/></svg>`;
 }
 
 function renderHistoryList() {
   renderHistorySummary();
   const el = document.getElementById('history-list');
   if (!el) return;
+  const filters = HISTORY_FILTERS.filter(([k]) => k !== 'me' || (myPlayerName && dbPlayers.includes(myPlayerName)));
+  if (historyFilter === 'me' && !filters.some(([k]) => k === 'me')) historyFilter = 'all';
+  const fbox = document.getElementById('history-filters');
+  if (fbox) fbox.innerHTML = filters.map(([k, l]) => `<button type="button" class="sort-chip ${historyFilter === k ? 'active' : ''}" onclick="setHistoryFilter('${k}')">${l}</button>`).join('');
   if (matchHistory.length === 0) {
-    el.innerHTML = `<div style="text-align:center;padding:20px;color:var(--text-secondary);font-size:0.8rem;">Todavía no hay partidos guardados en el historial.</div>`;
+    el.innerHTML = `<div class="empty-note">Todavía no hay partidos guardados. Juega uno desde <strong>Partido</strong> y aparecerá aquí con sus estadísticas.</div>`;
     return;
   }
-  el.innerHTML = matchHistory.map((m, idx) => {
-    const scoreStr = m.sets.map(s => `${s[0]}-${s[1]}`).join(' · ');
-    return `
-      <div class="rk-player-row" style="margin-bottom:8px;cursor:default;">
-        <div style="flex:1;min-width:0;">
-          <div style="font-size:0.64rem;color:var(--volt);font-weight:800;">${m.date || ''} · ${scoreStr}</div>
-          <div style="font-family:var(--font-display);font-size:1.1rem;font-weight:800;text-transform:uppercase;">
-            ${m.players[0].name}/${m.players[1].name} vs ${m.players[2].name}/${m.players[3].name}
-          </div>
-        </div>
-        <div style="display:flex;gap:6px;">
-          <button class="btn-icon" onclick="openHistoryMatchStats(${idx})"><svg class="icon"><use href="#i-chart"/></svg></button>
-          <button class="btn-icon" style="color:var(--volt);" onclick="openHistoryMatchPoster(${idx})"><svg class="icon"><use href="#i-share"/></svg></button>
-          <button class="btn-icon" style="color:var(--coral);" onclick="deleteHistoryMatch(${idx})"><svg class="icon"><use href="#i-trash"/></svg></button>
-        </div>
-      </div>
-    `;
-  }).join('');
+  const q = (document.getElementById('history-search')?.value || '').trim().toLowerCase();
+  const months = [];
+  matchHistory.forEach((m, idx) => {
+    if (!historyMatchPasses(m, q)) return;
+    const d = new Date(m.id || Date.now());
+    const key = `${d.getFullYear()}-${d.getMonth()}`;
+    let g = months[months.length - 1];
+    if (!g || g.key !== key) {
+      const label = d.toLocaleDateString('es-ES', { month: 'long', year: 'numeric' });
+      g = { key, label: label.charAt(0).toUpperCase() + label.slice(1), items: [] };
+      months.push(g);
+    }
+    g.items.push({ m, idx });
+  });
+  if (!months.length) {
+    el.innerHTML = '<div class="empty-note">Ningún partido coincide con la búsqueda.</div>';
+    return;
+  }
+  el.innerHTML = months.map(g => `
+    <div class="hm-month"><span>${g.label}</span><small>${g.items.length} partido${g.items.length === 1 ? '' : 's'}</small></div>
+    ${g.items.map(({ m, idx }) => {
+      const chips = [
+        m.link && m.link.kind === 'tournament' ? '<span class="hm-chip t">Torneo</span>' : '',
+        m.deuceRule ? `<span class="hm-chip">${DEUCE_NAMES[m.deuceRule] || ''}</span>` : '',
+        m.elapsedSec ? `<span class="hm-chip">${formatMatchDuration(m.elapsedSec)}</span>` : ''
+      ].join('');
+      return `<div class="hm-card" role="button" tabindex="0" onclick="openHistoryMatchStats(${idx})">
+        <div class="hm-top"><span class="hm-date">${escapeHtml(m.date || '')}</span><span class="hm-chips">${chips}</span>
+          <button type="button" class="hm-more" onclick="event.stopPropagation(); openHistoryActions(${idx})" aria-label="Más opciones">···</button></div>
+        ${historyPairRow(m, 0)}${historyPairRow(m, 1)}
+        <div class="hm-foot">${historySpark(m) || '<span></span>'}<span>Ver estadísticas ›</span></div>
+      </div>`;
+    }).join('')}`).join('');
+}
+
+function openHistoryActions(idx) {
+  const m = matchHistory[idx];
+  if (!m) return;
+  const row = (icon, label, action, cls = '') => `<button type="button" class="menu-row ${cls}" onclick="closeEventModal(); ${action}">
+    <svg class="icon"><use href="#${icon}"/></svg><span>${label}</span><span class="menu-row-hint">›</span></button>`;
+  openEventModal(`
+    <div class="mo-title">${escapeHtml(livePairName(0, m))} vs ${escapeHtml(livePairName(1, m))}</div>
+    <p class="bc-intro">${escapeHtml(m.date || '')} · ${(m.sets || []).filter(s => s[0] + s[1] > 0).map(s => `${s[0]}-${s[1]}`).join(' ')}</p>
+    <div class="menu-list">
+      ${row('i-chart', 'Ver estadísticas', `openHistoryMatchStats(${idx})`)}
+      ${row('i-share', 'Póster para compartir', `openHistoryMatchPoster(${idx})`)}
+      ${row('i-trash', 'Eliminar partido', `deleteHistoryMatch(${idx})`, 'menu-row-danger')}
+    </div>`);
 }
 
 function openHistoryMatchStats(idx) {
