@@ -666,7 +666,7 @@ body.light-mode .match-screen-fixed { --qa: #0369A1; --qb: #BE123C; }
 .qp:active::after { opacity: 0.16; transition: none; }
 
 /* Acciones del partido */
-.match-bottom-actions { display: grid; grid-template-columns: repeat(5, 1fr); gap: 5px; height: 2.6rem; flex-shrink: 0; }
+.match-bottom-actions { display: grid; grid-template-columns: repeat(3, 1fr); gap: 5px; height: 2.6rem; flex-shrink: 0; }
 .mba { flex-direction: column; gap: 2px; padding: 0; border-radius: 11px; font-size: 0.56rem; font-weight: 800; letter-spacing: 0.02em;
   background: var(--surface-1); color: var(--text-secondary); min-width: 0; overflow: hidden; }
 .mba span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; padding: 0 2px; }
@@ -1581,3 +1581,33 @@ body.light-mode .drawer-item[data-section="me"] { --tile: #A16207; } body.light-
 .h2h-res { font-size: 0.6rem; font-weight: 800; text-transform: uppercase; padding: 2px 6px; border-radius: 5px; }
 .h2h-res.a { background: rgba(0,240,255,0.15); color: var(--cyan); } .h2h-res.b { background: rgba(255,46,84,0.15); color: var(--coral); }
 .h2h-mdate { font-size: 0.7rem; color: var(--text-secondary); } .h2h-msets { font-family: var(--font-mono); font-size: 0.78rem; }
+
+/* Panel del golpe: esquemas de pista por zona (red cian, transición dorado, fondo violeta) */
+.shot-grid { --zR: #22D3EE; --zT: #F5C04A; --zF: #A78BFA; }
+body.light-mode .shot-grid { --zR: #0891B2; --zT: #B45309; --zF: #7C3AED; }
+.shot-zone-title { grid-column: 1 / -1; display: flex; align-items: center; gap: 6px; font-size: 0.62rem; font-weight: 800; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-secondary); margin-top: 4px; }
+.shot-zone-title i { width: 8px; height: 8px; border-radius: 2px; }
+.shot-zone-title.z-R i { background: var(--zR); } .shot-zone-title.z-T i { background: var(--zT); } .shot-zone-title.z-F i { background: var(--zF); }
+.shot-grid .shot-tile { position: relative; align-items: stretch; text-align: left; gap: 2px; padding: 6px 6px 8px; background: var(--surface-1); border: 1px solid var(--border-subtle); color: var(--text-primary); overflow: hidden; }
+.shot-grid .shot-tile::before { content: ''; position: absolute; left: 0; right: 0; top: 0; height: 3px; }
+.shot-grid .tile-win::before { background: var(--emerald); } .shot-grid .tile-enf::before { background: var(--coral); } .shot-grid .tile-ef::before { background: var(--amber); }
+.shot-grid .shot-tile.z-R { --z: var(--zR); } .shot-grid .shot-tile.z-T { --z: var(--zT); } .shot-grid .shot-tile.z-F { --z: var(--zF); }
+.shot-art { display: block; border-radius: 9px; background: #0A1222; padding: 2px 3px; color: var(--z); margin-bottom: 4px; }
+body.light-mode .shot-art { background: #E2E8F0; }
+.shot-grid .shot-vec { display: block; width: 100%; height: auto; aspect-ratio: 72 / 40; }
+.shot-grid .shot-tile-title { font-size: 0.86rem; line-height: 1.05; padding: 0 2px; color: var(--text-primary); }
+.shot-tile-hint { font-size: 0.6rem; font-weight: 600; color: var(--text-secondary); line-height: 1.2; padding: 0 2px; }
+.shot-grid .shot-tile:active { border-color: var(--z); }
+.shot-court line { stroke: #94A3B8; stroke-width: 1; opacity: 0.45; }
+.shot-court .net { stroke: #E2E8F0; stroke-width: 2.6; opacity: 0.9; }
+body.light-mode .shot-court line { stroke: #475569; } body.light-mode .shot-court .net { stroke: #334155; }
+
+/* Simplificación v8 */
+.home-cta { margin-bottom: 10px; display: flex; align-items: center; justify-content: center; gap: 10px; font-size: 1.3rem; padding: 16px; }
+.home-me-link { display: inline-flex; align-items: center; gap: 5px; margin-top: 4px; font-size: 0.72rem; font-weight: 800; color: var(--volt); cursor: pointer; }
+.home-me-link .icon { width: 14px; height: 14px; }
+.mo-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 14px; }
+.mo-actions .btn-icon { min-height: 44px; }
+.mo-finish { color: var(--coral); border-color: rgba(255,46,84,0.35); }
+.match-bottom-actions .mba { flex-direction: row; gap: 7px; font-size: 0.72rem; }
+.match-bottom-actions .mba .icon { width: 1.05rem; height: 1.05rem; }

@@ -512,7 +512,11 @@ function openMatchOptions() {
     ${row('Al deslizar', 'Elegir el golpe con su dibujo o anotar al momento', seg([['tap', 'Elegir golpe'], ['swipe', 'Rápido']], state.inputMode, 'setMatchInputMode'))}
     ${row('Cronómetro', state.timerPaused ? 'En pausa' : 'En marcha', `<button type="button" class="btn-icon" onclick="toggleTimerPause(); openMatchOptions();">${state.timerPaused ? 'Reanudar' : 'Pausar'}</button>`)}
     ${row('Narrador de voz', 'Canta el marcador tras cada punto', `<button type="button" class="btn-icon" onclick="toggleVoiceNarrator(); openMatchOptions();">${voiceEnabled ? 'Desactivar' : 'Activar'}</button>`)}
-    ${row('Saque', 'Corrige quién saca si no coincide con la pista', `<button type="button" class="btn-icon" onclick="cycleServerManual(); openMatchOptions();">Siguiente</button>`)}`);
+    ${row('Saque', 'Corrige quién saca si no coincide con la pista', `<button type="button" class="btn-icon" onclick="cycleServerManual(); openMatchOptions();">Siguiente</button>`)}
+    <div class="mo-actions">
+      <button type="button" class="btn-icon" onclick="closeEventModal(); openPosterModal()"><svg class="icon"><use href="#i-share"/></svg> Póster</button>
+      <button type="button" class="btn-icon mo-finish" onclick="closeEventModal(); finishMatchManually()"><svg class="icon"><use href="#i-flag"/></svg> Finalizar partido</button>
+    </div>`);
 }
 
 function setMatchThirdSet(rule) {
@@ -624,11 +628,17 @@ function renderShotSheet() {
     `<button type="button" class="t-${k.toLowerCase()} ${k === type ? 'active' : ''}" onclick="setShotSheetType('${k}')">${label}</button>`).join('');
   const tileCls = { W: 'tile-win', ENF: 'tile-enf', EF: 'tile-ef' }[type];
   const shots = SHOT_CATALOG.filter(s => !(s.winnerOnly && type !== 'W') && !(s.serveOnly && !isServer));
-  document.getElementById('shot-grid').innerHTML = shots.map(s => `
-    <button type="button" class="shot-tile ${tileCls}" onclick="recordAction('${type}', ${jsArg(s.id)})">
-      <svg class="shot-vec"><use href="#${s.icon}"/></svg>
-      <span class="shot-tile-title">${s.label}</span>
-    </button>`).join('');
+  // Agrupados por zona de la pista; cada zona con su color para distinguirlos de un vistazo
+  document.getElementById('shot-grid').innerHTML = ['R', 'T', 'F'].map(z => {
+    const list = shots.filter(s => s.zone === z);
+    if (!list.length) return '';
+    return `<div class="shot-zone-title z-${z}"><i></i>${SHOT_ZONE_NAMES[z]}</div>` + list.map(s => `
+      <button type="button" class="shot-tile ${tileCls} z-${z}" onclick="recordAction('${type}', ${jsArg(s.id)})">
+        <span class="shot-art"><svg class="shot-vec"><use href="#${s.icon}"/></svg></span>
+        <span class="shot-tile-title">${s.label}</span>
+        <span class="shot-tile-hint">${s.hint}</span>
+      </button>`).join('');
+  }).join('');
   const grid = document.getElementById('shot-grid');
   grid.dataset.type = type;
   replayAnim(grid, 'swap');

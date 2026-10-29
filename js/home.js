@@ -25,15 +25,6 @@ function nextTournamentMatch(t) {
   return t.matches.find(m => m.a && m.b && !m.winner);
 }
 
-function homeQuickAction(tab, section, icon, title, sub) {
-  return `
-    <button type="button" class="home-action" data-section="${section}" onclick="switchMainTab('${tab}')">
-      <svg class="icon icon-lg"><use href="#${icon}"/></svg>
-      <span class="home-action-title">${title}</span>
-      <span class="home-action-sub">${sub}</span>
-    </button>`;
-}
-
 function renderHome() {
   const box = document.getElementById('view-home');
   if (!box) return;
@@ -103,6 +94,7 @@ function renderHome() {
     </div>
 
     ${installBannerHTML()}
+    ${paused ? '' : `<button type="button" class="btn-volt home-cta" onclick="switchMainTab('setup')"><svg class="icon icon-lg"><use href="#i-ball"/></svg> Nuevo partido</button>`}
     ${myHomeCardHTML(statsMap)}
 
     ${paused ? `
@@ -112,12 +104,6 @@ function renderHome() {
         <span class="home-resume-cta">Continuar</span>
       </button>` : ''}
 
-    <div class="home-actions">
-      ${homeQuickAction('setup', 'match', 'i-ball', 'Partido', 'Marcador en directo')}
-      ${homeQuickAction('tournaments', 'events', 'i-bracket', 'Torneo', 'Cuadro, liga o grupos')}
-      ${homeQuickAction('americano', 'events', 'i-shuffle', 'Americano', 'Americano, Mexicano y Pozo')}
-      ${homeQuickAction('ranking', 'ranking', 'i-trophy', 'Ranking', 'ELO y jugadores')}
-    </div>
 
     ${live ? `<div class="home-section-title">En juego</div><div class="home-live-list">${live}</div>` : ''}
     ${lastCard || topCard ? `<div class="home-section-title">Resumen</div>${lastCard}${topCard}` : ''}

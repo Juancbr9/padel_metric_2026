@@ -470,9 +470,6 @@ function renderAmericanoListHTML() {
     <div class="section-hero">
       <div class="section-hero-kicker">Competición social</div>
       <div class="section-hero-title">Americano · Mexicano</div>
-      <div class="format-explainer">
-        ${Object.values(AMERICANO_FORMATS).map(f => `<div><strong>${f.main}</strong><span>${f.sub}</span></div>`).join('')}
-      </div>
       <div class="section-hero-actions"><button class="btn-volt" onclick="startAmericanoDraft()"><svg class="icon icon-lg"><use href="#i-plus"/></svg> Nuevo evento</button></div>
     </div>
     ${cards ? `<div class="event-list">${cards}</div>` : `<div class="bento-card"><div class="empty-note">Organiza una tarde de pádel para 4, 8, 12 o más jugadores.<br>La app hace los cruces, reparte los descansos y lleva la clasificación por puntos.</div></div>`}`;

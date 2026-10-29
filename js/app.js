@@ -108,6 +108,13 @@ function openSettingsSheet() {
     <div class="menu-list">
       <button type="button" class="menu-row" onclick="closeEventModal(); openRulesModal()">
         <svg class="icon"><use href="#i-sliders"/></svg><span>Reglas y modo de anotación</span><span class="menu-row-hint">›</span></button>
+      <button type="button" class="menu-row" onclick="closeEventModal(); document.getElementById('cover-upload').click()">
+        <svg class="icon"><use href="#i-camera"/></svg><span>Foto de portada del partido</span><span class="menu-row-hint">›</span></button>
+    </div>
+    <div class="menu-group-title">Datos</div>
+    <div class="menu-list">
+      <button type="button" class="menu-row" onclick="openDataSheet()">
+        <svg class="icon"><use href="#i-save"/></svg><span>Copias de seguridad, Excel y restaurar</span><span class="menu-row-hint">›</span></button>
     </div>`);
   renderMenuSwitches();
 }

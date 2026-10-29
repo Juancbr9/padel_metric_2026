@@ -60,18 +60,19 @@ function isGoldenPointNow() {
 // (R = red / volea, T = transición, F = fondo). "group" es el total por familia de versiones anteriores,
 // que siguen usando las estadísticas y la ficha.
 const SHOT_CATALOG = [
-  { id: 'Volea', label: 'Volea', icon: 'shot-volea', zone: 'R', group: 'Volea' },
-  { id: 'Bandeja', label: 'Bandeja', icon: 'shot-bandeja', zone: 'T', group: 'Bandeja/Víbora' },
-  { id: 'Víbora', label: 'Víbora', icon: 'shot-vibora', zone: 'T', group: 'Bandeja/Víbora' },
-  { id: 'Remate', label: 'Remate', icon: 'shot-remate', zone: 'R', group: 'Remate' },
-  { id: 'Bajada de pared', label: 'Bajada de pared', icon: 'shot-bajada', zone: 'F', group: 'Fondo/Bajada' },
-  { id: 'Golpe de fondo', label: 'Golpe de fondo', icon: 'shot-fondo', zone: 'F', group: 'Fondo/Bajada' },
-  { id: 'Globo', label: 'Globo', icon: 'shot-globo', zone: 'F', group: 'Globo' },
-  { id: 'Dejada', label: 'Dejada', icon: 'shot-dejada', zone: 'R', group: 'Dejada' },
-  { id: 'Chiquita', label: 'Chiquita', icon: 'shot-chiquita', zone: 'T', group: 'Chiquita' },
-  { id: 'Resto', label: 'Resto', icon: 'shot-resto', zone: 'F', group: 'Resto' },
-  { id: 'Saque Directo', label: 'Saque directo', icon: 'shot-saque', zone: 'F', group: 'Saque Directo', serveOnly: true, winnerOnly: true }
+  { id: 'Volea', label: 'Volea', hint: 'En la red, sin bote', icon: 'shot-volea', zone: 'R', group: 'Volea' },
+  { id: 'Remate', label: 'Remate', hint: 'Por arriba, definitivo', icon: 'shot-remate', zone: 'R', group: 'Remate' },
+  { id: 'Dejada', label: 'Dejada', hint: 'Corta, junto a la red', icon: 'shot-dejada', zone: 'R', group: 'Dejada' },
+  { id: 'Bandeja', label: 'Bandeja', hint: 'Por alto, cortada', icon: 'shot-bandeja', zone: 'T', group: 'Bandeja/Víbora' },
+  { id: 'Víbora', label: 'Víbora', hint: 'Por alto, con efecto', icon: 'shot-vibora', zone: 'T', group: 'Bandeja/Víbora' },
+  { id: 'Chiquita', label: 'Chiquita', hint: 'Baja, a los pies', icon: 'shot-chiquita', zone: 'T', group: 'Chiquita' },
+  { id: 'Golpe de fondo', label: 'Golpe de fondo', hint: 'Drive o revés atrás', icon: 'shot-fondo', zone: 'F', group: 'Fondo/Bajada' },
+  { id: 'Bajada de pared', label: 'Bajada de pared', hint: 'Tras el cristal', icon: 'shot-bajada', zone: 'F', group: 'Fondo/Bajada' },
+  { id: 'Globo', label: 'Globo', hint: 'Por encima del rival', icon: 'shot-globo', zone: 'F', group: 'Globo' },
+  { id: 'Resto', label: 'Resto', hint: 'Devolución del saque', icon: 'shot-resto', zone: 'F', group: 'Resto' },
+  { id: 'Saque Directo', label: 'Saque directo', hint: 'Punto con el saque', icon: 'shot-saque', zone: 'F', group: 'Saque Directo', serveOnly: true, winnerOnly: true }
 ];
+const SHOT_ZONE_NAMES = { R: 'En la red', T: 'Transición', F: 'Fondo' };
 const SHOT_BY_ID = Object.fromEntries(SHOT_CATALOG.map(s => [s.id, s]));
 
 const SHOT_DEFAULT_ZONE = {

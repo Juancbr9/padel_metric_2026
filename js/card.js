@@ -202,8 +202,7 @@ function myHomeCardHTML(statsMap) {
           <div><b data-count="${card.PJ ? Math.round((card.V / card.PJ) * 100) : 0}" data-suffix=" %">0</b><span>Victorias</span></div>
         </div>
         <span class="home-me-form">${formDotsHTML(card.form) || 'Sin partidos todavía'}</span>
+        ${card.PJ ? `<span class="home-me-link" role="button" onclick="event.stopPropagation(); openWrapped(${jsArg(myPlayerName)})"><svg class="icon"><use href="#i-play-circle"/></svg> Mi temporada</span>` : ''}
       </div>
-    </button>
-    ${card.PJ ? `<button type="button" class="home-wrapped" onclick="openWrapped(${jsArg(myPlayerName)})">
-      <svg class="icon icon-lg"><use href="#i-play-circle"/></svg><span><strong>Tu temporada</strong><small>Tu año de pádel en historias</small></span></button>` : ''}`;
+    </button>`;
 }
