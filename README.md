@@ -2,7 +2,7 @@
 
 Marcador, estadísticas y competiciones de pádel. Se instala en el móvil y funciona sin conexión.
 
-**App publicada:** https://padelmetric2026.netlify.app
+**App publicada:** https://juancbr9.github.io/padel_metric_2026/ (GitHub Pages, rama `main`)
 
 ## Qué hace
 

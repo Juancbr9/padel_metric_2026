@@ -35,7 +35,7 @@
                 <action android:name="android.intent.action.VIEW" />
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
-                <data android:scheme="https" android:host="padelmetric2026.netlify.app" />
+                <data android:scheme="https" android:host="juancbr9.github.io" android:pathPrefix="/padel_metric_2026" />
             </intent-filter>
         </activity>
 

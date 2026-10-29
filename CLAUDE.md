@@ -1,6 +1,6 @@
 # Padel Metric — guía para Claude
 
-App web (PWA) de marcador y estadísticas de pádel en directo. Sin servidor ni dependencias: HTML, CSS y JavaScript puro. Se publica en Netlify desde la rama `main` (y está preparada para GitHub Pages: rutas relativas y `.nojekyll`). Se instala desde el navegador en Android e iPhone (ver `js/install.js`) y hay APK de Android.
+App web (PWA) de marcador y estadísticas de pádel en directo. Sin servidor ni dependencias: HTML, CSS y JavaScript puro. Se publica en GitHub Pages desde la rama `main` (https://juancbr9.github.io/padel_metric_2026/, rutas relativas y `.nojekyll`); Netlify también despliega `main`, pero tiene protección de acceso y no sirve para compartir. Se instala desde el navegador en Android e iPhone (ver `js/install.js`) y hay APK de Android.
 
 El dueño del proyecto no es programador: explica los cambios en español y en lenguaje sencillo.
 
@@ -42,7 +42,7 @@ El dueño del proyecto no es programador: explica los cambios en español y en l
   - `history.js` también tiene `applyBackupData`, `loadDemoData` (datos de ejemplo) y `openFactoryReset`/`factoryReset` (borra todas las claves `pm_`).
 - `assets/demo/padel-metric-demo.json`: datos de ejemplo (top 15 masculino y femenino, partidos simulados punto a punto con ventaja al saque y `wp`, torneos y americanos). Se regeneran con `tools/generar-datos-demo.mjs` (generador mulberry32). `loadDemoData` mueve las fechas (`shiftDemoDates`) para que el último partido sea reciente.
 - `sw.js`: service worker (modo sin conexión). **Si añades un archivo JS/CSS, inclúyelo en `APP_FILES` y sube la versión de `CACHE`.** La app de Android usa esa misma lista para actualizarse sola.
-- `android/`: app nativa (como la de USAR): WebView que sirve la web desde el APK y se actualiza desde Netlify. Ver `android/README.md`. `js/nativo.js` (se carga el primero) conecta con Android a través de `window.PadelNative`; en el navegador no hace nada. Las medidas de pantalla completa llegan como `--sa-t/--sa-b/--sa-l/--sa-r` en CSS. El APK publicado está en `descargas/PadelMetric.apk` y `/.well-known/assetlinks.json` tiene la huella de la firma.
+- `android/`: app nativa (como la de USAR): WebView que sirve la web desde el APK y se actualiza desde GitHub Pages (`Web.PUBLICA`; al cambiar la carpeta `android/` hay que subir `versionCode`). Ver `android/README.md`. `js/nativo.js` (se carga el primero) conecta con Android a través de `window.PadelNative`; en el navegador no hace nada. Las medidas de pantalla completa llegan como `--sa-t/--sa-b/--sa-l/--sa-r` en CSS. El APK publicado está en `descargas/PadelMetric.apk` y `/.well-known/assetlinks.json` tiene la huella de la firma.
 
 ## Datos
 

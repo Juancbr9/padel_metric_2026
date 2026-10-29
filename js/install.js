@@ -3,7 +3,7 @@
 // Un enlace y un QR para pasársela a los compañeros, con los pasos para instalarla en Android y en iPhone
 // (desde el navegador, sin tienda) y el APK de Android como alternativa.
 // ==========================================================
-const PUBLIC_APP_URL = 'https://padelmetric2026.netlify.app/';
+const PUBLIC_APP_URL = 'https://juancbr9.github.io/padel_metric_2026/';
 
 function appPublicUrl() {
   if (window.PadelNative) { try { return PadelNative.urlPublica(); } catch (e) {} }

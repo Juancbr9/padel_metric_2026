@@ -164,7 +164,7 @@ public class MainActivity extends Activity {
         return archivos.abrir(ruta.startsWith("/") ? ruta.substring(1) : ruta);
     }
 
-    /** https://padelmetric2026.netlify.app/#unirse=... → la misma pantalla dentro de la app */
+    /** https://juancbr9.github.io/padel_metric_2026/#unirse=... → la misma pantalla dentro de la app */
     private static String local(String url) {
         if (url == null || !url.startsWith(Web.PUBLICA)) return ORIGEN + "index.html";
         int h = url.indexOf('#');

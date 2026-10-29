@@ -28,7 +28,7 @@ import java.util.regex.Pattern;
  * La versión es la CACHE de sw.js y los archivos son su lista APP_FILES: al subir CACHE en la web, la app la descarga.
  */
 class Web {
-    static final String PUBLICA = "https://padelmetric2026.netlify.app/";
+    static final String PUBLICA = "https://juancbr9.github.io/padel_metric_2026/";
     private static final Pattern VERSION = Pattern.compile("const CACHE = '([^']+)'");
     private static final Pattern LISTA = Pattern.compile("const APP_FILES = \\[([^\\]]*)\\]");
     private static final Pattern ARCHIVO = Pattern.compile("'([^']+)'");
