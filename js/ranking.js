@@ -116,7 +116,7 @@ function renderGlobalRanking() {
 
   const wrap = document.getElementById('ranking-table-wrap');
   if (list.length === 0) {
-    wrap.innerHTML = `<div style="text-align:center;padding:18px;color:var(--text-secondary);font-size:0.8rem;">No hay jugadores registrados con ese filtro</div>`;
+    wrap.innerHTML = `<div class="empty-note">No hay jugadores registrados con ese filtro</div>`;
   } else {
     wrap.innerHTML = `<div class="rk-card-list">${list.map((item, i) => {
       const prof = ensureProfile(item.name);
@@ -126,7 +126,7 @@ function renderGlobalRanking() {
         <div class="rk-player-row" onclick="openPlayerProfile(${jsArg(item.name)})">
           <div class="rk-left">
             <span class="rk-rank-num">${i + 1}</span>
-            ${renderAvatarHTML(item.name, 'avatar-p1')}
+            ${renderAvatarHTML(item.name, '')}
             <div class="rk-info">
               <div class="rk-name">${escapeHtml(item.name)}</div>
               <div class="rk-sub">${prof.club ? escapeHtml(prof.club) + ' · ' : ''}${item.PJ} PJ · ${item.V} V (${winPct}%)${formDotsHTML(item.form)}</div>
@@ -134,7 +134,7 @@ function renderGlobalRanking() {
           </div>
           <div class="rk-right">
             <div class="rk-stat-box">
-              <span class="rk-stat-val" style="color:var(--cyan);">${item.elo}</span>
+              <span class="rk-stat-val">${item.elo}</span>
               <span class="rk-stat-lbl">ELO</span>
             </div>
             <div class="rk-stat-box">
@@ -169,7 +169,7 @@ function renderRankingPodium(statsMap) {
     const safe = st.name.replace(/'/g, "\\'");
     return `
       <div class="podium-slot ${pos === 0 ? 'first' : ''}" onclick="openPlayerProfile('${safe}')">
-        ${renderAvatarHTML(st.name, 'avatar-p1')}
+        ${renderAvatarHTML(st.name, '')}
         <div class="podium-name">${st.name.split(' ')[0]}</div>
         <div class="podium-elo">${st.elo}</div>
         <div class="podium-step" style="height:${heights[pos]}px;">${pos + 1}</div>
@@ -272,7 +272,7 @@ function openPlayerProfile(name, keepTab = false) {
 
   document.getElementById('prof-name').innerText = name;
   document.getElementById('prof-meta-badges').innerHTML = `
-    ${rankPos ? `<span class="meta-tag" style="color:var(--volt);border-color:var(--volt);">N.º ${rankPos} ELO</span>` : ''}
+    ${rankPos ? `<span class="meta-tag accent">N.º ${rankPos} ELO</span>` : ''}
     <span class="meta-tag">${prof.gender === 'F' ? 'Femenino' : 'Masculino'}</span>
     <span class="meta-tag">${escapeHtml(prof.hand || 'Diestro')}</span>
     <span class="meta-tag">${escapeHtml(prof.prefSide || 'Ambas')}</span>
@@ -298,27 +298,27 @@ function openPlayerProfile(name, keepTab = false) {
         <div class="kpi-card"><div class="kpi-label">Victorias</div><div class="kpi-value">${st.V}/${st.PJ} · ${winPct}%</div></div>
         <div class="kpi-card"><div class="kpi-label">Valoración</div><div class="kpi-value">${avgR}</div></div>
       </div>
-      <div class="sheet-category-label" style="color:var(--volt);">Evolución del ELO</div>
+      <div class="sheet-category-label">Evolución del ELO</div>
       ${eloChartSVG(st.eloHistory)}
       <div class="detail-grid">
         <div><span>Forma reciente</span><strong>${formDotsHTML(st.form) || '–'}</strong></div>
         <div><span>Racha actual</span><strong>${d.curStreak} victoria${d.curStreak === 1 ? '' : 's'}</strong></div>
         <div><span>Mejor racha</span><strong>${d.bestStreak} victoria${d.bestStreak === 1 ? '' : 's'}</strong></div>
-        <div><span>Último cambio ELO</span><strong style="color:${st.eloDelta >= 0 ? 'var(--emerald)' : 'var(--coral)'};">${st.PJ ? (st.eloDelta >= 0 ? '+' : '') + Math.round(st.eloDelta) : '–'}</strong></div>
+        <div><span>Último cambio ELO</span><strong class="${st.eloDelta >= 0 ? 'u-good' : 'u-bad'}">${st.PJ ? (st.eloDelta >= 0 ? '+' : '') + Math.round(st.eloDelta) : '–'}</strong></div>
         <div><span>Sets ganados</span><strong>${d.setsWon} de ${d.setsWon + d.setsLost}</strong></div>
         <div><span>Juegos ganados</span><strong>${d.gamesWon} de ${d.gamesWon + d.gamesLost}</strong></div>
         <div><span>Tiempo en pista</span><strong>${d.timeSec >= 3600 ? (d.timeSec / 3600).toFixed(1).replace('.', ',') + ' h' : Math.round(d.timeSec / 60) + ' min'}</strong></div>
         <div><span>Torneos ganados</span><strong>${d.titles.length}${d.finals ? ` · ${d.finals} final${d.finals > 1 ? 'es' : ''}` : ''}</strong></div>
       </div>
       ${bestPartner || toughRival || d.americanoBest || d.titles.length ? `
-      <div class="sheet-category-label" style="color:var(--volt);">Compañeros y rivales</div>
+      <div class="sheet-category-label">Compañeros y rivales</div>
       <div class="coach-list">
         ${bestPartner ? `<div class="coach-tip"><span class="coach-tag">Pareja</span><span>Mejor compañero: <strong>${escapeHtml(bestPartner.name)}</strong> · ${bestPartner.v} de ${bestPartner.pj} ganados juntos</span></div>` : ''}
-        ${toughRival ? `<div class="coach-tip" style="border-left-color:var(--coral);"><span class="coach-tag">Rival</span><span>Pareja más difícil: <strong>${escapeHtml(toughRival.name)}</strong> · ${toughRival.pj - toughRival.v} derrota${toughRival.pj - toughRival.v > 1 ? 's' : ''} en ${toughRival.pj}</span></div>` : ''}
+        ${toughRival ? `<div class="coach-tip bad"><span class="coach-tag">Rival</span><span>Pareja más difícil: <strong>${escapeHtml(toughRival.name)}</strong> · ${toughRival.pj - toughRival.v} derrota${toughRival.pj - toughRival.v > 1 ? 's' : ''} en ${toughRival.pj}</span></div>` : ''}
         ${d.titles.length ? `<div class="coach-tip"><span class="coach-tag">Títulos</span><span>${d.titles.map(escapeHtml).join(', ')}</span></div>` : ''}
         ${d.americanoBest ? `<div class="coach-tip"><span class="coach-tag">Americano</span><span>Mejor puesto: <strong>${d.americanoBest.pos}.º</strong> en ${escapeHtml(d.americanoBest.name)}</span></div>` : ''}
       </div>` : ''}
-      ${Object.keys(st.badges).length ? `<div class="sheet-category-label" style="color:var(--amber);">Hitos</div>${badgeChipsHTML(Object.keys(st.badges), st.badges)}` : ''}
+      ${Object.keys(st.badges).length ? `<div class="sheet-category-label">Hitos</div>${badgeChipsHTML(Object.keys(st.badges), st.badges)}` : ''}
       ${prof.notes ? `<div class="notes-box">${escapeHtml(prof.notes)}</div>` : ''}`;
   }
 
@@ -342,14 +342,14 @@ function openPlayerProfile(name, keepTab = false) {
         <div><span>Dobles faltas</span><strong>${d.df}</strong></div>
         <div><span>Winners por error</span><strong>${st.ENF ? (st.W / st.ENF).toFixed(2).replace('.', ',') : '–'}</strong></div>
       </div>
-      <div class="sheet-category-label" style="color:var(--volt);">Golpes ganadores</div>
+      <div class="sheet-category-label">Golpes ganadores</div>
       ${shotNames.map(([k, label]) => `
         <div class="shot-bar">
           <span>${label}</span>
           <div class="shot-bar-track"><i style="width:${((d.shots[k] || 0) / maxShot) * 100}%"></i></div>
           <strong>${d.shots[k] || 0}</strong>
         </div>`).join('')}
-      ${errNames.length ? `<div class="sheet-category-label" style="color:var(--coral);">Errores por golpe</div>
+      ${errNames.length ? `<div class="sheet-category-label">Errores por golpe</div>
       ${errNames.map(s => `
         <div class="shot-bar err">
           <span>${s.label}</span>
@@ -374,9 +374,9 @@ function openPlayerProfile(name, keepTab = false) {
   }
 
   document.getElementById('prof-body').innerHTML = `
-    <div class="sort-strip" style="margin-top:6px;">${tabs.map(([k, l]) => `<button type="button" class="sort-chip ${profileTab === k ? 'active' : ''}" onclick="setProfileTab('${k}')">${l}</button>`).join('')}</div>
+    <div class="sort-strip mt-6">${tabs.map(([k, l]) => `<button type="button" class="sort-chip ${profileTab === k ? 'active' : ''}" onclick="setProfileTab('${k}')">${l}</button>`).join('')}</div>
     ${body}
-    <button type="button" class="btn-icon" style="width:100%;color:var(--coral);padding:10px;margin-top:12px;" onclick="deletePlayerFromDB(${jsArg(name)})">
+    <button type="button" class="btn-icon btn-block mt-12 btn-danger" onclick="deletePlayerFromDB(${jsArg(name)})">
       <svg class="icon"><use href="#i-trash"/></svg> Eliminar jugador
     </button>
   `;
@@ -396,11 +396,11 @@ function renderProfileZonesHTML(st) {
   const strong = withW.length ? withW.reduce((a, z) => (net(z) > net(a) ? z : a)) : null;
   const weak = withE.length ? withE.reduce((a, z) => (net(z) < net(a) ? z : a)) : null;
   return `
-    <div class="sheet-category-label" style="color:var(--cyan);">Mapa de calor · todos sus partidos</div>
+    <div class="sheet-category-label">Mapa de calor · todos sus partidos</div>
     ${renderHalfCourtHeatSVG(st.zones, 'all')}
     <div class="coach-list">
       ${strong ? `<div class="coach-tip"><span class="coach-tag">Fuerte</span><span>Zona fuerte: <strong>${ZONE_NAMES[strong]}</strong> (${zoneTot[strong].W} winners, ${zoneTot[strong].E} errores)</span></div>` : ''}
-      ${weak && weak !== strong ? `<div class="coach-tip" style="border-left-color:var(--coral);"><span class="coach-tag">Mejorar</span><span>A mejorar: <strong>${ZONE_NAMES[weak]}</strong> (${zoneTot[weak].E} errores, ${zoneTot[weak].W} winners)</span></div>` : ''}
+      ${weak && weak !== strong ? `<div class="coach-tip bad"><span class="coach-tag">Mejorar</span><span>A mejorar: <strong>${ZONE_NAMES[weak]}</strong> (${zoneTot[weak].E} errores, ${zoneTot[weak].W} winners)</span></div>` : ''}
     </div>`;
 }
 
@@ -485,7 +485,7 @@ function renderH2H() {
     </div>`;
   };
   const side = (name, st, wins, cls) => `<button type="button" class="h2h-side ${cls}" onclick="openPlayerProfile(${jsArg(name)})">
-    ${renderAvatarHTML(name, cls === 'a' ? 'avatar-p1' : 'avatar-p2', 'width:58px;height:58px;font-size:1.2rem;')}
+    ${renderAvatarHTML(name, `avatar-xl ${cls === 'a' ? 'avatar-p1' : 'avatar-p2'}`)}
     <strong>${escapeHtml(liveSurname({ name }))}</strong><small>${st.PJ} PJ · ELO ${st.elo}</small>
     <span class="h2h-wins" data-count="${wins}">0</span></button>`;
   box.innerHTML = `
@@ -523,14 +523,14 @@ function renderPairsRanking() {
     const diff = p.games - p.gamesAg;
     return `<div class="pr-row">
       <span class="pr-pos ${i < 3 ? `top${i + 1}` : ''}">${i + 1}</span>
-      <span class="hm-avs">${p.names.map(n => renderAvatarHTML(n, 'avatar-p1')).join('')}</span>
+      <span class="hm-avs">${p.names.map(n => renderAvatarHTML(n, '')).join('')}</span>
       <span class="pr-info"><strong>${p.names.map(n => escapeHtml(liveSurname({ name: n }))).join(' / ')}</strong>
         <small>${p.V} de ${p.PJ} ganados · juegos ${diff > 0 ? '+' : ''}${diff}</small>
         <span class="pr-bar"><i style="width:${pct}%"></i></span></span>
       <span class="pr-pct">${pct}<small>%</small></span>
     </div>`;
   }).join('')}</div>
-    ${list.length > 10 ? `<button type="button" class="btn-icon" style="width:100%;padding:10px;margin-top:8px;" onclick="showAllPairs = !showAllPairs; renderPairsRanking()">${showAllPairs ? 'Ver solo las 10 mejores' : `Ver las ${list.length} parejas`}</button>` : ''}`;
+    ${list.length > 10 ? `<button type="button" class="btn-icon btn-block" onclick="showAllPairs = !showAllPairs; renderPairsRanking()">${showAllPairs ? 'Ver solo las 10 mejores' : `Ver las ${list.length} parejas`}</button>` : ''}`;
 }
 
 let showAllPairs = false;

@@ -74,10 +74,10 @@ function renderPickerList() {
     const safeName = rawQuery.replace(/'/g, "\\'");
     html += `
       <div class="picker-item create-instant" onclick="createAndAssignOnTheFly('${safeName}')">
-        <span style="font-family:var(--font-display);font-size:1.15rem;font-weight:900;text-transform:uppercase;">
+        <span class="picker-name">
           + CREAR Y CONVOCAR A "${rawQuery}"
         </span>
-        <span class="picker-badge" style="background:#D4FF2A;color:#06090F;">RÁPIDO</span>
+        <span class="picker-badge accent">RÁPIDO</span>
       </div>
     `;
   }
@@ -85,14 +85,14 @@ function renderPickerList() {
   const genKey = `GEN_${activePickerSlot}`;
   html += `
     <div class="picker-item ${currentAssigned === genKey ? 'current-slot' : ''}" onclick="assignPlayerToSlot('${genKey}')">
-      <div style="display:flex;align-items:center;gap:10px;">
+      <div class="u-row-10">
         <span class="avatar-circle">J${activePickerSlot + 1}</span>
         <div>
-          <div style="font-family:var(--font-display);font-size:1.1rem;font-weight:800;text-transform:uppercase;">Jugador ${activePickerSlot + 1} (Genérico)</div>
-          <div style="font-size:0.64rem;color:var(--text-secondary);">Sin guardar estadísticas individuales en BD</div>
+          <div class="picker-name">Jugador ${activePickerSlot + 1} (Genérico)</div>
+          <div class="picker-sub">Sin guardar estadísticas individuales en BD</div>
         </div>
       </div>
-      <span class="picker-badge" style="background:var(--surface-2);color:var(--text-secondary);">LIBRE</span>
+      <span class="picker-badge">LIBRE</span>
     </div>
   `;
 
@@ -114,14 +114,14 @@ function renderPickerList() {
 
     html += `
       <div class="picker-item ${isCurrent ? 'current-slot' : ''} ${isOtherSlot ? 'disabled-slot' : ''}" onclick="assignPlayerToSlot('${safeName}')">
-        <div style="display:flex;align-items:center;gap:10px;min-width:0;">
-          ${renderAvatarHTML(name, 'avatar-p1')}
-          <div style="min-width:0;">
-            <div style="font-family:var(--font-display);font-size:1.15rem;font-weight:800;text-transform:uppercase;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${name}</div>
-            <div style="font-size:0.64rem;color:var(--text-secondary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${subInfo}</div>
+        <div class="u-row-10 u-min0">
+          ${renderAvatarHTML(name, '')}
+          <div class="u-min0">
+            <div class="picker-name u-ellipsis">${name}</div>
+            <div class="picker-sub u-ellipsis">${subInfo}</div>
           </div>
         </div>
-        <span class="picker-badge" style="background:rgba(212,255,42,0.12);color:var(--volt);">
+        <span class="picker-badge accent">
           ${isOtherSlot ? `EN PISTA` : `VAL ${avgR}`}
         </span>
       </div>

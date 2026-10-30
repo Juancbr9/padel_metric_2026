@@ -280,11 +280,11 @@ function openTournamentResult(tid, mid) {
       <div class="result-team b">${escapeHtml(teamName(t, m.b))}</div>
     </div>
     ${rows}
-    <div class="empty-note" style="padding:6px 0 10px;">El súper tie-break se anota como un set (por ejemplo 10–8).</div>
+    <div class="empty-note stack-pad">El súper tie-break se anota como un set (por ejemplo 10–8).</div>
     <button class="btn-volt" onclick="saveTournamentResultFromModal(${jsArg(tid)}, ${jsArg(mid)})">Guardar resultado</button>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px;">
-      <button class="btn-icon" style="padding:11px;color:var(--volt);" onclick="startTournamentLiveMatch(${jsArg(tid)}, ${jsArg(mid)})"><svg class="icon"><use href="#i-play"/></svg> Jugar en directo</button>
-      ${m.winner ? `<button class="btn-icon" style="padding:11px;color:var(--coral);" onclick="clearTournamentResult(${jsArg(tid)}, ${jsArg(mid)})">Borrar resultado</button>` : `<button class="btn-icon" style="padding:11px;" onclick="closeEventModal()">Cancelar</button>`}
+    <div class="u-grid-2 mt-8">
+      <button class="btn-icon btn-pad u-accent" onclick="startTournamentLiveMatch(${jsArg(tid)}, ${jsArg(mid)})"><svg class="icon"><use href="#i-play"/></svg> Jugar en directo</button>
+      ${m.winner ? `<button class="btn-icon btn-pad btn-danger" onclick="clearTournamentResult(${jsArg(tid)}, ${jsArg(mid)})">Borrar resultado</button>` : `<button class="btn-icon btn-pad" onclick="closeEventModal()">Cancelar</button>`}
     </div>`);
 }
 
@@ -423,7 +423,7 @@ function renderTournamentCreateHTML() {
       <span class="pair-num">${i + 1}</span>
       <span class="pair-names">${escapeHtml(pp.join(' / '))}</span>
       <span class="elo-pill">${Math.round((eloOfName(pp[0], elos) + eloOfName(pp[1], elos)) / 2)}</span>
-      <button type="button" class="btn-icon" style="padding:5px 8px;" onclick="removeTPair(${i})"><svg class="icon"><use href="#i-close"/></svg></button>
+      <button type="button" class="btn-icon btn-xs" onclick="removeTPair(${i})"><svg class="icon"><use href="#i-close"/></svg></button>
     </div>`).join('');
   const poolSelected = d.pool.filter(n => !used.includes(n));
   const chooser = renderPlayerChooserHTML(poolSelected, { onToggle: 'toggleTPool', onAdd: 'addTPoolPlayer', exclude: used });
@@ -441,21 +441,21 @@ function renderTournamentCreateHTML() {
       ${segOptionsHTML([{ value: 'elo', main: 'Por ELO', sub: 'Los mejores no se cruzan pronto' }, { value: 'random', main: 'Sorteo', sub: 'Cuadro aleatorio' }], d.seeding, "setTDraft.bind(null,'seeding')")}
       <div class="form-label">Reglas de los partidos</div>
       ${segOptionsHTML([{ value: 'adv', main: 'Ventaja' }, { value: 'star', main: 'Star point' }, { value: 'golden', main: 'Punto de oro' }], d.deuceRule, "setTDraft.bind(null,'deuceRule')")}
-      <div style="height:6px;"></div>
+      <div class="thick"></div>
       ${segOptionsHTML([{ value: 'normal', main: '3.er set completo' }, { value: 'supertb', main: 'Súper tie-break' }], d.thirdSetRule, "setTDraft.bind(null,'thirdSetRule')")}
     </div>
     <div class="bento-card">
       <div class="section-header"><div class="section-title">Parejas inscritas (${d.pairs.length})</div></div>
       ${pairsHTML || '<div class="empty-note">Aún no hay parejas. Márcalas abajo.</div>'}
-      <div class="form-label" style="margin-top:12px;">Jugadores disponibles · marca 2 para una pareja o varios para emparejar por ELO</div>
+      <div class="form-label mt-12">Jugadores disponibles · marca 2 para una pareja o varios para emparejar por ELO</div>
       ${chooser}
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px;">
-        <button type="button" class="btn-icon" style="padding:11px;" onclick="addPairFromPool()">Añadir pareja (${poolSelected.length}/2)</button>
-        <button type="button" class="btn-icon" style="padding:11px;color:var(--volt);" onclick="autoPairsFromPool()">Emparejar por ELO</button>
+      <div class="u-grid-2 mt-10">
+        <button type="button" class="btn-icon btn-pad" onclick="addPairFromPool()">Añadir pareja (${poolSelected.length}/2)</button>
+        <button type="button" class="btn-icon btn-pad u-accent" onclick="autoPairsFromPool()">Emparejar por ELO</button>
       </div>
     </div>
     <button class="btn-volt" onclick="createTournamentFromDraft()">Crear torneo</button>
-    <button class="btn-icon" style="width:100%;padding:12px;margin-top:8px;" onclick="showTournamentList()">Cancelar</button>`;
+    <button class="btn-icon btn-block" onclick="showTournamentList()">Cancelar</button>`;
 }
 
 // ---------- Detalle del torneo ----------
@@ -500,12 +500,12 @@ function renderTournamentDetailHTML(t) {
       <div class="section-hero-kicker">${TOURNAMENT_FORMATS[t.format].main} · ${t.teams.length} parejas</div>
       <div class="section-hero-title">${escapeHtml(t.name)}</div>
       ${t.champion ? `<div class="champion-banner"><svg class="icon icon-lg"><use href="#i-trophy"/></svg><div><small>Campeones</small><strong>${escapeHtml(teamById(t, t.champion).players.join(' / '))}</strong></div></div>`
-        : `<div class="event-progress" style="margin-top:12px;"><i style="width:${total ? (played / total) * 100 : 0}%"></i></div><div class="event-card-sub" style="position:relative;">${played} de ${total} partidos jugados</div>`}
+        : `<div class="event-progress mt-12"><i style="width:${total ? (played / total) * 100 : 0}%"></i></div><div class="event-card-sub u-rel">${played} de ${total} partidos jugados</div>`}
     </div>
     <button class="btn-icon share-btn" onclick="shareTournamentImage(${jsArg(t.id)})"><svg class="icon"><use href="#i-share"/></svg> Compartir ${t.format === 'ko' || t.koBuilt ? 'cuadro' : 'clasificación'}</button>
     <div class="sort-strip">${tabs.map(([k, l]) => `<button type="button" class="sort-chip ${tView.tab === k ? 'active' : ''}" onclick="setTournamentTab('${k}')">${l}</button>`).join('')}</div>
     ${body}
-    <button class="btn-icon" style="width:100%;padding:11px;margin-top:14px;color:var(--coral);" onclick="deleteTournament(${jsArg(t.id)})"><svg class="icon"><use href="#i-trash"/></svg> Eliminar torneo</button>`;
+    <button class="btn-icon btn-block mt-14 btn-danger" onclick="deleteTournament(${jsArg(t.id)})"><svg class="icon"><use href="#i-trash"/></svg> Eliminar torneo</button>`;
 }
 
 function matchSideHTML(t, m, side) {
@@ -549,7 +549,7 @@ function renderStandingsHTML(t, matches, teamIds, title, qualify = 0) {
           <tr class="${qualify && i < qualify ? 'qualify' : ''}">
             <td><span class="pos">${i + 1}</span>${escapeHtml(teamName(t, r.id))}</td>
             <td>${r.pj}</td><td>${r.pg}</td><td>${r.setDiff > 0 ? '+' : ''}${r.setDiff}</td><td>${r.gameDiff > 0 ? '+' : ''}${r.gameDiff}</td>
-            <td style="color:var(--volt);font-weight:800;">${r.pts}</td>
+            <td class="u-accent u-strong">${r.pts}</td>
           </tr>`).join('')}</tbody>
       </table>
     </div>`;

@@ -231,13 +231,13 @@ function openFactoryReset() {
   closeAppMenu();
   const summary = `${dbPlayers.length} jugadores, ${matchHistory.length} partidos, ${tournaments.length} torneos y ${americanos.length} americanos`;
   openEventModal(`
-    <div class="event-modal-title" style="color:var(--coral);">Restaurar de fábrica</div>
+    <div class="event-modal-title u-bad">Restaurar de fábrica</div>
     <div class="reset-title">Borrar todos los datos</div>
     <p class="reset-text">Se eliminarán <strong>${summary}</strong>, el partido en pausa, la portada y los ajustes de este dispositivo. No se puede deshacer.</p>
     <p class="reset-text">Si quieres conservar algo, exporta antes una copia: luego podrás restaurarla desde el menú.</p>
     <button class="btn-volt" onclick="exportBackupJSON(); setTimeout(factoryReset, 600)">Exportar copia y borrar</button>
     <button class="btn-icon reset-danger" onclick="factoryReset()">Borrar sin copia</button>
-    <button class="btn-icon" style="width:100%;padding:12px;margin-top:8px;" onclick="closeEventModal()">Cancelar</button>`);
+    <button class="btn-icon btn-block" onclick="closeEventModal()">Cancelar</button>`);
 }
 
 function factoryReset() {

@@ -74,7 +74,7 @@ function renderHome() {
       ${top.map((st, i) => `
         <div class="home-top-row">
           <span class="home-top-pos">${i + 1}</span>
-          ${renderAvatarHTML(st.name, 'avatar-p1', 'width:28px;height:28px;font-size:0.7rem;')}
+          ${renderAvatarHTML(st.name, 'avatar-sm')}
           <span class="home-top-name">${escapeHtml(st.name)}</span>
           <span class="home-top-elo" data-count="${st.elo}">${st.elo}</span>
         </div>`).join('')}
@@ -116,7 +116,7 @@ function renderHome() {
           <li>Juega un <strong>partido</strong> y registra los golpes: verás el mapa de calor y los puntos clave.</li>
           <li>Organiza un <strong>torneo</strong> o un <strong>americano</strong> con tus amigos.</li>
         </ol>
-        <button class="btn-icon" style="width:100%;padding:12px;color:var(--volt);" onclick="loadDemoData()">Cargar datos de ejemplo</button>
+        <button class="btn-icon btn-block u-accent" onclick="loadDemoData()">Cargar datos de ejemplo</button>
       </div>` : ''}`;
   initCardTilt(box);
 }

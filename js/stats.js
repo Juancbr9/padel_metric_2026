@@ -70,12 +70,12 @@ function renderStats(mode) {
       const balStr = bal > 0 ? `+${bal}` : `${bal}`;
       return `
         <tr>
-          <td style="font-weight:800;">${p.name}</td>
-          <td style="color:var(--emerald);font-weight:800;">${p.fW}</td>
-          <td style="color:var(--coral);font-weight:800;">${p.fENF}</td>
-          <td style="color:var(--amber);">${p.fEF}</td>
-          <td style="font-weight:800;">${balStr}</td>
-          <td style="color:var(--volt);font-weight:800;">${p.rating.toFixed(1)}</td>
+          <td class="u-strong">${p.name}</td>
+          <td class="u-good u-strong">${p.fW}</td>
+          <td class="u-bad u-strong">${p.fENF}</td>
+          <td class="u-warn">${p.fEF}</td>
+          <td class="u-strong">${balStr}</td>
+          <td class="u-accent u-strong">${p.rating.toFixed(1)}</td>
         </tr>
       `;
     }).join('');
@@ -98,14 +98,14 @@ function renderStats(mode) {
 
     container.innerHTML = `
       <div class="tv-compare-row">
-        <div class="tv-compare-header"><span style="color:var(--cyan);">${p1W}</span><span>WINNERS</span><span style="color:var(--coral);">${p2W}</span></div>
+        <div class="tv-compare-header"><span class="pair-a-txt">${p1W}</span><span>WINNERS</span><span class="pair-b-txt">${p2W}</span></div>
         <div class="tv-compare-track">
           <div class="tv-bar-p1" style="width:${(p1W / wTot) * 100}%"></div>
           <div class="tv-bar-p2" style="width:${(p2W / wTot) * 100}%"></div>
         </div>
       </div>
       <div class="tv-compare-row">
-        <div class="tv-compare-header"><span style="color:var(--cyan);">${p1ENF}</span><span>ERRORES NO FORZADOS</span><span style="color:var(--coral);">${p2ENF}</span></div>
+        <div class="tv-compare-header"><span class="pair-a-txt">${p1ENF}</span><span>ERRORES NO FORZADOS</span><span class="pair-b-txt">${p2ENF}</span></div>
         <div class="tv-compare-track">
           <div class="tv-bar-p1" style="width:${(p1ENF / enfTot) * 100}%"></div>
           <div class="tv-bar-p2" style="width:${(p2ENF / enfTot) * 100}%"></div>
@@ -122,7 +122,7 @@ function renderStats(mode) {
       const sh = p.shots || {};
       return `
         <tr>
-          <td style="font-weight:800;">${p.name}</td>
+          <td class="u-strong">${p.name}</td>
           <td>${sh['Volea'] || 0}</td>
           <td>${sh['Bandeja/Víbora'] || 0}</td>
           <td>${sh['Remate'] || 0}</td>
@@ -151,7 +151,7 @@ function renderKeyMomentsPanel(target) {
     const tot = (a.n + b.n) || 1;
     return `
       <div class="tv-compare-row">
-        <div class="tv-compare-header"><span style="color:var(--cyan);">${a.txt}</span><span>${label}</span><span style="color:var(--coral);">${b.txt}</span></div>
+        <div class="tv-compare-header"><span class="pair-a-txt">${a.txt}</span><span>${label}</span><span class="pair-b-txt">${b.txt}</span></div>
         <div class="tv-compare-track">
           <div class="tv-bar-p1" style="width:${(a.n / tot) * 100}%"></div>
           <div class="tv-bar-p2" style="width:${(b.n / tot) * 100}%"></div>
@@ -168,20 +168,20 @@ function renderKeyMomentsPanel(target) {
 
   return `
     ${wpPanelHTML(target)}
-    <div class="sheet-category-label" style="color:var(--volt);">Puntos clave</div>
+    <div class="sheet-category-label">Puntos clave</div>
     ${row('BOLAS DE BREAK GANADAS', frac(A.bpWon, A.bpChances), frac(B.bpWon, B.bpChances))}
     ${row('BOLAS DE BREAK SALVADAS', frac(A.bpSaved, A.bpFaced), frac(B.bpSaved, B.bpFaced))}
     ${row('PUNTOS DE ORO', { n: A.goldWon, txt: A.goldWon }, { n: B.goldWon, txt: B.goldWon })}
     ${row('PUNTOS EN TIE-BREAK', { n: A.tbWon, txt: A.tbWon }, { n: B.tbWon, txt: B.tbWon })}
     ${row('RACHA MÁXIMA (PTOS SEGUIDOS)', { n: A.maxRun, txt: A.maxRun }, { n: B.maxRun, txt: B.maxRun })}
-    <div class="sheet-category-label" style="color:var(--volt);">Saque y resto</div>
+    <div class="sheet-category-label">Saque y resto</div>
     ${row('PUNTOS GANADOS CON 1.ER SAQUE', frac(A.firstWon, A.first), frac(B.firstWon, B.first))}
     ${row('PUNTOS GANADOS CON 2.º SAQUE', frac(A.secondWon, A.second), frac(B.secondWon, B.second))}
     ${row('PUNTOS GANADOS AL RESTO', frac(A.returnWon, A.returnPts), frac(B.returnWon, B.returnPts))}
-    ${clutchTop ? `<div class="notes-box" style="margin-top:8px;"><strong>Puntos decisivos:</strong> ${clutchTop[0]} hizo ${clutchTop[1]} winner${clutchTop[1] > 1 ? 's' : ''} en bolas de break, puntos de oro o tie-break.</div>` : ''}
-    <div class="sheet-category-label" style="color:var(--cyan);">Análisis del partido</div>
+    ${clutchTop ? `<div class="notes-box mt-8"><strong>Puntos decisivos:</strong> ${clutchTop[0]} hizo ${clutchTop[1]} winner${clutchTop[1] > 1 ? 's' : ''} en bolas de break, puntos de oro o tie-break.</div>` : ''}
+    <div class="sheet-category-label">Análisis del partido</div>
     <div class="coach-list">${tips.map(t => `<div class="coach-tip"><span class="coach-tag">${t.tag}</span><span>${t.text}</span></div>`).join('')}</div>
-    ${badges ? `<div class="sheet-category-label" style="color:var(--amber);">Hitos del partido</div>${badges}` : ''}
+    ${badges ? `<div class="sheet-category-label">Hitos del partido</div>${badges}` : ''}
   `;
 }
 
@@ -213,10 +213,10 @@ function wpPanelHTML(target) {
     keyHtml = `<div class="wp-key"><b>Momento clave</b>${describeWpPoint(target, key.point).replace(/\.$/, '')}. La probabilidad de ${escapeHtml(pairShortLabel(target, 0))} pasó del ${before} % al ${after} %.</div>`;
   }
   return `
-    <div class="sheet-category-label" style="color:var(--volt);">Probabilidad de victoria</div>
+    <div class="sheet-category-label">Probabilidad de victoria</div>
     <div class="wp-panel">
       <div class="wp-panel-head"><span>Pareja 1 arriba · pareja 2 abajo</span>
-        <span class="wp-legend"><span><i style="background:#00F0FF"></i>P1</span><span><i style="background:#FF2E54"></i>P2</span></span></div>
+        <span class="wp-legend"><span><i class="sw-a"></i>P1</span><span><i class="sw-b"></i>P2</span></span></div>
       ${chart}
       <div class="wp-readout" id="wp-readout">Toca o desliza sobre el gráfico para ver cada punto.</div>
       ${keyHtml}

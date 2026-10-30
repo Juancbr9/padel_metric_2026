@@ -91,7 +91,7 @@ function wrapSlides(w) {
     <div class="w-foot">Máximo alcanzado: <b>${w.eloPeak}</b></div>` });
   if (w.bestPartner) slides.push({ cls: 'w-partner', html: `
     <div class="w-kicker">Tu mejor pareja</div>
-    <div class="w-avatar">${renderAvatarHTML(w.bestPartner.name, 'avatar-p1', '', false)}</div>
+    <div class="w-avatar">${renderAvatarHTML(w.bestPartner.name, '', '', false)}</div>
     <div class="w-name">${escapeHtml(w.bestPartner.name)}</div>
     <div class="w-sub">${w.bestPartner.v} victoria${w.bestPartner.v === 1 ? '' : 's'} en ${w.bestPartner.pj} partido${w.bestPartner.pj === 1 ? '' : 's'} juntos</div>` });
   if (w.toughRival) slides.push({ cls: 'w-rival', html: `

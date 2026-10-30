@@ -2,7 +2,7 @@
 // COMPARTIR CLASIFICACIONES Y CUADROS COMO IMAGEN (WHATSAPP)
 // ==========================================================
 const SHARE_THEME = {
-  bg1: '#0B0718', bg2: '#06090F', accent: '#A78BFA', accentDeep: '#7C5CF0', text: '#F8FAFC', muted: '#94A3B8',
+  bg1: '#030508', bg2: '#030508', accent: '#D4FF2A', accentDeep: '#B8E000', text: '#F5F7FA', muted: '#8B95A5',
   row: 'rgba(255,255,255,0.04)', rowAlt: 'rgba(255,255,255,0.075)', gold: '#F5C04A', silver: '#CBD5E1', bronze: '#D08A4E'
 };
 
@@ -40,15 +40,8 @@ function fitText(ctx, text, maxWidth) {
 }
 
 function drawShareFrame(ctx, W, H, { kicker, title, subtitle }) {
-  const bg = ctx.createLinearGradient(0, 0, 0, H);
-  bg.addColorStop(0, SHARE_THEME.bg1);
-  bg.addColorStop(1, SHARE_THEME.bg2);
-  ctx.fillStyle = bg;
-  ctx.fillRect(0, 0, W, H);
-  const glow = ctx.createRadialGradient(W, 0, 0, W, 0, 700);
-  glow.addColorStop(0, 'rgba(167,139,250,0.28)');
-  glow.addColorStop(1, 'rgba(167,139,250,0)');
-  ctx.fillStyle = glow;
+  // Fondo plano (DESIGN.md): sin degradados ni halos
+  ctx.fillStyle = SHARE_THEME.bg1;
   ctx.fillRect(0, 0, W, H);
 
   drawLogoMark(ctx, 64, 60, 70, SHARE_THEME.accent);
@@ -60,7 +53,7 @@ function drawShareFrame(ctx, W, H, { kicker, title, subtitle }) {
   ctx.font = '800 26px "Plus Jakarta Sans", sans-serif';
   ctx.fillText(kicker.toUpperCase(), 64, 200);
   ctx.fillStyle = SHARE_THEME.text;
-  ctx.font = 'italic 900 78px "Barlow Condensed", sans-serif';
+  ctx.font = '700 78px "Barlow Condensed", sans-serif';
   ctx.fillText(fitText(ctx, title.toUpperCase(), W - 128), 64, 280);
   if (subtitle) {
     ctx.fillStyle = SHARE_THEME.muted;
@@ -96,7 +89,7 @@ function drawShareTable(ctx, x, y, width, maxBottom, { title, columns, rows, med
   const medalColors = [SHARE_THEME.gold, SHARE_THEME.silver, SHARE_THEME.bronze];
   rows.forEach((row, i) => {
     const top = y + i * rowH;
-    ctx.fillStyle = i < highlight ? 'rgba(167,139,250,0.16)' : (i % 2 ? SHARE_THEME.rowAlt : SHARE_THEME.row);
+    ctx.fillStyle = i < highlight ? 'rgba(212,255,42,0.12)' : (i % 2 ? SHARE_THEME.rowAlt : SHARE_THEME.row);
     ctx.beginPath(); ctx.roundRect(x, top + 3, width, rowH - 6, 14); ctx.fill();
     const mid = top + rowH / 2 + 9;
     if (medals && i < 3) {
@@ -166,15 +159,12 @@ function shareTournamentImage(tid) {
     drawShareFrame(ctx, W, H, { kicker: `${TOURNAMENT_FORMATS[t.format].main}${t.champion ? ' · Campeones' : ' · En juego'}`, title: t.name, subtitle });
     let y = 380;
     if (t.champion) {
-      const grad = ctx.createLinearGradient(60, y, W - 60, y);
-      grad.addColorStop(0, SHARE_THEME.accent);
-      grad.addColorStop(1, SHARE_THEME.accentDeep);
-      ctx.fillStyle = grad;
+      ctx.fillStyle = SHARE_THEME.accent;
       ctx.beginPath(); ctx.roundRect(60, y, W - 120, 120, 22); ctx.fill();
-      ctx.fillStyle = '#0B0718';
+      ctx.fillStyle = '#06090F';
       ctx.font = '800 22px "Plus Jakarta Sans", sans-serif';
       ctx.fillText('CAMPEONES', 96, y + 42);
-      ctx.font = 'italic 900 52px "Barlow Condensed", sans-serif';
+      ctx.font = '700 52px "Barlow Condensed", sans-serif';
       ctx.fillText(fitText(ctx, teamById(t, t.champion).players.join(' / ').toUpperCase(), W - 200), 96, y + 96);
       y += 160;
     }

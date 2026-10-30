@@ -18,11 +18,8 @@ async function drawPosterCanvas(matchData) {
   const ctx = canvas.getContext('2d');
   const W = canvas.width, H = canvas.height;
 
-  const bg = ctx.createLinearGradient(0, 0, 0, H);
-  bg.addColorStop(0, '#06090F');
-  bg.addColorStop(0.5, '#0C1426');
-  bg.addColorStop(1, '#05070C');
-  ctx.fillStyle = bg;
+  // Fondo plano (DESIGN.md)
+  ctx.fillStyle = '#030508';
   ctx.fillRect(0, 0, W, H);
 
   ctx.fillStyle = '#D4FF2A';
@@ -33,8 +30,8 @@ async function drawPosterCanvas(matchData) {
   ctx.font = '700 28px "JetBrains Mono", monospace';
   ctx.fillText(matchData.date || 'PARTIDO OFICIAL', 64, 150);
 
-  ctx.fillStyle = '#12192A';
-  ctx.strokeStyle = 'rgba(255,255,255,0.16)';
+  ctx.fillStyle = '#0D1117';
+  ctx.strokeStyle = 'rgba(255,255,255,0.06)';
   ctx.lineWidth = 3;
   ctx.beginPath();
   ctx.roundRect(60, 190, W - 120, 290, 28);
@@ -60,7 +57,7 @@ async function drawPosterCanvas(matchData) {
   });
 
   ctx.fillStyle = '#D4FF2A';
-  ctx.font = 'italic 900 42px "Barlow Condensed", sans-serif';
+  ctx.font = '700 42px "Barlow Condensed", sans-serif';
   ctx.fillText('RENDIMIENTO INDIVIDUAL', 64, 560);
 
   for (let idx = 0; idx < matchData.players.length; idx++) {

@@ -4,6 +4,10 @@ App web (PWA) de marcador y estadísticas de pádel en directo. Sin servidor ni 
 
 El dueño del proyecto no es programador: explica los cambios en español y en lenguaje sencillo.
 
+## Diseño (obligatorio)
+
+**Antes de cualquier cambio estético, lee y cumple [`DESIGN.md`](DESIGN.md)** (sistema de diseño: fondo OLED `#030508`, tarjetas `#0D1117` con borde `rgba(255,255,255,0.06)`, un único acento `--volt` sin cambios por sección, cian y rojo solo para la pareja 1 y la pareja 2, nada de píldoras con borde de color, auroras, tramas ni degradados multicolor, cursiva solo en el logotipo y el marcador en directo, `tabular-nums` en todas las cifras y curva de muelle en hojas y modales). Los activos de marca están en [`docs/brand-index.md`](docs/brand-index.md). No añadas `style="..."` estáticos: crea clases en `css/styles.css`. Los cambios de diseño nunca tocan la lógica de `js/` ni las claves de `localStorage`.
+
 ## Estructura
 
 - `index.html`: solo el marcado (pantallas y modales). Los botones llaman a funciones globales con `onclick`. La navegación es un menú lateral (`#app-menu`) que se abre con el botón ☰ de arriba a la izquierda (`#main-nav`); tocar el logo lleva al inicio (`brandTap`). El menú lleva arriba tu perfil (carta) y agrupa Inicio, Jugar, Analizar y Más (instalar y compartir, club compartido y Ajustes). Ajustes (`openSettingsSheet`) reúne interruptores, reglas, foto de portada y el acceso a datos y copias (`openDataSheet`). Pocas acciones por pantalla: el inicio tiene un solo botón principal (Nuevo partido) y en el partido abajo solo Emitir, Opciones y Salir (póster y finalizar están en Opciones). Durante un partido en directo el menú queda bloqueado (se oculta `#main-nav`).
@@ -11,7 +15,7 @@ El dueño del proyecto no es programador: explica los cambios en español y en l
 - El sprite de iconos de `index.html` no puede usar `display:none` (rompería la máscara del logo).
 - `assets/logo.svg` y `assets/logo-mark.svg`: logo vectorial (monograma "P." con pala perforada). Los PNG de `icons/` se generan a partir de él; el logo también está como `<symbol id="logo-mark">` en `index.html`.
 - `css/styles.css`: todos los estilos. Colores en variables CSS en `:root` y `body.light-mode`.
-  - Cada sección tiene su color de acento mediante `body[data-section]`: `match` lima, `events` violeta (torneos y americanos), `ranking` oro y `history` azul. Usa siempre `var(--volt)`, `rgba(var(--volt-rgb), x)`, `var(--volt-deep)` y `var(--on-volt)` en vez de colores fijos para que el acento cambie solo.
+  - Un solo acento para toda la app (`--volt`); `body[data-section]` ya no cambia colores. Usa siempre los tokens de `DESIGN.md` (`var(--volt)`, `var(--bg-carbon)`, `var(--border-subtle)`…) en vez de colores fijos.
 - `js/`: scripts clásicos (no módulos ES) que comparten el ámbito global. **El orden de carga en `index.html` importa.**
   - `core/state.js`: variables globales (`state` = partido en curso, `dbPlayers`, `dbProfiles`, `matchHistory`, `setupConfig`).
   - `core/storage.js`: `saveDB()` y perfiles. Todo se guarda en `localStorage`.
@@ -58,4 +62,4 @@ El dueño del proyecto no es programador: explica los cambios en español y en l
 python3 -m http.server 8765   # y abrir http://localhost:8765
 ```
 
-Comprobar siempre: bienvenida (con almacenamiento vacío), inicio, menú superior y cambio de sección, cargar datos de ejemplo y restaurar de fábrica, empezar un partido, registrar golpes en modo Toque y Gestos, deshacer, tie-break, súper tie-break, estadísticas (mapa de calor, puntos clave y gráfico de probabilidad), cierre del partido, emitir en directo y vista del espectador (con un servidor simulado), carta de jugador, Soy yo y historias de temporada, torneo con resultado manual y en directo, americano/mexicano con cada tipo de partido, compartir imagen, sincronización (con un servidor simulado), ranking y ficha de jugador, en modo oscuro y claro, a 400 px de ancho.
+Comprobar siempre la lista de `DESIGN.md` (sección 8) en cualquier cambio visual, y además: bienvenida (con almacenamiento vacío), inicio, menú superior y cambio de sección, cargar datos de ejemplo y restaurar de fábrica, empezar un partido, registrar golpes en modo Toque y Gestos, deshacer, tie-break, súper tie-break, estadísticas (mapa de calor, puntos clave y gráfico de probabilidad), cierre del partido, emitir en directo y vista del espectador (con un servidor simulado), carta de jugador, Soy yo y historias de temporada, torneo con resultado manual y en directo, americano/mexicano con cada tipo de partido, compartir imagen, sincronización (con un servidor simulado), ranking y ficha de jugador, en modo oscuro y claro, a 400 px de ancho.

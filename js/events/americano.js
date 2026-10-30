@@ -249,7 +249,7 @@ function openAmericanoScore(aid, ri, mi) {
       <div class="result-vs">VS</div>
       <div class="result-team b">${escapeHtml(m.b.join(' / '))}</div>
     </div>`;
-  const clear = m.sa !== null ? `<button class="btn-icon" style="width:100%;padding:11px;margin-top:10px;color:var(--coral);" onclick="saveAmericanoScore(${jsArg(aid)}, ${ri}, ${mi}, null)">Borrar resultado</button>` : '';
+  const clear = m.sa !== null ? `<button class="btn-icon btn-block mt-10 btn-danger" onclick="saveAmericanoScore(${jsArg(aid)}, ${ri}, ${mi}, null)">Borrar resultado</button>` : '';
 
   if (MATCH_TYPES[mt.kind].fixedTotal) {
     // Total fijo: basta con elegir lo de una pareja. En el Pozo no puede haber empate.
@@ -274,7 +274,7 @@ function openAmericanoScore(aid, ri, mi) {
           <button type="button" class="btn-icon" onclick="stepScoreDraft('${side}', -1)">−</button>
         </div>`).join('<div class="score-stepper-sep">–</div>')}
     </div>
-    <div class="empty-note" style="padding:4px 0 10px;">${hint}</div>
+    <div class="empty-note stack-pad">${hint}</div>
     <button class="btn-volt" onclick="saveAmericanoScore(${jsArg(aid)}, ${ri}, ${mi}, scoreDraft.a, scoreDraft.b)">Guardar resultado</button>${clear}`);
 }
 
@@ -484,7 +484,7 @@ function renderAmericanoCreateHTML() {
   const pairsPreview = d.format === 'fixed' && n >= 2 ? `
     <div class="form-label">Parejas (en el orden en que los marcas)</div>
     ${Array.from({ length: Math.floor(n / 2) }, (_, i) => `<div class="pair-row"><span class="pair-num">${i + 1}</span><span class="pair-names">${escapeHtml(d.players[2 * i])} / ${escapeHtml(d.players[2 * i + 1])}</span></div>`).join('')}
-    <button type="button" class="btn-icon" style="width:100%;padding:10px;margin-top:6px;color:var(--volt);" onclick="balanceADraftPairs()">Equilibrar parejas por ELO</button>` : '';
+    <button type="button" class="btn-icon btn-block u-accent" onclick="balanceADraftPairs()">Equilibrar parejas por ELO</button>` : '';
   const stepper = (key, val, label) => `
     <div class="stepper">
       <span class="stepper-label">${label}</span>
@@ -504,7 +504,7 @@ function renderAmericanoCreateHTML() {
       ${segOptionsHTML(Object.entries(AMERICANO_FORMATS).map(([value, f]) => ({ value, main: f.main, sub: f.sub })), d.format, "setADraft.bind(null,'format')")}
       <div class="form-label">Tipo de partido</div>
       ${segOptionsHTML(Object.entries(MATCH_TYPES).map(([value, t]) => ({ value, main: t.main, sub: t.sub })), d.matchKind, "setADraft.bind(null,'matchKind')")}
-      <div style="height:6px;"></div>
+      <div class="thick"></div>
       ${segOptionsHTML(MATCH_TYPES[d.matchKind].values.map(v => ({
         value: v,
         main: d.matchKind === 'set' ? SET_NAMES[v] : String(v),
@@ -519,12 +519,12 @@ function renderAmericanoCreateHTML() {
     <div class="bento-card">
       ${['fixed', 'pozo'].includes(d.format) ? `<div class="stepper"><span class="stepper-label">Pistas</span><span class="stepper-val">${def.courts}</span></div>` : stepper('courts', def.courts, 'Pistas')}
       ${d.format === 'fixed' ? '' : stepper('rounds', def.rounds, 'Rondas')}
-      <div class="empty-note" style="text-align:left;padding:8px 0 0;">
+      <div class="empty-note u-left mt-8">
         ${err ? escapeHtml(err) : `${def.courts * 4} jugadores en pista por ronda${resting ? ` · ${resting} descansa${resting > 1 ? 'n' : ''} por turnos` : ''}${d.format === 'fixed' ? ` · ${Math.floor(n / 2) % 2 ? Math.floor(n / 2) : Math.floor(n / 2) - 1} rondas` : ''}`}
       </div>
     </div>
     <button class="btn-volt" onclick="createAmericanoFromDraft()">Crear y generar cruces</button>
-    <button class="btn-icon" style="width:100%;padding:12px;margin-top:8px;" onclick="showAmericanoList()">Cancelar</button>`;
+    <button class="btn-icon btn-block" onclick="showAmericanoList()">Cancelar</button>`;
 }
 
 // ---------- Cronómetro de ronda (partidos por tiempo) ----------
@@ -606,16 +606,16 @@ function renderAmericanoDetailHTML(ev) {
   const doneRounds = ev.rounds.filter(roundComplete).length;
   const canGenerate = !['americano', 'fixed'].includes(ev.format) && ev.rounds.length < ev.totalRounds && roundComplete(ev.rounds[ev.rounds.length - 1]);
   const podium = ev.status === 'finished' ? `
-    <div class="podium" style="margin-top:14px;">
+    <div class="podium mt-14">
       ${[1, 0, 2].map(pos => st[pos] ? `
         <div class="podium-slot ${pos === 0 ? 'first' : ''}">
-          ${renderAvatarHTML(st[pos].members[0], 'avatar-p1')}
+          ${renderAvatarHTML(st[pos].members[0], '')}
           <div class="podium-name">${escapeHtml(st[pos].members.map(shortName).join(' / '))}</div>
           <div class="podium-elo">${matchTypeOf(ev).kind === 'set' ? `${st[pos].w} victorias` : `${st[pos].pts} ${scoreUnit(ev) === 'puntos' ? 'pts' : 'juegos'}`}</div>
           <div class="podium-step" style="height:${[64, 46, 34][pos]}px;">${pos + 1}</div>
         </div>` : '<div></div>').join('')}
-    </div>` : `<div class="event-progress" style="margin-top:12px;"><i style="width:${(doneRounds / ev.totalRounds) * 100}%"></i></div>
-    <div class="event-card-sub" style="position:relative;">Ronda ${Math.min(doneRounds + 1, ev.totalRounds)} de ${ev.totalRounds} · ${matchTypeLabel(matchTypeOf(ev))} · ${ev.courts} pista${ev.courts > 1 ? 's' : ''}</div>`;
+    </div>` : `<div class="event-progress mt-12"><i style="width:${(doneRounds / ev.totalRounds) * 100}%"></i></div>
+    <div class="event-card-sub u-rel">Ronda ${Math.min(doneRounds + 1, ev.totalRounds)} de ${ev.totalRounds} · ${matchTypeLabel(matchTypeOf(ev))} · ${ev.courts} pista${ev.courts > 1 ? 's' : ''}</div>`;
 
   let body;
   if (aView.tab === 'table') {
@@ -626,8 +626,8 @@ function renderAmericanoDetailHTML(ev) {
           <tbody>${st.map((r, i) => `
             <tr class="${i < 3 && r.pj ? 'qualify' : ''}">
               <td><span class="pos">${i + 1}</span>${escapeHtml(r.members.map(shortName).join(' / '))}</td>
-              ${ev.format === 'pozo' ? `<td style="color:var(--volt);font-weight:800;">${r.court || '–'}</td>` : ''}<td>${r.pj}</td><td>${r.w}</td><td>${r.diff > 0 ? '+' : ''}${r.diff}</td>
-              <td style="color:var(--volt);font-weight:800;">${r.pts}</td>
+              ${ev.format === 'pozo' ? `<td class="u-accent u-strong">${r.court || '–'}</td>` : ''}<td>${r.pj}</td><td>${r.w}</td><td>${r.diff > 0 ? '+' : ''}${r.diff}</td>
+              <td class="u-accent u-strong">${r.pts}</td>
             </tr>`).join('')}</tbody>
         </table>
       </div>`;
@@ -659,5 +659,5 @@ function renderAmericanoDetailHTML(ev) {
       <button type="button" class="sort-chip ${aView.tab === 'table' ? 'active' : ''}" onclick="setAmericanoTab('table')">Clasificación</button>
     </div>
     ${body}
-    <button class="btn-icon" style="width:100%;padding:11px;margin-top:14px;color:var(--coral);" onclick="deleteAmericano(${jsArg(ev.id)})"><svg class="icon"><use href="#i-trash"/></svg> Eliminar evento</button>`;
+    <button class="btn-icon btn-block mt-14 btn-danger" onclick="deleteAmericano(${jsArg(ev.id)})"><svg class="icon"><use href="#i-trash"/></svg> Eliminar evento</button>`;
 }

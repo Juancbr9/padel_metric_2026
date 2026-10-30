@@ -23,12 +23,14 @@ function getInitials(name) {
   return parts[0].slice(0, 2).toUpperCase();
 }
 
-function renderAvatarHTML(playerName, extraClass = 'avatar-p1', customStyle = '', isGeneric = false, fallbackLabel = '') {
+// extraClass: tamaño (avatar-sm, avatar-md…) y, solo en un partido, el color de su pareja (avatar-p1 / avatar-p2)
+function renderAvatarHTML(playerName, extraClass = '', customStyle = '', isGeneric = false, fallbackLabel = '') {
+  const style = customStyle ? ` style="${customStyle}"` : '';
   if (!isGeneric && playerName && dbProfiles[playerName] && dbProfiles[playerName].photo) {
-    return `<span class="avatar-circle ${extraClass}" style="${customStyle}"><img src="${dbProfiles[playerName].photo}" alt="${playerName}"></span>`;
+    return `<span class="avatar-circle ${extraClass}"${style}><img src="${dbProfiles[playerName].photo}" alt="${escapeHtml(playerName)}"></span>`;
   }
   const text = fallbackLabel || getInitials(playerName);
-  return `<span class="avatar-circle ${extraClass}" style="${customStyle}">${text}</span>`;
+  return `<span class="avatar-circle ${extraClass}"${style}>${escapeHtml(text)}</span>`;
 }
 
 dbPlayers.forEach(k => ensureProfile(k));

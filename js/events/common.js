@@ -54,10 +54,10 @@ function renderPlayerChooserHTML(selected, { onToggle, onAdd, showGender = false
     return `<button type="button" class="player-chip ${on ? 'on' : ''}" onclick="${onToggle}(${jsArg(name)})">${escapeHtml(name)}<small>${eloOfName(name, elos)}${g}</small></button>`;
   }).join('');
   return `
-    <div class="player-chips">${chips || '<span class="empty-note" style="padding:4px;">No hay jugadores todavía: añádelos abajo.</span>'}</div>
-    <div class="input-row" style="margin-top:8px;">
+    <div class="player-chips">${chips || '<span class="empty-note pad-4">No hay jugadores todavía: añádelos abajo.</span>'}</div>
+    <div class="input-row mt-8">
       <input type="text" id="quick-player-name" placeholder="Añadir jugador nuevo (nombre y apellido)" onkeydown="if(event.key==='Enter'){${onAdd}();}">
-      ${showGender ? `<select id="quick-player-gender" style="max-width:90px;"><option value="M">Hombre</option><option value="F">Mujer</option></select>` : ''}
+      ${showGender ? `<select class="mw-90" id="quick-player-gender"><option value="M">Hombre</option><option value="F">Mujer</option></select>` : ''}
       <button type="button" class="btn-icon" onclick="${onAdd}()"><svg class="icon"><use href="#i-plus"/></svg></button>
     </div>`;
 }

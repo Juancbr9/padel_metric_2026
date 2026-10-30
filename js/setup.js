@@ -89,13 +89,13 @@ function renderSetupCourt() {
       <div class="lineup-slot-top">
         <span class="lineup-pos-tag" style="color:${pairColors[i]};">P${i<2?1:2} · ${FIXED_COURT_SIDES[i]}</span>
         <button type="button" class="srv-toggle-btn ${isSrv ? 'active' : ''}" onclick="event.stopPropagation(); selectInitialServer(${i});" title="Marcar como sacador inicial">
-          <svg class="icon" style="width:12px;height:12px;"><use href="#i-ball"/></svg>
+          <svg class="icon icon-xs"><use href="#i-ball"/></svg>
           ${isSrv ? 'SACA' : ''}
         </button>
       </div>
       <div class="lineup-player-row">
         ${avatarNode}
-        <div style="min-width:0;flex:1;">
+        <div class="u-min0 flex-1">
           <div class="lineup-player-label ${isGeneric ? 'placeholder' : ''}">
             ${isGeneric ? `Jugador ${i+1}` : currentVal}
           </div>

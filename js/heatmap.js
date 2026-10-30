@@ -109,19 +109,19 @@ function renderHeatmapPanel(target) {
   // Resumen por jugador: red vs fondo
   const rows = target.players.map(p => {
     const z = byPlayer[p.name] || { R: { W: 0, E: 0 }, T: { W: 0, E: 0 }, F: { W: 0, E: 0 } };
-    const cell = k => `<span style="color:var(--emerald);">${z[k].W}</span>/<span style="color:var(--coral);">${z[k].E}</span>`;
+    const cell = k => `<span class="u-good">${z[k].W}</span>/<span class="u-bad">${z[k].E}</span>`;
     const totW = z.R.W + z.T.W + z.F.W;
-    return `<tr><td style="font-weight:800;">${p.name}</td><td>${cell('R')}</td><td>${cell('T')}</td><td>${cell('F')}</td><td style="color:var(--volt);font-weight:800;">${pct(z.R.W, totW)}%</td></tr>`;
+    return `<tr><td class="u-strong">${p.name}</td><td>${cell('R')}</td><td>${cell('T')}</td><td>${cell('F')}</td><td class="u-accent u-strong">${pct(z.R.W, totW)}%</td></tr>`;
   }).join('');
 
   return `
-    <div class="sort-strip" style="margin-top:10px;">${playerChips}</div>
+    <div class="sort-strip mt-10">${playerChips}</div>
     <div class="sort-strip">${typeChips}</div>
     ${renderFullCourtHeatSVG(cells, heatFilterType)}
-    <div class="heat-legend"><span><i style="background:#00E676"></i>Winners</span><span><i style="background:#FF2E54"></i>Errores</span><span>Más intenso = más golpes</span></div>
+    <div class="heat-legend"><span><i class="sw-good"></i>Winners</span><span><i class="sw-bad"></i>Errores</span><span>Más intenso = más golpes</span></div>
     <table>
       <thead><tr><th>Jugador</th><th>Red</th><th>Trans.</th><th>Fondo</th><th>W en red</th></tr></thead>
       <tbody>${rows}</tbody>
     </table>
-    <div class="empty-note" style="margin-top:6px;">Cada casilla: <span style="color:var(--emerald);">winners</span>/<span style="color:var(--coral);">errores</span>.</div>`;
+    <div class="empty-note mt-6">Cada casilla: <span class="u-good">winners</span>/<span class="u-bad">errores</span>.</div>`;
 }

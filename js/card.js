@@ -126,7 +126,7 @@ function setMyPlayer(name) {
 // ---------- Imagen para compartir (1080 × 1350) ----------
 const CARD_COLORS = {
   bronce: ['#8A5A36', '#3B2414', '#E7B38A'], plata: ['#9AA7B8', '#2B3442', '#F1F5F9'],
-  oro: ['#E8B931', '#5A3F07', '#FFF1B8'], elite: ['#7C3AED', '#0B1027', '#D4FF2A']
+  oro: ['#D9A51F', '#8A6510', '#FFF1B8'], elite: ['#1A2230', '#0D1117', '#D4FF2A']
 };
 
 async function sharePlayerCard(name) {
@@ -168,7 +168,7 @@ async function sharePlayerCard(name) {
     ctx.font = '800 30px "Plus Jakarta Sans", sans-serif';
     ctx.fillText((prof.prefSide && prof.prefSide !== 'Ambas' ? prof.prefSide : 'Pádel').toUpperCase(), cx + 56, cy + 236);
     const parts = name.trim().split(/\s+/);
-    ctx.font = 'italic 900 84px "Barlow Condensed", sans-serif';
+    ctx.font = '700 84px "Barlow Condensed", sans-serif';
     ctx.textAlign = 'center';
     ctx.fillText(fitText(ctx, (parts.length > 1 ? parts.slice(1).join(' ') : parts[0]).toUpperCase(), cw - 80), W / 2, cy + 400);
     ctx.fillStyle = 'rgba(255,255,255,0.25)'; ctx.fillRect(cx + 70, cy + 425, cw - 140, 3);

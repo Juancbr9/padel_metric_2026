@@ -77,7 +77,7 @@ function renderDrawerMe() {
   const { statsMap } = computeAllPlayersStats();
   const st = statsMap[myPlayerName] || emptyPlayerStats(myPlayerName);
   box.innerHTML = `<button type="button" class="drawer-me" onclick="closeAppMenu(); openMyCard()">
-    ${renderAvatarHTML(myPlayerName, 'avatar-p1', 'width:40px;height:40px;font-size:0.9rem;')}
+    ${renderAvatarHTML(myPlayerName, 'avatar-md')}
     <span class="drawer-txt"><strong>${escapeHtml(myPlayerName)}</strong><small>ELO ${st.elo} · ${st.PJ} partidos · ${st.PJ ? Math.round((st.V / st.PJ) * 100) : 0} % victorias</small></span></button>`;
 }
 

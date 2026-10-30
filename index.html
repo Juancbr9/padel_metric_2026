@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <meta name="theme-color" content="#06090F">
+  <meta name="theme-color" content="#030508">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -19,7 +19,7 @@
 </head>
 </head>
 <body>
-<svg style="position:absolute;width:0;height:0;overflow:hidden;" aria-hidden="true">
+<svg class="svg-sprite" aria-hidden="true">
   <symbol id="i-ball" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M5.6 5.6C9 9 9 15 5.6 18.4"/><path d="M18.4 5.6C15 9 15 15 18.4 18.4"/></symbol>
   <symbol id="i-undo" viewBox="0 0 24 24"><path d="M3 7v6h6"/><path d="M21 17a9 9 0 0 0-9-9 9 9 0 0 0-6 2.3L3 13"/></symbol>
   <symbol id="i-chart" viewBox="0 0 24 24"><path d="M18 20V10"/><path d="M12 20V4"/><path d="M6 20v-6"/></symbol>
@@ -69,27 +69,6 @@
     <circle cx="372" cy="388" r="38" fill="currentColor"/>
   </symbol>
   <symbol id="i-swipe" viewBox="0 0 24 24"><polyline points="8 7 12 3 16 7"/><polyline points="16 17 12 21 8 17"/><line x1="12" y1="3" x2="12" y2="21"/></symbol>
-  <symbol id="vec-saque" viewBox="0 0 40 40">
-    <line x1="20" y1="14" x2="20" y2="35" stroke="currentColor" stroke-width="2" stroke-dasharray="2 2"/>
-    <path d="M5 28 Q 20 8 35 30" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>
-    <circle cx="35" cy="30" r="3.5" fill="currentColor"/><circle cx="6" cy="27" r="2.5" fill="currentColor"/>
-  </symbol>
-  <symbol id="vec-volea" viewBox="0 0 40 40">
-    <line x1="20" y1="18" x2="20" y2="36" stroke="currentColor" stroke-width="2.5"/><line x1="4" y1="36" x2="36" y2="36" stroke="currentColor" stroke-width="1.5" opacity="0.4"/>
-    <path d="M6 16 Q 20 12 34 22" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/><polygon points="35,23 29,23 32,18" fill="currentColor"/><circle cx="8" cy="15" r="3" fill="currentColor"/>
-  </symbol>
-  <symbol id="vec-bandeja" viewBox="0 0 40 40">
-    <line x1="4" y1="34" x2="36" y2="34" stroke="currentColor" stroke-width="1.5" opacity="0.4"/><path d="M6 8 C 16 8, 22 28, 34 31" fill="none" stroke="currentColor" stroke-width="2.5" stroke-dasharray="3 2"/>
-    <circle cx="6" cy="8" r="3.5" fill="currentColor"/><polygon points="36,31 30,28 31,34" fill="currentColor"/>
-  </symbol>
-  <symbol id="vec-remate" viewBox="0 0 40 40">
-    <line x1="4" y1="34" x2="36" y2="34" stroke="currentColor" stroke-width="1.5" opacity="0.4"/><polyline points="8,6 21,33 34,10" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
-    <circle cx="8" cy="6" r="3.5" fill="currentColor"/><polygon points="35,8 30,12 36,14" fill="currentColor"/>
-  </symbol>
-  <symbol id="vec-bajada" viewBox="0 0 40 40">
-    <line x1="7" y1="6" x2="7" y2="34" stroke="currentColor" stroke-width="3"/><polyline points="18,8 8,20 34,28" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
-    <polygon points="36,29 30,25 31,31" fill="currentColor"/>
-  </symbol>
   <!-- Esquema de cada golpe: pista de lado (cristal, suelo y red), pala en el punto de impacto, trayectoria y bote -->
   <symbol id="shot-volea" viewBox="0 0 72 40"><g class="shot-court"><line x1="3" y1="36" x2="69" y2="36"/><line x1="3" y1="6" x2="3" y2="36"/><line x1="69" y1="6" x2="69" y2="36"/><line x1="38" y1="27" x2="38" y2="36" class="net"/></g><g transform="translate(31 19) rotate(-35)"><ellipse rx="3.3" ry="4.3" fill="currentColor" fill-opacity="0.28" stroke="currentColor" stroke-width="1.4"/><line x1="0" y1="4.3" x2="0" y2="8.3" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></g><path d="M34 20 L 55 35 L 60 31" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"/><ellipse cx="55" cy="36" rx="3" ry="1" fill="currentColor" opacity="0.5"/><circle cx="61" cy="30" r="2.4" fill="currentColor"/></symbol>
   <symbol id="shot-remate" viewBox="0 0 72 40"><g class="shot-court"><line x1="3" y1="36" x2="69" y2="36"/><line x1="3" y1="6" x2="3" y2="36"/><line x1="69" y1="6" x2="69" y2="36"/><line x1="38" y1="27" x2="38" y2="36" class="net"/></g><g transform="translate(25 6) rotate(-10)"><ellipse rx="3.3" ry="4.3" fill="currentColor" fill-opacity="0.28" stroke="currentColor" stroke-width="1.4"/><line x1="0" y1="4.3" x2="0" y2="8.3" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></g><path d="M28 7 L 50 35 L 64 7" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"/><ellipse cx="50" cy="36" rx="3" ry="1" fill="currentColor" opacity="0.5"/><circle cx="64.5" cy="6" r="2.4" fill="currentColor"/></symbol>
@@ -107,7 +86,7 @@
 <input type="file" id="import-file" accept=".json" class="hidden" onchange="importBackupJSON(event)">
 
 <div id="toast-hud">
-  <svg class="icon" style="color:#D4FF2A;"><use href="#i-ball"/></svg>
+  <svg class="icon toast-ico"><use href="#i-ball"/></svg>
   <span id="toast-msg">Listo</span>
 </div>
 
@@ -177,7 +156,7 @@
     </div>
     <div class="menu-footer">
       <svg class="menu-footer-logo"><use href="#logo-mark"/></svg>
-      <span id="app-version-label">Padel Metric · v8</span>
+      <span id="app-version-label">Padel Metric · v9</span>
     </div>
   </nav>
 </div>
@@ -192,22 +171,22 @@
 
     <div id="resume-match-banner" class="resume-banner hidden">
       <div>
-        <div style="font-size:0.62rem;font-weight:800;color:var(--volt);text-transform:uppercase;letter-spacing:0.4px;">Partido en curso pausado</div>
-        <div id="resume-match-label" style="font-family:var(--font-display);font-size:1.12rem;font-weight:800;">Pareja 1 vs Pareja 2</div>
+        <div class="resume-kicker">Partido en curso pausado</div>
+        <div class="resume-label" id="resume-match-label">Pareja 1 vs Pareja 2</div>
       </div>
-      <div style="display:flex;gap:6px;">
-        <button type="button" class="btn-icon" style="background:var(--volt);color:var(--on-volt);border:none;" onclick="resumeSavedActiveMatch()">CONTINUAR</button>
-        <button type="button" class="btn-icon" style="color:var(--coral);" onclick="discardSavedActiveMatch()">✕</button>
+      <div class="u-row-6">
+        <button type="button" class="btn-icon btn-accent" onclick="resumeSavedActiveMatch()">CONTINUAR</button>
+        <button type="button" class="btn-icon btn-danger" onclick="discardSavedActiveMatch()">✕</button>
       </div>
     </div>
 
     <div id="hero-card-box" class="hero-padel-card">
       <div class="hero-top-bar">
         <button type="button" class="rules-pill-btn" onclick="openRulesModal()" title="Ajustes de Formato y Control del Partido">
-          <svg class="icon" style="width:14px;height:14px;"><use href="#i-sliders"/></svg>
+          <svg class="icon icon-sm"><use href="#i-sliders"/></svg>
           <span id="rules-summary-text">3 Sets · Ventaja · Toque</span>
         </button>
-        <button type="button" class="btn-custom-cover" onclick="clearSetupCourt()" title="Quitar a los jugadores" aria-label="Quitar a los jugadores"><svg class="icon" style="width:14px;height:14px;"><use href="#i-trash"/></svg></button>
+        <button type="button" class="btn-custom-cover" onclick="clearSetupCourt()" title="Quitar a los jugadores" aria-label="Quitar a los jugadores"><svg class="icon icon-sm"><use href="#i-trash"/></svg></button>
         <input type="file" id="cover-upload" accept="image/*" class="hidden" onchange="handleCustomCover(event)">
       </div>
       <div class="hero-headline">NUEVO PARTIDO</div>
@@ -225,13 +204,13 @@
         <line x1="200" y1="84" x2="200" y2="336" stroke="rgba(255,255,255,0.28)" stroke-width="1.8"/>
       </svg>
 
-      <div style="position:relative; z-index:2;">
+      <div class="u-raise">
         <div class="players-pair-grid">
           <div id="setup-slot-0" class="lineup-slot-card" onclick="openPlayerPicker(0)"></div>
           <div id="setup-slot-1" class="lineup-slot-card" onclick="openPlayerPicker(1)"></div>
         </div>
 
-        <div class="premier-net-container" style="margin:12px -10px;">
+        <div class="premier-net-container lineup-net">
           <div class="premier-net-post left"></div>
           <div class="premier-net-sign"><span class="premier-net-accent"></span><span class="premier-net-text">PADEL METRIC</span><span class="premier-net-accent"></span></div>
           <div class="premier-net-post right"></div>
@@ -247,22 +226,22 @@
     <div class="prematch-bar">
       <div class="prob-wrap">
         <div class="prob-labels">
-          <span id="prob-p1-txt" style="color:var(--cyan);">P1 50%</span>
-          <span style="color:var(--text-secondary);">PREVISIÓN</span>
-          <span id="prob-p2-txt" style="color:var(--coral);">P2 50%</span>
+          <span id="prob-p1-txt" class="pair-a-txt">P1 50%</span>
+          <span class="u-muted">PREVISIÓN</span>
+          <span id="prob-p2-txt" class="pair-b-txt">P2 50%</span>
         </div>
         <div class="prob-track">
           <div id="prob-bar-1" class="tv-bar-p1" style="width:50%"></div>
           <div id="prob-bar-2" class="tv-bar-p2" style="width:50%"></div>
         </div>
       </div>
-      <button type="button" class="btn-icon" style="color:var(--volt);border-color:rgba(var(--volt-rgb),0.35);padding:9px 12px;" onclick="balancePairsAutomatically()">
-        <svg class="icon" style="width:14px;height:14px;"><use href="#i-swap"/></svg> Equilibrar
+      <button type="button" class="btn-icon btn-accent-text" onclick="balancePairsAutomatically()">
+        <svg class="icon icon-sm"><use href="#i-swap"/></svg> Equilibrar
       </button>
     </div>
 
     <button class="btn-volt" onclick="startMatch()">
-      <svg class="icon icon-lg" style="stroke:#06090F;"><use href="#i-ball"/></svg>
+      <svg class="icon icon-lg"><use href="#i-ball"/></svg>
       EMPEZAR PARTIDO
     </button>
   </div>
@@ -283,18 +262,18 @@
     <div id="rk-panel-players">
     <div class="bento-card">
       <div class="section-header">
-        <div class="section-title"><svg class="icon" style="color:var(--volt);"><use href="#i-users"/></svg> Jugadores</div>
-        <button class="btn-icon" style="background:var(--volt);color:var(--on-volt);border:none;" onclick="openEditProfileModal(null)">+ NUEVO</button>
+        <div class="section-title"><svg class="icon u-accent"><use href="#i-users"/></svg> Jugadores</div>
+        <button class="btn-icon btn-accent" onclick="openEditProfileModal(null)">+ NUEVO</button>
       </div>
 
-      <div class="input-row" style="margin-bottom:8px;">
+      <div class="input-row mb-8">
         <input type="text" id="search-player-input" placeholder="Buscar por nombre, apellidos, club o nota..." oninput="renderGlobalRanking()">
       </div>
 
-      <div class="seg-grid-3" style="margin-bottom:8px;">
-        <button type="button" class="seg-btn active" id="sexflt-all" style="padding:7px;" onclick="setRankingGenderFilter('all')">Todos</button>
-        <button type="button" class="seg-btn" id="sexflt-M" style="padding:7px;" onclick="setRankingGenderFilter('M')">Masculino</button>
-        <button type="button" class="seg-btn" id="sexflt-F" style="padding:7px;" onclick="setRankingGenderFilter('F')">Femenino</button>
+      <div class="seg-grid-3 mb-8">
+        <button type="button" class="seg-btn active compact" id="sexflt-all" onclick="setRankingGenderFilter('all')">Todos</button>
+        <button type="button" class="seg-btn compact" id="sexflt-M" onclick="setRankingGenderFilter('M')">Masculino</button>
+        <button type="button" class="seg-btn compact" id="sexflt-F" onclick="setRankingGenderFilter('F')">Femenino</button>
       </div>
 
       <div class="sort-strip">
@@ -457,33 +436,33 @@
     <div class="bento-card">
       <div class="section-header">
         <div class="section-title">Estadísticas</div>
-        <button class="btn-icon" style="background:var(--volt);color:var(--on-volt);border:none;" onclick="toggleStatsView()">VOLVER</button>
+        <button class="btn-icon btn-accent" onclick="toggleStatsView()">VOLVER</button>
       </div>
-      <div style="display:grid; grid-template-columns: 1fr 1fr; gap:8px; margin-bottom:10px;">
-        <button class="btn-icon" style="background:rgba(0,230,118,0.15);color:var(--emerald);border-color:rgba(0,230,118,0.4);padding:12px;" onclick="openPosterModal()">
+      <div class="u-grid-2 mb-10">
+        <button class="btn-icon btn-tall" onclick="openPosterModal()">
           <svg class="icon"><use href="#i-share"/></svg> PÓSTER WHATSAPP
         </button>
-        <button id="btn-manual-save" class="btn-icon" style="background:rgba(0,240,255,0.14);color:var(--cyan);border-color:rgba(0,240,255,0.4);padding:12px;" onclick="saveMatchToHistory(true)">
+        <button id="btn-manual-save" class="btn-icon btn-tall" onclick="saveMatchToHistory(true)">
           <svg class="icon"><use href="#i-save"/></svg> GUARDAR EN HISTORIAL
         </button>
       </div>
 
-      <div style="display:grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap:5px; margin-bottom:8px;">
-        <button class="seg-btn active" id="setflt-all" style="padding:7px;" onclick="selectSetFilter('all')">Total</button>
-        <button class="seg-btn" id="setflt-0" style="padding:7px;" onclick="selectSetFilter(0)">Set 1</button>
-        <button class="seg-btn" id="setflt-1" style="padding:7px;" onclick="selectSetFilter(1)">Set 2</button>
-        <button class="seg-btn" id="setflt-2" style="padding:7px;" onclick="selectSetFilter(2)">Set 3</button>
+      <div class="u-grid-4 mb-8">
+        <button class="seg-btn active compact" id="setflt-all" onclick="selectSetFilter('all')">Total</button>
+        <button class="seg-btn compact" id="setflt-0" onclick="selectSetFilter(0)">Set 1</button>
+        <button class="seg-btn compact" id="setflt-1" onclick="selectSetFilter(1)">Set 2</button>
+        <button class="seg-btn compact" id="setflt-2" onclick="selectSetFilter(2)">Set 3</button>
       </div>
 
       <div class="kpi-trio" id="mvp-highlights"></div>
-      <div id="stats-tabs" class="sort-strip" style="margin-top:8px;">
+      <div id="stats-tabs" class="sort-strip mt-8">
         <button type="button" class="sort-chip active" data-mode="ind" onclick="renderStats('ind')">Jugadores</button>
         <button type="button" class="sort-chip" data-mode="pair" onclick="renderStats('pair')">Parejas</button>
         <button type="button" class="sort-chip" data-mode="heatmap" onclick="renderStats('heatmap')">Mapa de calor</button>
         <button type="button" class="sort-chip" data-mode="clave" onclick="renderStats('clave')">Puntos clave</button>
         <button type="button" class="sort-chip" data-mode="shots" onclick="renderStats('shots')">Golpes</button>
       </div>
-      <div id="stats-content" style="overflow-x:auto;"></div>
+      <div class="u-scroll-x" id="stats-content"></div>
     </div>
   </div>
 </div>
@@ -493,14 +472,14 @@
 <!-- MODAL SELECTOR DE JUGADOR ANCLADO EN LA PARTE SUPERIOR DE LA PANTALLA -->
 <div id="player-picker-modal" class="sheet-backdrop top-pinned hidden" onclick="closePlayerPicker()">
   <div class="telemetry-sheet full-top-sheet" onclick="event.stopPropagation()">
-    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; flex-shrink:0;">
-      <div id="picker-title" style="font-family:var(--font-display);font-size:1.35rem;font-weight:900;text-transform:uppercase;color:var(--volt);">SELECCIONAR JUGADOR</div>
-      <div style="display:flex; gap:6px;">
-        <button type="button" class="btn-icon" style="color:var(--volt);border-color:rgba(var(--volt-rgb),0.4);" onclick="openNewFullPlayerFromPicker()">+ FICHA CON FOTO</button>
+    <div class="sheet-head no-shrink mb-8">
+      <div class="sheet-title" id="picker-title">SELECCIONAR JUGADOR</div>
+      <div class="u-row-6">
+        <button type="button" class="btn-icon btn-accent-text" onclick="openNewFullPlayerFromPicker()">+ FICHA CON FOTO</button>
         <button class="btn-icon" onclick="closePlayerPicker()">✕</button>
       </div>
     </div>
-    <input type="text" id="picker-search" style="flex-shrink:0;" placeholder="Buscar jugador o escribir nombre nuevo..." oninput="renderPickerList()" onkeydown="handlePickerSearchEnter(event)">
+    <input class="no-shrink" type="text" id="picker-search" placeholder="Buscar jugador o escribir nombre nuevo..." oninput="renderPickerList()" onkeydown="handlePickerSearchEnter(event)">
     <div id="picker-list" class="picker-list"></div>
   </div>
 </div>
@@ -508,12 +487,12 @@
 <!-- MODAL PROFESIONAL DE AJUSTES DEL PARTIDO (REGLAS + CONTROL INTEGRADO) -->
 <div id="rules-modal" class="sheet-backdrop hidden" onclick="closeRulesModal()">
   <div class="telemetry-sheet" onclick="event.stopPropagation()">
-    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
+    <div class="sheet-head mb-14">
       <div>
-        <div style="font-family:var(--font-display);font-size:1.45rem;font-weight:900;text-transform:uppercase;color:var(--text-primary);line-height:1;">AJUSTES DEL PARTIDO</div>
-        <div style="font-size:0.68rem;color:var(--text-secondary);font-weight:600;margin-top:2px;">Reglamento oficial y método de registro en vivo</div>
+        <div class="sheet-title">AJUSTES DEL PARTIDO</div>
+        <div class="sheet-sub">Reglamento oficial y método de registro en vivo</div>
       </div>
-      <button class="btn-icon" style="background:var(--volt);color:#06090F;border:none;padding:8px 14px;" onclick="closeRulesModal()">LISTO</button>
+      <button class="btn-icon btn-accent" onclick="closeRulesModal()">LISTO</button>
     </div>
 
     <!-- Grupo 1: Resolución en 40-40 -->
@@ -575,7 +554,7 @@
     </div>
 
     <!-- Grupo 4: Interacción de Registro durante el Partido (Exclusivo) -->
-    <div class="settings-group" style="margin-bottom:0;">
+    <div class="settings-group mb-0">
       <div class="settings-group-header">
         <span class="settings-group-title">Control de Anotación en Pista</span>
         <span class="settings-group-hint">Tocar al jugador abre siempre todas las opciones</span>
@@ -631,30 +610,30 @@
 <!-- MODAL DE FICHA INDIVIDUAL DE JUGADOR -->
 <div id="player-profile-modal" class="sheet-backdrop hidden" onclick="closePlayerProfile()">
   <div class="telemetry-sheet" onclick="event.stopPropagation()">
-    <div style="display:flex; justify-content:space-between; align-items:center;">
-      <div style="display:flex;align-items:center;gap:10px;">
-        <div id="prof-avatar" class="avatar-circle avatar-p1" style="width:44px;height:44px;font-size:1.1rem;">JR</div>
+    <div class="sheet-head">
+      <div class="u-row-10">
+        <div id="prof-avatar" class="avatar-circle avatar-lg">JR</div>
         <div>
-          <div id="prof-name" style="font-family:var(--font-display);font-size:1.6rem;font-weight:900;text-transform:uppercase;color:var(--volt);line-height:1;">JUGADOR</div>
-          <div id="prof-meta-badges" style="margin-top:4px;"></div>
+          <div class="sheet-title" id="prof-name">JUGADOR</div>
+          <div class="mt-4" id="prof-meta-badges"></div>
         </div>
       </div>
-      <div style="display:flex; gap:6px;">
-        <button id="btn-open-edit-prof" class="btn-icon" style="color:var(--volt);border-color:rgba(var(--volt-rgb),0.35);">
-          <svg class="icon" style="width:14px;height:14px;"><use href="#i-edit"/></svg> Editar
+      <div class="u-row-6">
+        <button id="btn-open-edit-prof" class="btn-icon btn-accent-text">
+          <svg class="icon icon-sm"><use href="#i-edit"/></svg> Editar
         </button>
         <button class="btn-icon" onclick="closePlayerProfile()">✕</button>
       </div>
     </div>
-    <div id="prof-body" style="margin-top:10px;"></div>
+    <div class="mt-10" id="prof-body"></div>
   </div>
 </div>
 
 <!-- MODAL DE EDICIÓN / ALTA COMPLETA DE JUGADOR CON ENCUADRE INTERACTIVO DE FOTO -->
 <div id="player-edit-modal" class="sheet-backdrop hidden" onclick="closeEditProfileModal()">
   <div class="telemetry-sheet" onclick="event.stopPropagation()">
-    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
-      <div id="edit-modal-title" style="font-family:var(--font-display);font-size:1.45rem;font-weight:900;text-transform:uppercase;color:var(--volt);">DATOS DEL JUGADOR</div>
+    <div class="sheet-head mb-12">
+      <div class="sheet-title" id="edit-modal-title">DATOS DEL JUGADOR</div>
       <button class="btn-icon" onclick="closeEditProfileModal()">✕</button>
     </div>
 
@@ -665,22 +644,22 @@
         <span id="avatar-crop-initials">JR</span>
         <div class="cropper-guide-ring"></div>
       </div>
-      <div style="flex:1;">
-        <div style="font-size:0.74rem;font-weight:800;margin-bottom:5px;color:var(--text-primary);">Encuadre Circular (Arrastra la foto)</div>
-        <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px;">
-          <button type="button" class="btn-icon" style="color:var(--volt);border-color:rgba(var(--volt-rgb),0.35);padding:6px 10px;" onclick="document.getElementById('edit-avatar-input').click()">
-            <svg class="icon" style="width:13px;height:13px;"><use href="#i-camera"/></svg> Subir Foto
+      <div class="flex-1">
+        <div class="field-title">Encuadre Circular (Arrastra la foto)</div>
+        <div class="u-wrap-6 mb-8">
+          <button type="button" class="btn-icon btn-accent-text btn-sm" onclick="document.getElementById('edit-avatar-input').click()">
+            <svg class="icon icon-sm"><use href="#i-camera"/></svg> Subir Foto
           </button>
-          <button type="button" id="btn-center-avatar" class="btn-icon hidden" style="padding:6px 9px;" onclick="resetAvatarCrop()">
+          <button type="button" id="btn-center-avatar" class="btn-icon hidden btn-sm" onclick="resetAvatarCrop()">
             Centrar
           </button>
-          <button type="button" id="btn-remove-avatar" class="btn-icon hidden" style="color:var(--coral);padding:6px 9px;" onclick="clearEditAvatarPhoto()">
+          <button type="button" id="btn-remove-avatar" class="btn-icon hidden btn-danger btn-sm" onclick="clearEditAvatarPhoto()">
             Quitar
           </button>
         </div>
-        <div id="avatar-zoom-controls" class="hidden" style="display:flex;align-items:center;gap:8px;">
-          <span style="font-size:0.64rem;color:var(--text-secondary);font-weight:700;">Zoom</span>
-          <input type="range" id="avatar-zoom-slider" min="0.8" max="3.5" step="0.05" value="1" style="padding:0;height:6px;" oninput="onAvatarZoomChange(this.value)">
+        <div id="avatar-zoom-controls" class="hidden u-row-8">
+          <span class="field-hint">Zoom</span>
+          <input class="range-input" type="range" id="avatar-zoom-slider" min="0.8" max="3.5" step="0.05" value="1" oninput="onAvatarZoomChange(this.value)">
         </div>
         <input type="file" id="edit-avatar-input" accept="image/*" class="hidden" onchange="handleEditAvatarFile(event)">
       </div>
@@ -695,14 +674,14 @@
       <input type="text" id="edit-club" placeholder="Club habitual o instalación">
     </div>
 
-    <span style="font-size:0.68rem;font-weight:700;color:var(--text-secondary);display:block;margin-bottom:5px;text-transform:uppercase;">Sexo</span>
+    <span class="field-label">Sexo</span>
     <div class="seg-grid-2">
       <button type="button" class="seg-btn active" id="edit-sex-M" onclick="selectEditSex('M')">Masculino</button>
       <button type="button" class="seg-btn" id="edit-sex-F" onclick="selectEditSex('F')">Femenino</button>
     </div>
 
-    <span style="font-size:0.68rem;font-weight:700;color:var(--text-secondary);display:block;margin-bottom:5px;text-transform:uppercase;">Mano y Posición Habitual</span>
-    <div class="seg-grid-2" style="margin-bottom:6px;">
+    <span class="field-label">Mano y Posición Habitual</span>
+    <div class="seg-grid-2 mb-6">
       <button type="button" class="seg-btn active" id="edit-hand-R" onclick="selectEditHand('Diestro')">Diestro</button>
       <button type="button" class="seg-btn" id="edit-hand-L" onclick="selectEditHand('Zurdo')">Zurdo</button>
     </div>
@@ -712,17 +691,17 @@
       <button type="button" class="seg-btn active" id="edit-side-Ambas" onclick="selectEditPrefSide('Ambas')">Ambas</button>
     </div>
 
-    <span style="font-size:0.68rem;font-weight:700;color:var(--text-secondary);display:block;margin-bottom:5px;text-transform:uppercase;">Notas y Observaciones</span>
+    <span class="field-label">Notas y Observaciones</span>
     <textarea id="edit-notes" placeholder="Ej. Torneo San Andrés, buen bloqueo de revés..."></textarea>
 
-    <button class="btn-volt" style="margin-top:12px;padding:13px;font-size:1.1rem;" onclick="saveEditedProfile()">GUARDAR FICHA</button>
+    <button class="btn-volt mt-12" onclick="saveEditedProfile()">GUARDAR FICHA</button>
   </div>
 </div>
 
 <!-- MODAL DE RESULTADOS DE TORNEOS Y AMERICANOS -->
 <div id="event-modal" class="sheet-backdrop hidden" onclick="closeEventModal()">
   <div class="telemetry-sheet" onclick="event.stopPropagation()">
-    <div style="display:flex;justify-content:flex-end;"><button class="btn-icon" onclick="closeEventModal()"><svg class="icon"><use href="#i-close"/></svg></button></div>
+    <div class="u-end"><button class="btn-icon" onclick="closeEventModal()"><svg class="icon"><use href="#i-close"/></svg></button></div>
     <div id="event-modal-body"></div>
   </div>
 </div>
@@ -741,15 +720,15 @@
 <!-- MODAL DE PÓSTER HD -->
 <div id="poster-modal" class="sheet-backdrop hidden" onclick="closePosterModal()">
   <div class="telemetry-sheet" onclick="event.stopPropagation()">
-    <div style="display:flex; justify-content:space-between; align-items:center;">
-      <div id="poster-modal-title" style="font-family:var(--font-display);font-size:1.3rem;font-weight:900;text-transform:uppercase;color:var(--volt);">Póster del partido</div>
+    <div class="sheet-head">
+      <div class="sheet-title" id="poster-modal-title">Póster del partido</div>
       <button class="btn-icon" onclick="closePosterModal()">✕</button>
     </div>
     <canvas id="poster-canvas" width="1080" height="1350" class="hidden"></canvas>
     <img id="poster-preview" class="poster-img-preview" alt="Resumen del partido">
-    <div style="display:flex; gap:8px;">
-      <button class="btn-volt" style="flex:1;font-size:1rem;padding:12px;" onclick="sharePosterWhatsApp()">COMPARTIR EN WHATSAPP</button>
-      <button class="btn-icon" style="padding:12px 16px;" onclick="downloadPosterPNG()"><svg class="icon"><use href="#i-download"/></svg> PNG</button>
+    <div class="u-row-8">
+      <button class="btn-volt flex-1 btn-volt-sm" onclick="sharePosterWhatsApp()">COMPARTIR EN WHATSAPP</button>
+      <button class="btn-icon btn-tall" onclick="downloadPosterPNG()"><svg class="icon"><use href="#i-download"/></svg> PNG</button>
     </div>
   </div>
 </div>
