@@ -111,7 +111,7 @@ function openHistoryActions(idx) {
     <p class="bc-intro">${escapeHtml(m.date || '')} · ${(m.sets || []).filter(s => s[0] + s[1] > 0).map(s => `${s[0]}-${s[1]}`).join(' ')}</p>
     <div class="menu-list">
       ${row('i-chart', 'Ver estadísticas', `openHistoryMatchStats(${idx})`)}
-      ${row('i-share', 'Póster para compartir', `openHistoryMatchPoster(${idx})`)}
+      ${row('i-share', 'Compartir: enlace, QR o póster', `openShareMatchSheet(matchHistory[${idx}])`)}
       ${row('i-trash', 'Eliminar partido', `deleteHistoryMatch(${idx})`, 'menu-row-danger')}
     </div>`);
 }
@@ -124,18 +124,29 @@ function openHistoryMatchStats(idx) {
   selectSetFilter('all');
 }
 
-function openHistoryMatchPoster(idx) {
-  posterTargetState = matchHistory[idx];
-  openPosterModal();
-}
-
+// Se borra al momento y el aviso ofrece "Deshacer" durante unos segundos
 function deleteHistoryMatch(idx) {
-  if (!confirm('¿Eliminar este partido del historial?')) return;
+  const m = matchHistory[idx];
+  if (!m) return;
   matchHistory.splice(idx, 1);
   saveDB();
   renderHistoryList();
   renderGlobalRanking();
-  showToast('Partido eliminado del historial');
+  showToast('Partido eliminado', { label: 'Deshacer', run: () => restoreHistoryMatch(m, idx) });
+}
+
+function restoreHistoryMatch(m, idx) {
+  if (matchHistory.some(x => x && String(x.id) === String(m.id))) return;
+  if (typeof syncMeta !== 'undefined' && syncMeta.deleted.matches[String(m.id)]) {
+    delete syncMeta.deleted.matches[String(m.id)];
+    saveSyncMeta();
+  }
+  matchHistory.splice(Math.min(idx, matchHistory.length), 0, m);
+  saveDB();
+  if (currentTab === 'history') renderHistoryList();
+  if (currentTab === 'home') renderHome();
+  renderGlobalRanking();
+  showToast('Partido recuperado');
 }
 
 function clearAllHistory() {
@@ -148,13 +159,56 @@ function clearAllHistory() {
   showToast('Historial vaciado');
 }
 
-function exportBackupJSON() {
+// En el móvil abre el menú de compartir (Drive, WhatsApp, correo, Archivos…) cuando el navegador lo permite;
+// si no, se descarga el archivo
+async function exportBackupJSON() {
   const payload = { app: 'Padel Metric', version: 3, exportedAt: new Date().toISOString(), dbPlayers, dbProfiles, matchHistory, tournaments, americanos };
-  const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+  const json = JSON.stringify(payload, null, 2);
+  const name = `PadelMetric_copia_${new Date().toISOString().slice(0, 10)}.json`;
+  if (!window.PadelNative && devicePlatform() !== 'desktop' && navigator.canShare) {
+    const file = new File([json], name, { type: 'application/json' });
+    if (navigator.canShare({ files: [file] })) {
+      try {
+        await navigator.share({ files: [file], title: 'Copia de seguridad de Padel Metric' });
+        markBackupDone();
+        return;
+      } catch (e) {
+        if (e && e.name === 'AbortError') return;
+      }
+    }
+  }
   const a = document.createElement('a');
-  a.download = `PadelMetric_BD_${Date.now()}.json`;
-  a.href = URL.createObjectURL(blob);
+  a.download = name;
+  a.href = URL.createObjectURL(new Blob([json], { type: 'application/json' }));
   a.click();
+  markBackupDone();
+}
+
+function markBackupDone() {
+  appSettings.lastBackupAt = Date.now();
+  appSettings.lastBackupCount = matchHistory.length;
+  try { localStorage.setItem('pm_ajustes_v1', JSON.stringify(appSettings)); } catch (e) {}
+  showToast('Copia de seguridad guardada');
+  if (currentTab === 'home') renderHome();
+}
+
+// Aviso en el inicio: partidos que solo están en este móvil (sin club compartido) y sin copia reciente
+function backupReminderHTML() {
+  if ((typeof syncConfig !== 'undefined' && syncConfig) || !matchHistory.length) return '';
+  const pending = matchHistory.length - (appSettings.lastBackupCount || 0);
+  const now = Date.now();
+  if (pending < 5 || now - (appSettings.lastBackupAt || 0) < 14 * 864e5 || now < (appSettings.backupSnoozeUntil || 0)) return '';
+  return `<div class="home-install">
+    <svg class="icon icon-lg"><use href="#i-save"/></svg>
+    <button type="button" class="home-install-main" onclick="exportBackupJSON()"><strong>Haz una copia de seguridad</strong><small>${pending} partidos guardados solo en este móvil</small></button>
+    <button type="button" class="home-install-x" onclick="snoozeBackupHint()" aria-label="Ahora no"><svg class="icon"><use href="#i-close"/></svg></button>
+  </div>`;
+}
+
+function snoozeBackupHint() {
+  appSettings.backupSnoozeUntil = Date.now() + 7 * 864e5;
+  try { localStorage.setItem('pm_ajustes_v1', JSON.stringify(appSettings)); } catch (e) {}
+  renderHome();
 }
 
 // Sustituye todos los datos por los de una copia (archivo importado o datos de ejemplo)

@@ -115,6 +115,11 @@ function openSettingsSheet() {
     <div class="menu-list">
       <button type="button" class="menu-row" onclick="openDataSheet()">
         <svg class="icon"><use href="#i-save"/></svg><span>Copias de seguridad, Excel y restaurar</span><span class="menu-row-hint">›</span></button>
+    </div>
+    <div class="menu-group-title">Acerca de</div>
+    <div class="menu-list">
+      <button type="button" class="menu-row" onclick="openNewsSheet()">
+        <svg class="icon"><use href="#i-star"/></svg><span>Novedades de la versión ${APP_VERSION}</span><span class="menu-row-hint">›</span></button>
     </div>`);
   renderMenuSwitches();
 }
@@ -127,7 +132,7 @@ function openDataSheet() {
     <div class="mo-title">Datos y copias de seguridad</div>
     <p class="bc-intro">Todo se guarda en este dispositivo. Exporta una copia de vez en cuando o activa el club compartido para tenerlo también en la nube.</p>
     <div class="menu-list">
-      ${row('i-download', 'Exportar copia de seguridad', '.json', 'exportBackupJSON()')}
+      ${row('i-download', 'Guardar copia de seguridad', appSettings.lastBackupAt ? `última: ${new Date(appSettings.lastBackupAt).toLocaleDateString('es-ES', { day: 'numeric', month: 'short' })}` : '.json', 'exportBackupJSON()')}
       ${row('i-upload', 'Restaurar copia de seguridad', '.json', "closeEventModal(); document.getElementById('import-file').click()")}
       ${row('i-file', 'Exportar partidos a Excel', '.csv', 'exportHistoryCSV()')}
     </div>
@@ -183,11 +188,20 @@ function exportHistoryCSV() {
   showToast('Partidos exportados para Excel');
 }
 
-// Botón atrás de Android: cierra lo que esté abierto o vuelve a Inicio. Devuelve false para salir de la app.
-window.__padelAtras = () => {
+// Cierra lo que esté encima (hojas, menú, historias, cierre del partido). Devuelve true si ha cerrado algo.
+function closeTopOverlay() {
+  if (!document.getElementById('wrapped').classList.contains('hidden')) { closeWrapped(); return true; }
   const open = [...document.querySelectorAll('.sheet-backdrop')].filter(el => !el.classList.contains('hidden'));
   if (open.length) { open.forEach(el => el.classList.add('hidden')); return true; }
+  if (!document.getElementById('match-end').classList.contains('hidden')) { closeMatchEnd(); return true; }
   if (!document.getElementById('app-menu').classList.contains('hidden')) { closeAppMenu(); return true; }
+  return false;
+}
+
+// Botón atrás (app de Android, navegador y app instalada): cierra lo que esté abierto o vuelve a Inicio.
+// Devuelve false para salir de la app.
+window.__padelAtras = () => {
+  if (closeTopOverlay()) return true;
   if (!document.getElementById('view-stats').classList.contains('hidden')) { toggleStatsView(); return true; }
   if (document.body.classList.contains('in-live-match')) { showToast('Para salir del partido usa el botón Salir'); return true; }
   if (currentTab === 'tournaments' && tView.mode !== 'list') { eventDraft = null; showTournamentList(); return true; }
@@ -195,6 +209,70 @@ window.__padelAtras = () => {
   if (currentTab !== 'home') { switchMainTab('home'); return true; }
   return false;
 };
+
+// En el navegador y en la app instalada desde la web, el botón atrás del móvil también cierra hojas y menús
+// en vez de salir de golpe. Se deja una entrada de "guardia" en el historial al tocar la pantalla (los navegadores
+// ignoran las que se crean sin que el usuario haya tocado nada) y se gasta al pulsar atrás.
+let backGuardArmed = false, backGuardHref = '';
+function backGuardAllowed() {
+  return !window.PadelNative && !document.body.classList.contains('spectator-mode');
+}
+
+function armBackGuard() {
+  if (backGuardArmed || !backGuardAllowed()) return;
+  try {
+    history.pushState({ pmGuard: 1 }, '');
+    backGuardArmed = true;
+    backGuardHref = location.href;
+  } catch (e) {}
+}
+
+function initBackGuard() {
+  document.addEventListener('pointerdown', armBackGuard, true);
+  window.addEventListener('popstate', (e) => {
+    if (e.state && e.state.pmGuard) { backGuardArmed = true; backGuardHref = location.href; return; }
+    if (!backGuardArmed) return;
+    backGuardArmed = false;
+    if (location.href !== backGuardHref || !backGuardAllowed()) return;
+    if (!window.__padelAtras()) history.back();
+  });
+  // En el ordenador, Escape cierra la hoja o el menú abierto
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && closeTopOverlay()) e.preventDefault();
+  });
+}
+
+// Novedades: se muestran una vez tras actualizar (no a quien abre la app por primera vez)
+const APP_VERSION = 10;
+const APP_NEWS = [
+  ['i-share', 'Comparte un partido con un enlace', 'Resultado, estadísticas y gráfico de probabilidad en un enlace o un QR. Se abre en cualquier móvil sin instalar nada y quien lo recibe puede guardarlo en su historial.'],
+  ['i-broadcast', 'Clasificación en directo', 'En americanos, mexicanos, pozo y torneos: "Emitir en directo" y todos ven la ronda en juego y la clasificación en su móvil o en una tele.'],
+  ['i-save', 'Copia de seguridad en un toque', 'Se envía a Drive, WhatsApp o el correo desde el menú de compartir del móvil, y el inicio te avisa si llevas tiempo sin copia.'],
+  ['i-play', 'Accesos directos', 'Mantén pulsado el icono de la app para ir directo a Nuevo partido, Americano, Ranking o Historial.'],
+  ['i-screen', 'Más rápida con poca cobertura', 'Si la red tarda, la app se abre al momento con la versión guardada. El botón atrás del móvil cierra hojas y menús, y al borrar un partido puedes deshacerlo.']
+];
+
+function openNewsSheet() {
+  openEventModal(`
+    <div class="mo-title">Novedades · versión ${APP_VERSION}</div>
+    <div class="news-list">${APP_NEWS.map(([icon, title, text]) => `
+      <div class="wl-feat"><svg class="icon"><use href="#${icon}"/></svg><div><strong>${title}</strong><span>${text}</span></div></div>`).join('')}
+    </div>
+    <button type="button" class="btn-volt btn-block mt-14" onclick="closeEventModal()">Entendido</button>`);
+}
+
+function maybeShowNews() {
+  let seen = 0;
+  try { seen = +localStorage.getItem('pm_novedades_v1') || 0; } catch (e) {}
+  if (seen >= APP_VERSION) return;
+  const mark = () => { try { localStorage.setItem('pm_novedades_v1', String(APP_VERSION)); } catch (e) {} };
+  // Primera vez (sin datos): ya ve la bienvenida
+  if (!seen && !hasAnyData()) { mark(); return; }
+  // Si se ha abierto un enlace (directo o partido) se deja para la próxima vez
+  if (document.body.classList.contains('spectator-mode')) return;
+  mark();
+  setTimeout(openNewsSheet, 700);
+}
 
 // Ofrece el APK en los navegadores de Android (fuera de la app)
 function setupAppDownload() {
@@ -212,7 +290,10 @@ window.addEventListener('DOMContentLoaded', () => {
   switchMainTab('home');
   initSync();
   initLiveSpectator();
+  initLinks();
   maybeShowWelcome();
+  maybeShowNews();
+  initBackGuard();
   setupAppDownload();
   syncNativeTheme();
 });

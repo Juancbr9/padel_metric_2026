@@ -141,6 +141,9 @@ body.menu-open .nav-burger span:nth-child(3) { transform: translateY(-6.2px) rot
 }
 #toast-hud.show { opacity: 1; transform: translateX(-50%) translateY(0); }
 .toast-ico { color: #D4FF2A; }
+#toast-hud.has-action { pointer-events: auto; padding-right: 6px; }
+.toast-action { background: transparent; border: none; color: #D4FF2A; font-weight: 800; font-size: 0.75rem; padding: 6px 10px; margin-left: 4px; border-radius: 8px; text-transform: uppercase; letter-spacing: 0.04em; }
+.toast-action:active { background: rgba(212,255,42,0.12); }
 /* En el partido el aviso sale sobre la pista para no tapar el marcador */
 body.in-live-match #toast-hud { top: auto; bottom: calc(6.4rem + 18px + var(--sa-b)); }
 
@@ -269,7 +272,7 @@ td:first-child, th:first-child { text-align: left; font-family: var(--font-sans)
 .control-card-desc { font-size: 0.64rem; font-weight: 600; color: var(--text-secondary); line-height: 1.3; }
 
 /* ---------- 6. Hojas inferiores y modales ---------- */
-.sheet-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,0.72); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); display: flex; align-items: flex-end; justify-content: center; z-index: 80; }
+.sheet-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,0.72); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); display: flex; align-items: flex-end; justify-content: center; z-index: 100; }
 .sheet-backdrop:not(.hidden) { animation: fadeIn 0.22s ease-out; }
 .sheet-backdrop.top-pinned { align-items: flex-start; padding: 6px 8px; }
 .telemetry-sheet { background: var(--bg-carbon); border-top: 1px solid var(--border-specular); border-radius: 22px 22px 0 0; width: 100%; max-width: 560px;
@@ -288,6 +291,11 @@ td:first-child, th:first-child { text-align: left; font-family: var(--font-sans)
 .mo-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 14px; }
 .mo-actions .btn-icon { min-height: 44px; }
 .mo-finish { color: var(--danger); }
+/* Novedades (hoja que se abre una vez tras actualizar) */
+.news-list { display: flex; flex-direction: column; gap: 8px; }
+.news-list .wl-feat { background: var(--surface-1); border-color: var(--border-subtle); }
+.news-list .wl-feat .icon { color: var(--volt); }
+.news-list .wl-feat span { color: var(--text-secondary); }
 .poster-img-preview { width: 100%; border-radius: 14px; border: 1px solid var(--border-specular); margin: 10px 0; display: block; }
 .event-modal-title { font-size: 0.66rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-secondary); margin-top: -26px; }
 
@@ -957,7 +965,9 @@ table.standings tr.qualify td:first-child { box-shadow: inset 3px 0 0 var(--volt
 .round-timer.ending { color: var(--amber); }
 .round-timer.over { color: var(--danger); animation: timerBlink 0.8s infinite; }
 @keyframes timerBlink { 50% { opacity: 0.35; } }
-.share-btn { width: 100%; padding: 12px; margin-bottom: 10px; }
+.event-share-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 10px; }
+.event-share-row .btn-icon { min-height: 44px; }
+.event-share-row .btn-icon.is-live { color: var(--emerald); border-color: var(--emerald); }
 
 /* ---------- 15. Club compartido, directo e instalación ---------- */
 .sync-status { display: flex; align-items: center; gap: 8px; font-size: 0.78rem; font-weight: 700; margin-bottom: 10px; }
@@ -1045,6 +1055,47 @@ body.spectator-mode > header, body.spectator-mode .container, body.spectator-mod
 .spx-player em { position: absolute; top: 8px; right: 10px; font-style: normal; font-family: var(--font-mono); font-weight: 800; font-size: 0.75rem; color: #D4FF2A; }
 .spx-foot { text-align: center; font-size: 0.66rem; color: #64748B; margin-top: auto; }
 @media (max-width: 640px) { .spx-players { grid-template-columns: 1fr 1fr; } }
+
+/* Ficha pública de un partido (#partido=…) */
+.sm-facts { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+.sm-facts div { background: #0D1117; border: 1px solid rgba(255,255,255,0.06); border-radius: 12px; padding: 10px 8px; text-align: center; min-width: 0; }
+.sm-facts strong { display: block; font-family: var(--font-mono); font-size: clamp(0.95rem, 2.4vw, 1.4rem); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.sm-facts span { font-size: 0.62rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: #8B95A5; }
+.sm-actions { display: grid; grid-template-columns: 1fr; gap: 8px; }
+.sm-actions .btn-volt { min-height: 48px; }
+.sm-actions .btn-volt:disabled { opacity: 1; background: #151B24; color: #D4FF2A; border: 1px solid rgba(255,255,255,0.10); }
+.sm-actions .btn-icon { background: #151B24; color: #F5F7FA; border-color: rgba(255,255,255,0.10); min-height: 48px; }
+.share-qr-wait { aspect-ratio: 1; display: flex; align-items: center; justify-content: center; text-align: center; color: #64748B; font-size: 0.74rem; font-weight: 700; }
+
+/* Clasificación en directo de un evento (#directo=… con datos de torneo o americano) */
+.spe-head { padding: 12px clamp(12px, 2vw, 24px) 14px; }
+.spe-title { font-family: var(--font-display); font-weight: 800; text-transform: uppercase; font-size: clamp(1.6rem, 5vw, 3.2rem); line-height: 1; overflow-wrap: anywhere; }
+.spe-sub { font-size: clamp(0.7rem, 1.4vw, 0.95rem); color: #8B95A5; margin: 4px 0 10px; }
+.spe-progress { height: 6px; border-radius: 99px; background: #1E2530; overflow: hidden; }
+.spe-progress i { display: block; height: 100%; background: #D4FF2A; border-radius: 99px; transition: width 0.6s var(--ease-out); }
+.spe-champ { display: flex; align-items: center; gap: 12px; padding: 12px clamp(12px, 2vw, 24px); background: #D4FF2A; color: #06090F; }
+.spe-champ .icon { width: 28px; height: 28px; flex-shrink: 0; }
+.spe-champ small { display: block; font-size: 0.62rem; font-weight: 800; letter-spacing: 0.1em; text-transform: uppercase; }
+.spe-champ strong { display: block; font-family: var(--font-display); font-weight: 800; font-size: clamp(1.2rem, 3.6vw, 2rem); line-height: 1.05; text-transform: uppercase; }
+.spe-card { background: #0D1117; border: 1px solid rgba(255,255,255,0.06); border-radius: 16px; padding: 12px clamp(10px, 2vw, 20px); }
+.spe-card-title { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; font-size: 0.7rem; font-weight: 800; letter-spacing: 0.1em; text-transform: uppercase; color: #8B95A5; margin-bottom: 8px; }
+.spe-card-title small { font-size: 0.68rem; letter-spacing: 0; text-transform: none; font-weight: 600; text-align: right; }
+.spe-round { font-size: 0.64rem; font-weight: 800; letter-spacing: 0.1em; text-transform: uppercase; color: #D4FF2A; margin: 10px 0 4px; }
+.spe-game { display: grid; grid-template-columns: auto minmax(0, 1fr) auto minmax(0, 1fr); align-items: center; gap: 8px; padding: 9px 0; border-top: 1px solid rgba(255,255,255,0.06); font-size: clamp(0.8rem, 1.8vw, 1.1rem); }
+.spe-card-title + .spe-game, .spe-round + .spe-game { border-top: none; }
+.spe-court { font-family: var(--font-mono); font-size: 0.7rem; font-weight: 800; color: #06090F; background: #D4FF2A; border-radius: 6px; padding: 2px 6px; }
+.spe-side { min-width: 0; font-weight: 700; color: #C6CDD8; overflow-wrap: anywhere; }
+.spe-side.right { text-align: right; }
+.spe-side.won { color: #FFFFFF; }
+.spe-score { font-family: var(--font-mono); font-weight: 800; color: #D4FF2A; white-space: nowrap; text-align: center; min-width: 3.2em; }
+.spe-score em { font-style: normal; color: #64748B; }
+.spe-table { width: 100%; border-collapse: collapse; font-size: clamp(0.8rem, 1.8vw, 1.1rem); }
+.spe-table th { font-size: 0.62rem; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; color: #64748B; text-align: right; padding: 0 4px 6px; }
+.spe-table td { text-align: right; padding: 9px 4px; border-top: 1px solid rgba(255,255,255,0.06); font-family: var(--font-mono); color: #C6CDD8; }
+.spe-table .spe-name { text-align: left; font-family: var(--font-sans); font-weight: 700; color: #F5F7FA; width: 100%; overflow-wrap: anywhere; }
+.spe-table .spe-pos { text-align: left; color: #64748B; width: 1.6em; }
+.spe-table .spe-pts { color: #D4FF2A; font-weight: 800; }
+.spe-table tr.top td:first-child { box-shadow: inset 3px 0 0 #D4FF2A; padding-left: 8px; }
 
 /* ---------- 16. Historias (temporada y bienvenida) ----------
    Fondo plano con un único halo del color de cada pantalla */

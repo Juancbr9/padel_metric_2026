@@ -55,12 +55,18 @@ Se pintan con `class="icon"` (16 px) o `icon icon-lg` (20 px) y toman el color d
 ## Imágenes generadas por la app
 
 - **Póster del partido** y **clasificaciones** (1080 × 1350, `js/poster.js` y `js/share.js`): fondo oscuro plano, logo, título y tabla.
+- **Ficha pública del partido** (`#partido=…`, `js/links.js`) y **clasificación en directo** (`#directo=…` con datos de evento, `js/directo.js`): páginas siempre oscuras con los colores fijos de la vista del espectador.
 - **Carta de jugador** (`sharePlayerCard` en `js/card.js`) y **QR de la app** (`shareAppQR` en `js/install.js`).
 - **Portada del partido** (`pm_custom_cover`): foto opcional del usuario sobre la cabecera de "Nuevo partido".
 
-## Capturas
+## Accesos directos y capturas de instalación
 
-No hay capturas guardadas en el repositorio. Para revisar la interfaz se generan con Playwright (ver "Cómo probar" en `CLAUDE.md`) a 400 px de ancho, en modo oscuro y claro.
+| Archivo | Tamaño | Uso |
+|---|---|---|
+| `icons/shortcut-partido.png`, `shortcut-americano.png`, `shortcut-ranking.png`, `shortcut-historial.png` | 96 × 96 | Accesos directos del icono de la app (`shortcuts` en `manifest.json`): fondo `#0D1117` a sangre (Android lo recorta en círculo) y el icono del sprite (`i-ball`, `i-shuffle`, `i-trophy`, `i-history`) en lima, a 46 px. |
+| `assets/screenshots/inicio.jpg`, `partido.jpg`, `ranking.jpg` | 780 × 1688 (JPEG) | `screenshots` del manifiesto (`form_factor: narrow`): Android las enseña en la ventana de instalación, como en una tienda. Se hacen con los datos de ejemplo a 390 × 844 y escala 2. |
+
+Si cambia la interfaz de forma visible, conviene rehacer las capturas. Para revisar la interfaz se generan capturas con Playwright (ver "Cómo probar" en `CLAUDE.md`) a 400 px de ancho, en modo oscuro y claro.
 
 ## Datos de ejemplo
 

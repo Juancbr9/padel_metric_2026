@@ -85,9 +85,10 @@
 
 <input type="file" id="import-file" accept=".json" class="hidden" onchange="importBackupJSON(event)">
 
-<div id="toast-hud">
+<div id="toast-hud" role="status" aria-live="polite">
   <svg class="icon toast-ico"><use href="#i-ball"/></svg>
   <span id="toast-msg">Listo</span>
+  <button type="button" id="toast-action" class="toast-action hidden" onclick="runToastAction()"></button>
 </div>
 
 <header>
@@ -156,7 +157,7 @@
     </div>
     <div class="menu-footer">
       <svg class="menu-footer-logo"><use href="#logo-mark"/></svg>
-      <span id="app-version-label">Padel Metric · v9</span>
+      <span id="app-version-label">Padel Metric · v10</span>
     </div>
   </nav>
 </div>
@@ -759,6 +760,7 @@
 <script src="js/sync.js"></script>
 <script src="js/qr.js"></script>
 <script src="js/directo.js"></script>
+<script src="js/links.js"></script>
 <script src="js/install.js"></script>
 <script src="js/home.js"></script>
 <script src="js/app.js"></script>

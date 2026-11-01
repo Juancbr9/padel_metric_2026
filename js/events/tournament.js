@@ -502,7 +502,10 @@ function renderTournamentDetailHTML(t) {
       ${t.champion ? `<div class="champion-banner"><svg class="icon icon-lg"><use href="#i-trophy"/></svg><div><small>Campeones</small><strong>${escapeHtml(teamById(t, t.champion).players.join(' / '))}</strong></div></div>`
         : `<div class="event-progress mt-12"><i style="width:${total ? (played / total) * 100 : 0}%"></i></div><div class="event-card-sub u-rel">${played} de ${total} partidos jugados</div>`}
     </div>
-    <button class="btn-icon share-btn" onclick="shareTournamentImage(${jsArg(t.id)})"><svg class="icon"><use href="#i-share"/></svg> Compartir ${t.format === 'ko' || t.koBuilt ? 'cuadro' : 'clasificación'}</button>
+    <div class="event-share-row">
+      ${eventLiveButtonHTML('t', t)}
+      <button class="btn-icon" onclick="shareTournamentImage(${jsArg(t.id)})"><svg class="icon"><use href="#i-share"/></svg> Imagen</button>
+    </div>
     <div class="sort-strip">${tabs.map(([k, l]) => `<button type="button" class="sort-chip ${tView.tab === k ? 'active' : ''}" onclick="setTournamentTab('${k}')">${l}</button>`).join('')}</div>
     ${body}
     <button class="btn-icon btn-block mt-14 btn-danger" onclick="deleteTournament(${jsArg(t.id)})"><svg class="icon"><use href="#i-trash"/></svg> Eliminar torneo</button>`;

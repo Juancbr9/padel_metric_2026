@@ -14,8 +14,7 @@ function liveRandom(len) {
 }
 
 function liveLink(code) {
-  const base = window.PadelNative ? PadelNative.urlPublica() : `${location.origin}${location.pathname}`;
-  return `${base}#directo=${code}`;
+  return `${appPublicUrl()}#directo=${code}`;
 }
 
 // Lo que ven los espectadores (sin fotos ni datos personales: nombres, marcador y estadísticas del partido)
@@ -160,10 +159,27 @@ function leaveSpectator() {
   switchMainTab('home');
 }
 
-function renderSpectator(d) {
-  const box = document.getElementById('view-spectator');
-  const head = `<div class="spx-top"><span class="spx-brand"><svg><use href="#logo-mark"/></svg>PADEL METRIC</span>
+function spectatorHeadHTML() {
+  return `<div class="spx-top"><span class="spx-brand"><svg><use href="#logo-mark"/></svg>PADEL METRIC</span>
     <button class="btn-icon" onclick="leaveSpectator()">Abrir la app</button></div>`;
+}
+
+// Gráfico de probabilidad de victoria (valores de 0 a 1) para las vistas públicas
+function spxSparkSVG(sp) {
+  if (!sp || sp.length < 2) return '';
+  const W = 600, H = 60, mid = H / 2;
+  const line = sp.map((v, i) => `${i ? 'L' : 'M'}${(i / (sp.length - 1)) * W} ${(mid - (v - 0.5) * 2 * (mid - 3)).toFixed(1)}`).join('');
+  return `<svg class="spx-spark" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none">
+    <defs><clipPath id="spx-t"><rect width="${W}" height="${mid}"/></clipPath><clipPath id="spx-b"><rect y="${mid}" width="${W}" height="${mid}"/></clipPath></defs>
+    <line x1="0" y1="${mid}" x2="${W}" y2="${mid}" class="sb-spark-mid"/>
+    <path d="${line}L${W} ${mid}L0 ${mid}Z" clip-path="url(#spx-t)" class="sb-spark-a"/><path d="${line}L${W} ${mid}L0 ${mid}Z" clip-path="url(#spx-b)" class="sb-spark-b"/>
+    <path d="${line}" class="sb-spark-line"/></svg>`;
+}
+
+function renderSpectator(d) {
+  if (d && d.kind === 'ev') { renderEventSpectator(d); return; }
+  const box = document.getElementById('view-spectator');
+  const head = spectatorHeadHTML();
   if (!d || d.missing || d.error) {
     box.innerHTML = `${head}<div class="spx-empty">${!d ? 'Conectando con el directo…' : d.missing ? 'Este directo no existe o ya ha caducado.' : `No se puede conectar: ${escapeHtml(d.error)}`}</div>`;
     return;
@@ -189,14 +205,7 @@ function renderSpectator(d) {
     </div>`;
   };
   const pa = Math.round(d.wp * 100);
-  const sp = d.spark || [];
-  const W = 600, H = 60, mid = H / 2;
-  const line = sp.map((v, i) => `${i ? 'L' : 'M'}${(sp.length > 1 ? i / (sp.length - 1) : 0) * W} ${(mid - (v - 0.5) * 2 * (mid - 3)).toFixed(1)}`).join('');
-  const spark = sp.length > 1 ? `<svg class="spx-spark" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none">
-    <defs><clipPath id="spx-t"><rect width="${W}" height="${mid}"/></clipPath><clipPath id="spx-b"><rect y="${mid}" width="${W}" height="${mid}"/></clipPath></defs>
-    <line x1="0" y1="${mid}" x2="${W}" y2="${mid}" class="sb-spark-mid"/>
-    <path d="${line}L${W} ${mid}L0 ${mid}Z" clip-path="url(#spx-t)" class="sb-spark-a"/><path d="${line}L${W} ${mid}L0 ${mid}Z" clip-path="url(#spx-b)" class="sb-spark-b"/>
-    <path d="${line}" class="sb-spark-line"/></svg>` : '';
+  const spark = spxSparkSVG(d.spark || []);
   box.innerHTML = `${head}
     <div class="spx-board">
       <div class="spx-status sb-status ${d.over ? 'is-over' : d.status.cls}">${badge}<span class="spx-status-txt">${escapeHtml(d.status.text)}</span><span class="spx-time">${mm}:${ss}</span></div>
@@ -214,4 +223,214 @@ function renderSpectator(d) {
 function initLiveSpectator() {
   handleLiveHash();
   window.addEventListener('hashchange', handleLiveHash);
+}
+
+// ==========================================================
+// CLASIFICACIÓN EN DIRECTO (americanos, mexicanos, pozo y torneos)
+// Usa la misma tabla pm_live que el marcador: el evento guarda su código y su clave en ev.live
+// y se vuelve a publicar cada vez que se guarda un resultado (saveDB → scheduleEventLivePublish).
+// ==========================================================
+let eventLiveTimer = null, eventLiveError = '', eventBroadcastOpen = null;
+const eventLiveSent = {};
+
+function findLiveEvent(kind, id) {
+  return kind === 'a' ? findAmericano(id) : findTournament(id);
+}
+
+const signedNum = n => (n > 0 ? `+${n}` : String(n));
+
+function tMatchLive(t, m) {
+  const side = id => (id ? teamName(t, id) : m.bye ? 'Exento' : 'Por decidir');
+  const c = m.stage === 'ko' ? '' : m.stage === 'group' ? `${m.group} · J${m.round + 1}` : `Jornada ${m.round + 1}`;
+  return { c, a: side(m.a), b: side(m.b),
+    sets: (m.sets || []).map(s => `${s[0]}-${s[1]}`).join(' '), w: m.winner ? (m.winner === m.a ? 0 : 1) : null };
+}
+
+function eventLivePayload(kind, ev) {
+  const base = { v: 1, kind: 'ev', name: ev.name, on: !!(ev.live && ev.live.on), over: ev.status === 'finished', at: Date.now() };
+  if (kind === 'a') {
+    const unit = scoreUnit(ev) === 'puntos' ? 'Pts' : 'Juegos';
+    const pozo = ev.format === 'pozo';
+    const done = ev.rounds.filter(roundComplete).length;
+    const open = ev.rounds.findIndex(r => !roundComplete(r));
+    const shown = open >= 0 ? open : ev.rounds.length - 1;
+    const r = ev.rounds[shown];
+    return { ...base,
+      fmt: AMERICANO_FORMATS[ev.format].main,
+      sub: `${ev.players.length} jugadores · ${ev.courts} pista${ev.courts > 1 ? 's' : ''} · ${matchTypeLabel(matchTypeOf(ev))}`,
+      prog: ev.totalRounds ? done / ev.totalRounds : 0,
+      progText: base.over ? 'Clasificación final' : `Ronda ${Math.min(done + 1, ev.totalRounds)} de ${ev.totalRounds}`,
+      champion: base.over ? (americanoStandings(ev)[0] || { members: [] }).members.join(' / ') : '', champLabel: 'Primer puesto',
+      games: r && !base.over ? { title: `Ronda ${shown + 1} · ${open >= 0 ? 'en juego' : 'resultados'}`, note: r.rest && r.rest.length ? `Descansa${r.rest.length > 1 ? 'n' : ''}: ${r.rest.map(shortName).join(', ')}` : '',
+        list: r.matches.map(m => ({ c: `P${m.court}`, a: pairLabel(m.a), b: pairLabel(m.b), sets: m.sa === null ? '' : `${m.sa}-${m.sb}`, w: m.sa === null || m.sa === m.sb ? null : m.sa > m.sb ? 0 : 1 })) } : null,
+      tables: [{ title: 'Clasificación', top: 3, cols: [...(pozo ? ['Pista'] : []), 'PJ', 'G', 'Dif', unit],
+        rows: americanoStandings(ev).slice(0, 40).map(x => [x.members.map(shortName).join(' / '), ...(pozo ? [x.court || '–'] : []), x.pj, x.w, signedNum(x.diff), x.pts]) }],
+      ko: [] };
+  }
+  const t = ev;
+  const played = t.matches.filter(m => m.winner && !m.bye).length;
+  const total = t.matches.filter(m => !m.bye).length;
+  const cols = ['PJ', 'PG', 'Sets', 'Pts'];
+  const rowsOf = list => list.map(r => [teamName(t, r.id), r.pj, r.pg, signedNum(r.setDiff), r.pts]);
+  const tables = [];
+  if (t.format === 'league') tables.push({ title: 'Clasificación', top: 3, cols, rows: rowsOf(tournamentStandings(t, t.matches, t.teams.map(x => x.id))) });
+  if (t.format === 'groups') t.groups.forEach(g => tables.push({ title: `Grupo ${g.name}`, top: 2, cols, rows: rowsOf(tournamentStandings(t, t.matches.filter(m => m.group === g.name), g.teamIds)) }));
+  const ko = [];
+  if (t.format === 'ko' || t.koBuilt) {
+    for (let r = 0; r < t.koRounds; r++) {
+      const ms = t.matches.filter(m => m.stage === 'ko' && m.round === r && !m.bye);
+      if (ms.length) ko.push({ title: koRoundName(t.koRounds, r), list: ms.map(m => tMatchLive(t, m)) });
+    }
+  }
+  const pending = t.matches.filter(m => !m.bye && !m.winner && m.a && m.b && m.stage !== 'ko');
+  return { ...base,
+    fmt: TOURNAMENT_FORMATS[t.format].main, sub: `${t.teams.length} parejas`,
+    prog: total ? played / total : 0, progText: `${played} de ${total} partidos`,
+    champion: t.champion ? teamById(t, t.champion).players.join(' / ') : '',
+    games: pending.length ? { title: 'Próximos partidos', note: '', list: pending.slice(0, 8).map(m => tMatchLive(t, m)) } : null,
+    tables, ko };
+}
+
+async function publishEventLive(kind, ev, force = false) {
+  if (!ev || !ev.live) return;
+  const data = eventLivePayload(kind, ev);
+  const sig = JSON.stringify({ ...data, at: 0 });
+  if (!force && eventLiveSent[ev.live.code] === sig) return;
+  try {
+    const ok = await syncRpc('pm_live_publish', { p_code: ev.live.code, p_secret: ev.live.secret, p_data: data }, LIVE_CFG);
+    eventLiveError = ok === false ? 'Este código de directo pertenece a otro móvil' : '';
+    if (ok !== false) eventLiveSent[ev.live.code] = sig;
+  } catch (e) {
+    eventLiveError = navigator.onLine === false ? 'Sin conexión: se reintentará solo' : e.message;
+  }
+  renderEventBroadcastStatus();
+}
+
+async function publishEventLives(force = false) {
+  for (const t of tournaments) if (t.live && t.live.on) await publishEventLive('t', t, force);
+  for (const a of americanos) if (a.live && a.live.on) await publishEventLive('a', a, force);
+}
+
+// Se llama desde saveDB(): agrupa los cambios rápidos en un solo envío
+function scheduleEventLivePublish() {
+  if (!tournaments.some(t => t.live && t.live.on) && !americanos.some(a => a.live && a.live.on)) return;
+  clearTimeout(eventLiveTimer);
+  eventLiveTimer = setTimeout(() => publishEventLives(false), 900);
+}
+
+function refreshEventView(kind) {
+  if (kind === 'a' && currentTab === 'americano') renderAmericanoView();
+  if (kind === 't' && currentTab === 'tournaments') renderTournamentsView();
+}
+
+function eventLiveButtonHTML(kind, ev) {
+  const on = ev.live && ev.live.on;
+  return `<button class="btn-icon ${on ? 'is-live' : ''}" onclick="openEventBroadcast('${kind}', ${jsArg(ev.id)})">${on ? '<span class="live-dot"></span> En directo' : '<svg class="icon"><use href="#i-broadcast"/></svg> Emitir en directo'}</button>`;
+}
+
+function openEventBroadcast(kind, id) {
+  const ev = findLiveEvent(kind, id);
+  if (!ev) return;
+  vibrate(10);
+  if (!ev.live) {
+    ev.live = { code: liveRandom(10), secret: liveRandom(32), on: true };
+    saveDB();
+    publishEventLive(kind, ev, true);
+    refreshEventView(kind);
+    showToast('Clasificación en directo');
+  }
+  eventBroadcastOpen = { kind, id };
+  const link = liveLink(ev.live.code);
+  openEventModal(`
+    <div class="mo-title">Clasificación en directo</div>
+    <p class="bc-intro">Quien abra este enlace o escanee el código verá la clasificación y la ronda en juego en su móvil o en una tele. Se actualiza sola cada vez que anotas un resultado y no hace falta instalar nada.</p>
+    <div class="bc-qr">${QR.svg(link, 2)}</div>
+    <div class="bc-link">${escapeHtml(link)}</div>
+    <div id="ev-bc-status" class="bc-status"></div>
+    <div class="bc-actions">
+      <button class="btn-volt" onclick="shareEventLiveLink()"><svg class="icon"><use href="#i-share"/></svg> Compartir enlace</button>
+      <button class="btn-icon" onclick="copyEventLiveLink()"><svg class="icon"><use href="#i-copy"/></svg> Copiar</button>
+      <button class="btn-icon" onclick="window.open(${jsArg(link)}, '_blank')"><svg class="icon"><use href="#i-tv"/></svg> Ver como espectador</button>
+      <button class="btn-icon bc-toggle" onclick="toggleEventBroadcast()">${ev.live.on ? 'Pausar directo' : 'Reanudar directo'}</button>
+    </div>`);
+  renderEventBroadcastStatus();
+}
+
+function openEventBroadcastTarget() {
+  return eventBroadcastOpen ? findLiveEvent(eventBroadcastOpen.kind, eventBroadcastOpen.id) : null;
+}
+
+function renderEventBroadcastStatus() {
+  const el = document.getElementById('ev-bc-status');
+  const ev = openEventBroadcastTarget();
+  if (!el || !ev || !ev.live) return;
+  const cls = !ev.live.on ? 'off' : eventLiveError ? 'err' : 'ok';
+  const txt = !ev.live.on ? 'Directo en pausa: se ve la última clasificación enviada'
+    : eventLiveError || 'Emitiendo: se actualiza con cada resultado';
+  el.className = `bc-status ${cls}`;
+  el.innerHTML = `<span class="live-dot"></span>${escapeHtml(txt)}`;
+}
+
+async function shareEventLiveLink() {
+  const ev = openEventBroadcastTarget();
+  if (!ev || !ev.live) return;
+  const url = liveLink(ev.live.code);
+  try {
+    if (navigator.share) await navigator.share({ title: 'Padel Metric · Clasificación en directo', text: `Sigue en directo la clasificación de ${ev.name}`, url });
+    else { await navigator.clipboard.writeText(url); showToast('Enlace copiado'); }
+  } catch (e) {}
+}
+
+async function copyEventLiveLink() {
+  const ev = openEventBroadcastTarget();
+  if (!ev || !ev.live) return;
+  try { await navigator.clipboard.writeText(liveLink(ev.live.code)); showToast('Enlace copiado'); } catch (e) { showToast('No se pudo copiar'); }
+}
+
+function toggleEventBroadcast() {
+  const ev = openEventBroadcastTarget();
+  if (!ev || !ev.live) return;
+  ev.live.on = !ev.live.on;
+  saveDB();
+  publishEventLive(eventBroadcastOpen.kind, ev, true);
+  refreshEventView(eventBroadcastOpen.kind);
+  openEventBroadcast(eventBroadcastOpen.kind, ev.id);
+}
+
+// ---------- Vista del espectador de un evento ----------
+function eventGameHTML(g) {
+  return `<div class="spe-game">
+    ${g.c ? `<span class="spe-court">${escapeHtml(g.c)}</span>` : ''}
+    <span class="spe-side ${g.w === 0 ? 'won' : ''}">${escapeHtml(g.a)}</span>
+    <span class="spe-score">${g.sets ? escapeHtml(g.sets) : '<em>–</em>'}</span>
+    <span class="spe-side right ${g.w === 1 ? 'won' : ''}">${escapeHtml(g.b)}</span>
+  </div>`;
+}
+
+function renderEventSpectator(d) {
+  const box = document.getElementById('view-spectator');
+  spectatorLast = d;
+  const ago = Math.max(0, Math.round((d.lagMs || 0) / 60000));
+  const badge = d.over ? '<span class="spx-badge over">Final</span>'
+    : !d.on || d.offline ? '<span class="spx-badge off">En pausa</span>'
+    : '<span class="spx-badge"><span class="live-dot"></span>En directo</span>';
+  const table = tb => `<div class="spe-card">
+    <div class="spe-card-title">${escapeHtml(tb.title)}</div>
+    <table class="spe-table"><thead><tr><th>#</th><th class="spe-name"></th>${tb.cols.map(c => `<th>${escapeHtml(c)}</th>`).join('')}</tr></thead>
+    <tbody>${tb.rows.map((r, i) => `<tr class="${i < tb.top && (d.prog > 0 || d.over) ? 'top' : ''}"><td class="spe-pos">${i + 1}</td><td class="spe-name">${escapeHtml(r[0])}</td>${r.slice(1).map((c, ci) => `<td class="${ci === r.length - 2 ? 'spe-pts' : ''}">${escapeHtml(c)}</td>`).join('')}</tr>`).join('')}</tbody></table>
+  </div>`;
+  box.innerHTML = `${spectatorHeadHTML()}
+    <div class="spx-board spe-hero">
+      <div class="spx-status sb-status ${d.over ? 'is-over' : ''}">${badge}<span class="spx-status-txt">${escapeHtml(d.fmt)}</span><span class="spx-time">${escapeHtml(d.progText)}</span></div>
+      <div class="spe-head">
+        <div class="spe-title">${escapeHtml(d.name)}</div>
+        <div class="spe-sub">${escapeHtml(d.sub)}</div>
+        <div class="spe-progress"><i style="width:${Math.round((d.prog || 0) * 100)}%"></i></div>
+      </div>
+      ${d.champion ? `<div class="spe-champ"><svg class="icon"><use href="#i-trophy"/></svg><div><small>${escapeHtml(d.champLabel || 'Campeones')}</small><strong>${escapeHtml(d.champion)}</strong></div></div>` : ''}
+    </div>
+    ${d.games ? `<div class="spe-card"><div class="spe-card-title">${escapeHtml(d.games.title)}${d.games.note ? `<small>${escapeHtml(d.games.note)}</small>` : ''}</div>${d.games.list.map(eventGameHTML).join('')}</div>` : ''}
+    ${(d.tables || []).map(table).join('')}
+    ${(d.ko || []).length ? `<div class="spe-card"><div class="spe-card-title">Cuadro</div>${d.ko.slice().reverse().map(r => `<div class="spe-round">${escapeHtml(r.title)}</div>${r.list.map(eventGameHTML).join('')}`).join('')}</div>` : ''}
+    <div class="spx-foot">${d.offline ? 'Sin conexión: mostrando la última clasificación recibida' : `Actualizado ${ago < 1 ? 'hace un momento' : `hace ${ago} min`} · se actualiza solo`}</div>`;
 }

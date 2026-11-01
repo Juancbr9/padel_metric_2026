@@ -6,7 +6,7 @@ Marcador, estadísticas y competiciones de pádel. Se instala en el móvil y fun
 
 ## Qué hace
 
-**Navegación**: menú ☰ arriba a la izquierda con todas las secciones (Jugar, Analizar, Mi pádel, Compartir y Aplicación). Ajustes y copias de seguridad en hojas propias.
+**Navegación**: menú ☰ arriba a la izquierda con tu perfil y todas las secciones (Inicio, Jugar, Analizar y Más). Ajustes, copias de seguridad y novedades en hojas propias.
 
 **Instalar y compartir**: menú → **Instalar y compartir la app**. Enlace, código QR (también como imagen para WhatsApp) y pasos para instalarla desde el navegador en Android y en iPhone (Safari → Compartir → Añadir a pantalla de inicio). En iPhone el inicio muestra un aviso para instalarla.
 
@@ -29,8 +29,22 @@ Marcador, estadísticas y competiciones de pádel. Se instala en el móvil y fun
 - **Ranking** por pestañas: jugadores, parejas y cara a cara (enfrentamientos, comparación con barras y partidos entre ellos).
 
 **Compartir**
+- **Enlace del partido**: botón **Compartir** al acabar un partido, en sus opciones o en el historial. Crea un enlace y un QR con el resultado, las estadísticas de los cuatro jugadores y la curva de probabilidad. Se abre en cualquier móvil sin instalar nada y quien use Padel Metric puede **guardarlo en su historial**. Los datos van comprimidos dentro del propio enlace: no se suben a ningún servidor y el enlace no caduca.
+- **Clasificación en directo**: en americanos, mexicanos, pozo y torneos, **Emitir en directo** genera un enlace y un QR. Jugadores y público ven la ronda en juego y la clasificación (o el cuadro) en su móvil o en una tele, y se actualiza sola con cada resultado.
 - **Imágenes para WhatsApp** de clasificaciones de americanos, ligas, grupos y cuadros de torneo.
 - **Sincronizar entre móviles**: un club compartido en Supabase (gratis) para que todo el grupo vea el mismo ranking, partidos, torneos y americanos. Guía en [`supabase/LEEME.md`](supabase/LEEME.md).
+
+**Funcionamiento**
+- Se abre al momento aunque haya poca cobertura en la pista (si la red tarda más de 3 segundos usa la versión guardada y se actualiza por detrás) y funciona sin conexión.
+- **Accesos directos**: mantén pulsado el icono de la app para ir a Nuevo partido, Americano, Ranking o Historial.
+- El botón atrás del móvil cierra hojas y menús antes de salir, y Escape hace lo mismo en el ordenador.
+- **Copia de seguridad en un toque** (Ajustes → Datos): en el móvil se envía a Drive, WhatsApp, el correo o Archivos. Si no usas el club compartido, el inicio avisa cuando tienes partidos sin copia.
+- Al borrar un partido del historial se puede **deshacer** durante unos segundos.
+- Tras cada actualización se muestran una vez las **novedades** (también en Ajustes).
+
+## Pruebas automáticas
+
+`npm test` abre la app en un navegador sin ventana y comprueba la bienvenida, el menú, un partido completo (saque, golpes, deshacer, tie-break y cierre), el enlace del partido, la clasificación en directo, los datos (deshacer, copia, novedades y restaurar de fábrica), el botón atrás y el diseño (sin desbordes a 360 px en modo oscuro y claro). Necesita Node 18 o superior y Playwright (`npm install --no-save playwright` y `npx playwright install chromium`). En GitHub se ejecutan solas en cada subida a `main` (pestaña **Actions**).
 
 ## App para Android
 

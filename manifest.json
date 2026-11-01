@@ -10,10 +10,105 @@
   "orientation": "portrait",
   "background_color": "#030508",
   "theme_color": "#030508",
-  "categories": ["sports", "utilities"],
+  "categories": [
+    "sports",
+    "utilities"
+  ],
   "icons": [
-    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
-    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
-    { "src": "icons/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+    {
+      "src": "icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icons/icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Nuevo partido",
+      "short_name": "Partido",
+      "description": "Preparar y empezar un partido",
+      "url": "./?ir=setup",
+      "icons": [
+        {
+          "src": "icons/shortcut-partido.png",
+          "sizes": "96x96",
+          "type": "image/png"
+        }
+      ]
+    },
+    {
+      "name": "Americano y mexicano",
+      "short_name": "Americano",
+      "description": "Americanos, mexicanos y pozo",
+      "url": "./?ir=americano",
+      "icons": [
+        {
+          "src": "icons/shortcut-americano.png",
+          "sizes": "96x96",
+          "type": "image/png"
+        }
+      ]
+    },
+    {
+      "name": "Ranking",
+      "short_name": "Ranking",
+      "description": "Clasificación ELO de jugadores y parejas",
+      "url": "./?ir=ranking",
+      "icons": [
+        {
+          "src": "icons/shortcut-ranking.png",
+          "sizes": "96x96",
+          "type": "image/png"
+        }
+      ]
+    },
+    {
+      "name": "Historial",
+      "short_name": "Historial",
+      "description": "Partidos jugados y estadísticas",
+      "url": "./?ir=history",
+      "icons": [
+        {
+          "src": "icons/shortcut-historial.png",
+          "sizes": "96x96",
+          "type": "image/png"
+        }
+      ]
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "assets/screenshots/inicio.jpg",
+      "sizes": "780x1688",
+      "type": "image/jpeg",
+      "form_factor": "narrow",
+      "label": "Inicio con tu perfil, tus números y las competiciones en juego"
+    },
+    {
+      "src": "assets/screenshots/partido.jpg",
+      "sizes": "780x1688",
+      "type": "image/jpeg",
+      "form_factor": "narrow",
+      "label": "Marcador en directo con probabilidad de victoria"
+    },
+    {
+      "src": "assets/screenshots/ranking.jpg",
+      "sizes": "780x1688",
+      "type": "image/jpeg",
+      "form_factor": "narrow",
+      "label": "Ranking ELO de jugadores y parejas"
+    }
   ]
 }

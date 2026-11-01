@@ -489,7 +489,7 @@ function openMatchEnd() {
     ${chart ? `<div class="me-chart"><div class="me-chart-title"><span>Probabilidad de victoria</span><span>${escapeHtml(livePairName(0))}</span></div>${chart}</div>` : ''}
     <div class="me-actions">
       <button class="btn-volt" onclick="closeMatchEnd(); toggleStatsView();">Ver estadísticas</button>
-      <button class="btn-icon" onclick="openPosterModal()"><svg class="icon"><use href="#i-share"/></svg> Póster</button>
+      <button class="btn-icon" onclick="openShareMatchSheet(state)"><svg class="icon"><use href="#i-share"/></svg> Compartir</button>
       <button class="btn-icon" onclick="closeMatchEnd(); exitMatchScreen();"><svg class="icon"><use href="#i-exit"/></svg> Salir</button>
     </div>`;
   document.getElementById('match-end').classList.remove('hidden');
@@ -514,7 +514,7 @@ function openMatchOptions() {
     ${row('Narrador de voz', 'Canta el marcador tras cada punto', `<button type="button" class="btn-icon" onclick="toggleVoiceNarrator(); openMatchOptions();">${voiceEnabled ? 'Desactivar' : 'Activar'}</button>`)}
     ${row('Saque', 'Corrige quién saca si no coincide con la pista', `<button type="button" class="btn-icon" onclick="cycleServerManual(); openMatchOptions();">Siguiente</button>`)}
     <div class="mo-actions">
-      <button type="button" class="btn-icon" onclick="closeEventModal(); openPosterModal()"><svg class="icon"><use href="#i-share"/></svg> Póster</button>
+      <button type="button" class="btn-icon" onclick="closeEventModal(); openShareMatchSheet(state)"><svg class="icon"><use href="#i-share"/></svg> Compartir</button>
       <button type="button" class="btn-icon mo-finish" onclick="closeEventModal(); finishMatchManually()"><svg class="icon"><use href="#i-flag"/></svg> Finalizar partido</button>
     </div>`);
 }

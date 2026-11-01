@@ -93,7 +93,7 @@ function renderHome() {
       </div>
     </div>
 
-    ${installBannerHTML()}
+    ${installBannerHTML() || backupReminderHTML()}
     ${paused ? '' : `<button type="button" class="btn-volt home-cta" onclick="switchMainTab('setup')"><svg class="icon icon-lg"><use href="#i-ball"/></svg> Nuevo partido</button>`}
     ${myHomeCardHTML(statsMap)}
 

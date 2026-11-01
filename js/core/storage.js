@@ -28,4 +28,6 @@ function saveDB() {
     showToast('Memoria llena: exporta una copia y quita fotos o la portada');
   }
   if (typeof scheduleSync === 'function') scheduleSync();
+  // Torneos y americanos con la clasificación en directo: se vuelve a publicar lo que haya cambiado
+  if (typeof scheduleEventLivePublish === 'function') scheduleEventLivePublish();
 }

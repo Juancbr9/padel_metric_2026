@@ -7,7 +7,8 @@ const PUBLIC_APP_URL = 'https://juancbr9.github.io/padel_metric_2026/';
 
 function appPublicUrl() {
   if (window.PadelNative) { try { return PadelNative.urlPublica(); } catch (e) {} }
-  if (/^https:/.test(location.protocol) && !/^(localhost|127\.)/.test(location.hostname)) {
+  // Netlify tiene protección de acceso: los enlaces para compartir siempre apuntan a GitHub Pages
+  if (/^https:/.test(location.protocol) && !/^(localhost|127\.)/.test(location.hostname) && !/netlify\.app$/.test(location.hostname)) {
     return `${location.origin}${location.pathname.replace(/index\.html$/, '')}`;
   }
   return PUBLIC_APP_URL;

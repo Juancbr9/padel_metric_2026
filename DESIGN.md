@@ -112,6 +112,8 @@ Mismo sistema con valores claros: fondo `#F4F6F8`, tarjetas `#FFFFFF`, borde `rg
 - **Tarjetas de jugador en pista:** superficie oscura translúcida sobre la pista, franja lateral con el color de su pareja, borde lima si saca.
 - **Panel de golpes:** casillas planas, esquema en el color de su zona y una línea superior con el color del tipo de punto (verde, rojo o ámbar).
 - **Gráficos:** líneas de 1.5–2 px, rejilla y ejes en gris, áreas con el color de pareja al 25 %, una sola escala. Ver la guía `dataviz` para cualquier gráfico nuevo.
+- **Avisos (toast):** tarjeta `#0D1117` flotante con el icono de la pelota en lima. Si llevan acción (por ejemplo "Deshacer"), es un texto en lima en mayúsculas, sin caja, y el aviso dura 5 s.
+- **Páginas públicas** (vista del espectador, clasificación en directo y ficha de un partido compartido): siempre oscuras, con colores fijos (no dependen del modo claro de quien las abre). Tarjetas `#0D1117`, cifras en mono tabular y la primera posición marcada con una franja lima a la izquierda.
 
 ---
 

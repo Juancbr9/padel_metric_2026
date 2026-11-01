@@ -653,7 +653,10 @@ function renderAmericanoDetailHTML(ev) {
       <div class="section-hero-title">${escapeHtml(ev.name)}</div>
       ${podium}
     </div>
-    <button class="btn-icon share-btn" onclick="shareAmericanoImage(${jsArg(ev.id)})"><svg class="icon"><use href="#i-share"/></svg> Compartir clasificación</button>
+    <div class="event-share-row">
+      ${eventLiveButtonHTML('a', ev)}
+      <button class="btn-icon" onclick="shareAmericanoImage(${jsArg(ev.id)})"><svg class="icon"><use href="#i-share"/></svg> Imagen</button>
+    </div>
     <div class="sort-strip">
       <button type="button" class="sort-chip ${aView.tab === 'rounds' ? 'active' : ''}" onclick="setAmericanoTab('rounds')">Rondas</button>
       <button type="button" class="sort-chip ${aView.tab === 'table' ? 'active' : ''}" onclick="setAmericanoTab('table')">Clasificación</button>

@@ -202,10 +202,24 @@ if (localStorage.getItem('pm_theme_light') === '1') {
   document.body.classList.add('light-mode');
 }
 
-function showToast(msg) {
+// Aviso breve. Con action = { label, run } muestra un botón (por ejemplo "Deshacer") durante 5 segundos.
+let toastActionFn = null;
+function showToast(msg, action = null) {
   const t = document.getElementById('toast-hud');
   document.getElementById('toast-msg').innerText = msg;
+  const btn = document.getElementById('toast-action');
+  toastActionFn = action ? action.run : null;
+  if (btn) { btn.classList.toggle('hidden', !action); if (action) btn.innerText = action.label; }
+  t.classList.toggle('has-action', !!action);
   t.classList.add('show');
   if (toastTimeout) clearTimeout(toastTimeout);
-  toastTimeout = setTimeout(() => t.classList.remove('show'), 2300);
+  toastTimeout = setTimeout(() => { t.classList.remove('show', 'has-action'); toastActionFn = null; }, action ? 5000 : 2300);
+}
+
+function runToastAction() {
+  const fn = toastActionFn;
+  toastActionFn = null;
+  clearTimeout(toastTimeout);
+  document.getElementById('toast-hud').classList.remove('show', 'has-action');
+  if (fn) fn();
 }

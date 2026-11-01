@@ -1,0 +1,9 @@
+{
+  "name": "padel-metric",
+  "private": true,
+  "description": "Marcador, estadísticas, torneos y americanos de pádel (PWA sin dependencias).",
+  "scripts": {
+    "test": "node tests/run.mjs",
+    "start": "python3 -m http.server 8765"
+  }
+}
