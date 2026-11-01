@@ -56,8 +56,9 @@ function computePlayerCard(name, statsMap = computeAllPlayersStats().statsMap) {
   return { name, attrs, overall, tier: tier[1], tierLabel: tier[2], best, elo: st.elo, PJ: st.PJ, V: st.V, form: st.form, hasPoints: c.pts > 0 };
 }
 
-function playerCardHTML(card, { big = false } = {}) {
-  const prof = ensureProfile(card.name);
+// profile: datos de la ficha para dibujarla (la vista pública pasa los suyos y no toca la base de datos)
+function playerCardHTML(card, { big = false, profile = null } = {}) {
+  const prof = profile || ensureProfile(card.name);
   const parts = card.name.trim().split(/\s+/);
   const surname = parts.length > 1 ? parts.slice(1).join(' ') : parts[0];
   const side = prof.prefSide && prof.prefSide !== 'Ambas' ? prof.prefSide : 'Pádel';
@@ -106,8 +107,8 @@ function playerCardTabHTML(name) {
     </div>
     <p class="pcard-note">${card.hasPoints ? 'Calculada con todos sus puntos registrados: zonas de golpeo, saque, resto, puntos decisivos y errores. La media incluye su ELO.' : 'Aún no hay partidos con registro punto a punto: la carta se irá afinando al jugar.'}</p>
     <div class="pcard-actions">
-      <button class="btn-volt" onclick="sharePlayerCard(${jsArg(name)})"><svg class="icon"><use href="#i-share"/></svg> Compartir carta</button>
-      <button class="btn-icon" onclick="closePlayerProfile(); openWrapped(${jsArg(name)})"><svg class="icon"><use href="#i-play-circle"/></svg> Ver su temporada en historias</button>
+      <button class="btn-volt" onclick="openSharePlayerSheet(${jsArg(name)})">Compartir perfil</button>
+      <button class="btn-icon" onclick="closePlayerProfile(); openWrapped(${jsArg(name)})">Ver su temporada en historias</button>
       <button class="btn-icon ${isMe ? 'is-me' : ''}" onclick="setMyPlayer(${jsArg(name)})">${isMe ? 'Este eres tú · quitar' : 'Soy yo'}</button>
     </div>`;
 }
@@ -165,7 +166,7 @@ async function sharePlayerCard(name) {
     ctx.fillStyle = c3;
     ctx.font = '900 150px "Barlow Condensed", sans-serif';
     ctx.fillText(String(card.overall), cx + 50, cy + 190);
-    ctx.font = '800 30px "Plus Jakarta Sans", sans-serif';
+    ctx.font = '700 30px "Barlow", sans-serif';
     ctx.fillText((prof.prefSide && prof.prefSide !== 'Ambas' ? prof.prefSide : 'Pádel').toUpperCase(), cx + 56, cy + 236);
     const parts = name.trim().split(/\s+/);
     ctx.font = '700 84px "Barlow Condensed", sans-serif';
@@ -177,7 +178,7 @@ async function sharePlayerCard(name) {
       const x = cx + 140 + col * 250, y = cy + 500 + row * 70;
       ctx.textAlign = 'right'; ctx.fillStyle = c3; ctx.font = '900 56px "Barlow Condensed", sans-serif';
       ctx.fillText(String(card.attrs[k]), x + 30, y);
-      ctx.textAlign = 'left'; ctx.fillStyle = 'rgba(255,255,255,0.85)'; ctx.font = '800 30px "Plus Jakarta Sans", sans-serif';
+      ctx.textAlign = 'left'; ctx.fillStyle = 'rgba(255,255,255,0.85)'; ctx.font = '700 30px "Barlow", sans-serif';
       ctx.fillText(lbl, x + 45, y - 4);
     });
     ctx.textAlign = 'left';
@@ -191,18 +192,13 @@ function myHomeCardHTML(statsMap) {
   const ranked = Object.values(statsMap).filter(s => s.PJ > 0).sort((a, b) => b.elo - a.elo);
   const pos = ranked.findIndex(s => s.name === myPlayerName) + 1;
   return `
-    <button type="button" class="home-card home-me" onclick="openPlayerProfile(${jsArg(myPlayerName)}); setProfileTab('card')">
+    <div class="home-me" role="button" tabindex="0" onclick="openPlayerProfile(${jsArg(myPlayerName)}); setProfileTab('card')">
       <div class="home-me-card">${playerCardHTML(card)}</div>
       <div class="home-me-info">
-        <small>Tu perfil</small>
         <strong>${escapeHtml(myPlayerName)}</strong>
-        <div class="home-me-stats">
-          <div><b data-count="${card.elo}">${card.elo}</b><span>ELO</span></div>
-          <div><b>${pos ? `${pos}.º` : '–'}</b><span>Ranking</span></div>
-          <div><b data-count="${card.PJ ? Math.round((card.V / card.PJ) * 100) : 0}" data-suffix=" %">0</b><span>Victorias</span></div>
-        </div>
-        <span class="home-me-form">${formDotsHTML(card.form) || 'Sin partidos todavía'}</span>
-        ${card.PJ ? `<span class="home-me-link" role="button" onclick="event.stopPropagation(); openWrapped(${jsArg(myPlayerName)})"><svg class="icon"><use href="#i-play-circle"/></svg> Mi temporada</span>` : ''}
+        <span>ELO <b>${card.elo}</b>${pos ? ` · ${pos}.º del ranking` : ''}</span>
+        <span>${card.PJ ? `<b>${card.V}</b> de ${card.PJ} ganados` : 'Sin partidos todavía'}${card.form && card.form.length ? ` ${formDotsHTML(card.form)}` : ''}</span>
+        ${card.PJ ? `<span class="home-me-link" role="button" onclick="event.stopPropagation(); openWrapped(${jsArg(myPlayerName)})">Tu temporada ›</span>` : ''}
       </div>
-    </button>`;
+    </div>`;
 }

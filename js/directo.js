@@ -81,9 +81,9 @@ function openBroadcastPanel() {
     <div class="bc-link">${escapeHtml(link)}</div>
     <div id="bc-status" class="bc-status"></div>
     <div class="bc-actions">
-      <button class="btn-volt" onclick="shareLiveLink()"><svg class="icon"><use href="#i-share"/></svg> Compartir enlace</button>
-      <button class="btn-icon" onclick="copyLiveLink()"><svg class="icon"><use href="#i-copy"/></svg> Copiar</button>
-      <button class="btn-icon" onclick="window.open(${jsArg(link)}, '_blank')"><svg class="icon"><use href="#i-tv"/></svg> Ver como espectador</button>
+      <button class="btn-volt" onclick="shareLiveLink()">Compartir enlace</button>
+      <button class="btn-icon" onclick="copyLiveLink()">Copiar</button>
+      <button class="btn-icon" onclick="window.open(${jsArg(link)}, '_blank')">Ver como espectador</button>
       <button class="btn-icon bc-toggle" onclick="toggleLiveBroadcast()">${state.live.on ? 'Pausar directo' : 'Reanudar directo'}</button>
     </div>`);
   renderBroadcastStatus();
@@ -144,7 +144,10 @@ async function pollSpectator() {
     const row = rows && rows[0];
     if (!row) { renderSpectator({ missing: true }); return; }
     const lag = new Date(row.server_now) - new Date(row.updated_at);
-    renderSpectator({ ...row.data, lagMs: lag });
+    // Inscripción abierta: además se lee la lista de apuntados
+    const joins = row.data && row.data.kind === 'signup'
+      ? await syncRpc('pm_live_joins', { p_code: spectatorCode }, LIVE_CFG).catch(() => null) : null;
+    renderSpectator({ ...row.data, joins, lagMs: lag });
   } catch (e) {
     renderSpectator(spectatorLast ? { ...spectatorLast, offline: true } : { error: e.message });
   }
@@ -178,6 +181,7 @@ function spxSparkSVG(sp) {
 
 function renderSpectator(d) {
   if (d && d.kind === 'ev') { renderEventSpectator(d); return; }
+  if (d && d.kind === 'signup') { renderSignupSpectator(d); return; }
   const box = document.getElementById('view-spectator');
   const head = spectatorHeadHTML();
   if (!d || d.missing || d.error) {
@@ -325,7 +329,7 @@ function refreshEventView(kind) {
 
 function eventLiveButtonHTML(kind, ev) {
   const on = ev.live && ev.live.on;
-  return `<button class="btn-icon ${on ? 'is-live' : ''}" onclick="openEventBroadcast('${kind}', ${jsArg(ev.id)})">${on ? '<span class="live-dot"></span> En directo' : '<svg class="icon"><use href="#i-broadcast"/></svg> Emitir en directo'}</button>`;
+  return `<button class="btn-icon ${on ? 'is-live' : ''}" onclick="openEventBroadcast('${kind}', ${jsArg(ev.id)})">${on ? '<span class="live-dot"></span> En directo' : 'Emitir en directo'}</button>`;
 }
 
 function openEventBroadcast(kind, id) {
@@ -348,9 +352,9 @@ function openEventBroadcast(kind, id) {
     <div class="bc-link">${escapeHtml(link)}</div>
     <div id="ev-bc-status" class="bc-status"></div>
     <div class="bc-actions">
-      <button class="btn-volt" onclick="shareEventLiveLink()"><svg class="icon"><use href="#i-share"/></svg> Compartir enlace</button>
-      <button class="btn-icon" onclick="copyEventLiveLink()"><svg class="icon"><use href="#i-copy"/></svg> Copiar</button>
-      <button class="btn-icon" onclick="window.open(${jsArg(link)}, '_blank')"><svg class="icon"><use href="#i-tv"/></svg> Ver como espectador</button>
+      <button class="btn-volt" onclick="shareEventLiveLink()">Compartir enlace</button>
+      <button class="btn-icon" onclick="copyEventLiveLink()">Copiar</button>
+      <button class="btn-icon" onclick="window.open(${jsArg(link)}, '_blank')">Ver como espectador</button>
       <button class="btn-icon bc-toggle" onclick="toggleEventBroadcast()">${ev.live.on ? 'Pausar directo' : 'Reanudar directo'}</button>
     </div>`);
   renderEventBroadcastStatus();

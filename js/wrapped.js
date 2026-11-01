@@ -70,7 +70,7 @@ function wrapSlides(w) {
     <svg class="w-logo"><use href="#logo-mark"/></svg>
     <div class="w-kicker">${escapeHtml(w.label)}</div>
     <div class="w-huge">${escapeHtml(first)}</div>
-    <div class="w-sub">Esto es lo que ha dado de sí tu pádel. Toca para avanzar.</div>` });
+    <div class="w-sub">Tu temporada en cifras. Toca la pantalla para avanzar.</div>` });
   slides.push({ cls: 'w-matches', html: `
     <div class="w-kicker">En la pista</div>
     <div class="w-big"><b data-count="${w.PJ}">0</b></div>
@@ -193,32 +193,33 @@ function maybeShowWelcome() {
     return;
   }
   const done = () => { try { localStorage.setItem('pm_bienvenida_v1', '1'); } catch (e) {} };
-  const feat = (icon, title, text) => `<div class="wl-feat"><svg class="icon"><use href="#${icon}"/></svg><div><strong>${title}</strong><span>${text}</span></div></div>`;
+  const feat = (title, text) => `<div class="wl-feat"><strong>${title}</strong><span>${text}</span></div>`;
   openStories([
     { cls: 'w-intro', html: `
       <svg class="w-logo"><use href="#logo-mark"/></svg>
-      <div class="w-kicker">Bienvenido a</div>
       <div class="w-huge">Padel Metric</div>
-      <div class="w-sub">El marcador y las estadísticas de tus partidos, como en la televisión. Toca para continuar.</div>` },
+      <div class="w-sub">Marcador y estadísticas para tus partidos de pádel. Todo se guarda en este móvil y no hace falta crear una cuenta.</div>
+      <div class="w-foot">Toca la pantalla para seguir</div>` },
     { cls: 'w-matches', html: `
-      <div class="w-kicker">En directo</div>
-      <div class="w-name">Cada punto cuenta</div>
-      ${feat('i-ball', 'Marcador profesional', 'Saque, bolas de break, de set y de partido, punto de oro y tie-break.')}
-      ${feat('i-chart', 'Probabilidad de victoria', 'Se recalcula tras cada punto con el nivel de las parejas.')}
-      ${feat('i-broadcast', 'Directo para tus amigos', 'Comparte un enlace o un QR y lo siguen desde su móvil o una tele.')}` },
+      <div class="w-name">Durante el partido</div>
+      <div>
+        ${feat('Marcador completo', 'Saque, bolas de break y de set, punto de oro, tie-break y súper tie-break.')}
+        ${feat('Probabilidad de victoria', 'Se recalcula después de cada punto.')}
+        ${feat('Directo', 'Un enlace o un QR para seguir el marcador desde otro móvil o en una tele.')}
+      </div>` },
     { cls: 'w-shot', html: `
-      <div class="w-kicker">Analiza</div>
-      <div class="w-name">Tu juego, en datos</div>
-      ${feat('i-target', 'Mapa de calor', 'Dónde ganas y dónde fallas: red, transición y fondo.')}
-      ${feat('i-star', 'Carta de jugador', 'Atributos de red, fondo, saque, resto, presión y regularidad.')}
-      ${feat('i-trophy', 'Ranking ELO', 'Torneos, americanos y mexicanos con clasificación automática.')}` },
+      <div class="w-name">Después</div>
+      <div>
+        ${feat('Mapa de calor', 'Dónde ganas y dónde pierdes los puntos: red, transición y fondo.')}
+        ${feat('Ranking ELO', 'De jugadores y de parejas, con el cara a cara.')}
+        ${feat('Americanos y torneos', 'Cruces, descansos y clasificación automáticos, también en directo.')}
+      </div>` },
     { cls: 'w-final', html: `
-      <div class="w-kicker">Empezamos</div>
       <div class="w-name">¿Cómo quieres empezar?</div>
-      <div class="w-sub">Puedes probar con datos de ejemplo de los mejores jugadores del mundo y borrarlos después desde Ajustes.</div>
+      <div class="w-sub">Puedes ver la app con datos de ejemplo (jugadores del circuito profesional) y borrarlos después en Ajustes.</div>
       <div class="w-actions">
-        <button class="btn-volt" onclick="event.stopPropagation(); closeWrapped(); loadDemoData();">Probar con datos de ejemplo</button>
-        <button class="btn-icon" onclick="event.stopPropagation(); closeWrapped(); switchMainTab('setup');">Empezar un partido</button>
+        <button class="btn-volt" onclick="event.stopPropagation(); closeWrapped(); switchMainTab('setup');">Empezar un partido</button>
+        <button class="btn-icon" onclick="event.stopPropagation(); closeWrapped(); loadDemoData();">Ver con datos de ejemplo</button>
       </div>` }
   ], { auto: false, onClose: done });
 }

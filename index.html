@@ -14,7 +14,7 @@
   <title>PADEL METRIC</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@0,600;0,700;0,800;0,900;1,700;1,800;1,900&family=JetBrains+Mono:wght@600;700;800&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&family=Barlow+Condensed:ital,wght@0,600;0,700;0,800;0,900;1,800;1,900&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/styles.css">
 </head>
 </head>
@@ -86,7 +86,6 @@
 <input type="file" id="import-file" accept=".json" class="hidden" onchange="importBackupJSON(event)">
 
 <div id="toast-hud" role="status" aria-live="polite">
-  <svg class="icon toast-ico"><use href="#i-ball"/></svg>
   <span id="toast-msg">Listo</span>
   <button type="button" id="toast-action" class="toast-action hidden" onclick="runToastAction()"></button>
 </div>
@@ -104,7 +103,7 @@
   </div>
   <div class="header-actions">
     <button id="btn-undo" class="btn-icon hidden" onclick="undoLast()" title="Deshacer"><svg class="icon"><use href="#i-undo"/></svg></button>
-    <button id="btn-stats" class="btn-icon hidden" onclick="toggleStatsView()"><svg class="icon"><use href="#i-chart"/></svg> DATOS</button>
+    <button id="btn-stats" class="btn-icon hidden" onclick="toggleStatsView()">Datos</button>
   </div>
 </header>
 
@@ -119,45 +118,45 @@
     <div id="drawer-me"></div>
     <div class="drawer-group">
       <button type="button" class="drawer-item" id="menu-home" data-section="home" onclick="switchMainTab('home')">
-        <span class="drawer-ico"><svg class="icon"><use href="#i-home"/></svg></span><span class="drawer-txt"><strong>Inicio</strong><small>Resumen y accesos rápidos</small></span>
+        <span class="drawer-ico"><svg class="icon"><use href="#i-home"/></svg></span><span class="drawer-txt"><strong>Inicio</strong></span>
       </button>
     </div>
     <div class="menu-group-title">Jugar</div>
     <div class="drawer-group">
       <button type="button" class="drawer-item" id="menu-setup" data-section="match" onclick="switchMainTab('setup')">
-        <span class="drawer-ico"><svg class="icon"><use href="#i-ball"/></svg></span><span class="drawer-txt"><strong>Partido</strong><small>Marcador en directo y estadísticas</small></span>
+        <span class="drawer-ico"><svg class="icon"><use href="#i-ball"/></svg></span><span class="drawer-txt"><strong>Partido</strong></span>
       </button>
       <button type="button" class="drawer-item" id="menu-tournaments" data-section="events" onclick="switchMainTab('tournaments')">
-        <span class="drawer-ico"><svg class="icon"><use href="#i-bracket"/></svg></span><span class="drawer-txt"><strong>Torneos</strong><small>Cuadro, liga o grupos</small></span>
+        <span class="drawer-ico"><svg class="icon"><use href="#i-bracket"/></svg></span><span class="drawer-txt"><strong>Torneos</strong></span>
       </button>
       <button type="button" class="drawer-item" id="menu-americano" data-section="events" onclick="switchMainTab('americano')">
-        <span class="drawer-ico"><svg class="icon"><use href="#i-shuffle"/></svg></span><span class="drawer-txt"><strong>Americanos</strong><small>Americano, Mexicano y Pozo</small></span>
+        <span class="drawer-ico"><svg class="icon"><use href="#i-shuffle"/></svg></span><span class="drawer-txt"><strong>Americanos</strong></span>
       </button>
     </div>
     <div class="menu-group-title">Analizar</div>
     <div class="drawer-group">
       <button type="button" class="drawer-item" id="menu-ranking" data-section="ranking" onclick="switchMainTab('ranking')">
-        <span class="drawer-ico"><svg class="icon"><use href="#i-trophy"/></svg></span><span class="drawer-txt"><strong>Ranking</strong><small>Jugadores, parejas y cara a cara</small></span>
+        <span class="drawer-ico"><svg class="icon"><use href="#i-trophy"/></svg></span><span class="drawer-txt"><strong>Ranking</strong></span>
       </button>
       <button type="button" class="drawer-item" id="menu-history" data-section="history" onclick="switchMainTab('history')">
-        <span class="drawer-ico"><svg class="icon"><use href="#i-history"/></svg></span><span class="drawer-txt"><strong>Historial</strong><small>Partidos, resultados y estadísticas</small></span>
+        <span class="drawer-ico"><svg class="icon"><use href="#i-history"/></svg></span><span class="drawer-txt"><strong>Historial</strong></span>
       </button>
     </div>
     <div class="menu-group-title">Más</div>
     <div class="drawer-group">
       <button type="button" class="drawer-item"  data-section="share" onclick="closeAppMenu(); openInstallSheet()">
-        <span class="drawer-ico"><svg class="icon"><use href="#i-qr"/></svg></span><span class="drawer-txt"><strong>Instalar y compartir la app</strong><small>Enlace y QR para Android e iPhone</small></span>
+        <span class="drawer-ico"><svg class="icon"><use href="#i-qr"/></svg></span><span class="drawer-txt"><strong>Instalar y compartir la app</strong></span>
       </button>
       <button type="button" class="drawer-item" data-section="share" onclick="closeAppMenu(); openSyncPanel()">
         <span class="drawer-ico"><svg class="icon"><use href="#i-users"/></svg></span><span class="drawer-txt"><strong>Club compartido</strong><small id="sync-hint">Desactivado</small></span>
       </button>
       <button type="button" class="drawer-item" data-section="app" onclick="closeAppMenu(); openSettingsSheet()">
-        <span class="drawer-ico"><svg class="icon"><use href="#i-sliders"/></svg></span><span class="drawer-txt"><strong>Ajustes</strong><small>Tema, sonido, reglas y copias de seguridad</small></span>
+        <span class="drawer-ico"><svg class="icon"><use href="#i-sliders"/></svg></span><span class="drawer-txt"><strong>Ajustes</strong></span>
       </button>
     </div>
     <div class="menu-footer">
       <svg class="menu-footer-logo"><use href="#logo-mark"/></svg>
-      <span id="app-version-label">Padel Metric · v10</span>
+      <span id="app-version-label">Padel Metric · v11</span>
     </div>
   </nav>
 </div>
@@ -176,8 +175,8 @@
         <div class="resume-label" id="resume-match-label">Pareja 1 vs Pareja 2</div>
       </div>
       <div class="u-row-6">
-        <button type="button" class="btn-icon btn-accent" onclick="resumeSavedActiveMatch()">CONTINUAR</button>
-        <button type="button" class="btn-icon btn-danger" onclick="discardSavedActiveMatch()">✕</button>
+        <button type="button" class="btn-icon btn-accent" onclick="resumeSavedActiveMatch()">Continuar</button>
+        <button type="button" class="btn-icon btn-danger" onclick="discardSavedActiveMatch()" aria-label="Descartar el partido"><svg class="icon"><use href="#i-close"/></svg></button>
       </div>
     </div>
 
@@ -190,15 +189,14 @@
         <button type="button" class="btn-custom-cover" onclick="clearSetupCourt()" title="Quitar a los jugadores" aria-label="Quitar a los jugadores"><svg class="icon icon-sm"><use href="#i-trash"/></svg></button>
         <input type="file" id="cover-upload" accept="image/*" class="hidden" onchange="handleCustomCover(event)">
       </div>
-      <div class="hero-headline">NUEVO PARTIDO</div>
+      <div class="hero-headline">Nuevo partido</div>
     </div>
 
     <div class="lineup-court-arena">
       <svg class="court-bg-svg" viewBox="0 0 400 420" preserveAspectRatio="none">
         <defs>
-          <radialGradient id="setupTurfGlow" cx="50%" cy="50%" r="60%"><stop offset="0%" stop-color="#1D4ED8" stop-opacity="0.45"/><stop offset="100%" stop-color="#0A1936" stop-opacity="0.95"/></radialGradient>
         </defs>
-        <rect width="400" height="420" fill="#0E2756"/><rect width="400" height="420" fill="url(#setupTurfGlow)"/>
+        <rect width="400" height="420" fill="#0D2550"/>
         <rect x="14" y="14" width="372" height="392" fill="none" stroke="rgba(255,255,255,0.24)" stroke-width="2"/>
         <line x1="14" y1="84" x2="386" y2="84" stroke="rgba(255,255,255,0.28)" stroke-width="1.8"/>
         <line x1="14" y1="336" x2="386" y2="336" stroke="rgba(255,255,255,0.28)" stroke-width="1.8"/>
@@ -228,7 +226,7 @@
       <div class="prob-wrap">
         <div class="prob-labels">
           <span id="prob-p1-txt" class="pair-a-txt">P1 50%</span>
-          <span class="u-muted">PREVISIÓN</span>
+          <span class="u-muted">Previsión</span>
           <span id="prob-p2-txt" class="pair-b-txt">P2 50%</span>
         </div>
         <div class="prob-track">
@@ -236,22 +234,16 @@
           <div id="prob-bar-2" class="tv-bar-p2" style="width:50%"></div>
         </div>
       </div>
-      <button type="button" class="btn-icon btn-accent-text" onclick="balancePairsAutomatically()">
-        <svg class="icon icon-sm"><use href="#i-swap"/></svg> Equilibrar
-      </button>
+      <button type="button" class="btn-icon btn-accent-text" onclick="balancePairsAutomatically()">Equilibrar</button>
     </div>
 
-    <button class="btn-volt" onclick="startMatch()">
-      <svg class="icon icon-lg"><use href="#i-ball"/></svg>
-      EMPEZAR PARTIDO
-    </button>
+    <button class="btn-volt" onclick="startMatch()">Empezar partido</button>
   </div>
 
   <!-- PANTALLA 2: RANKING (IDENTIDAD DORADA: PODIO + CLASIFICACIÓN) -->
   <div id="view-ranking" class="hidden">
     <div class="section-hero hero-ranking">
-      <div class="section-hero-kicker">Clasificación ELO</div>
-      <div class="section-hero-title">Ranking</div>
+      <h1 class="section-hero-title">Ranking</h1>
       <div id="ranking-podium" class="podium"></div>
     </div>
 
@@ -263,8 +255,8 @@
     <div id="rk-panel-players">
     <div class="bento-card">
       <div class="section-header">
-        <div class="section-title"><svg class="icon u-accent"><use href="#i-users"/></svg> Jugadores</div>
-        <button class="btn-icon btn-accent" onclick="openEditProfileModal(null)">+ NUEVO</button>
+        <div class="section-title">Jugadores</div>
+        <button class="btn-icon btn-sm" onclick="openEditProfileModal(null)">Nuevo jugador</button>
       </div>
 
       <div class="input-row mb-8">
@@ -302,7 +294,7 @@
       <div class="bento-card">
         <div class="h2h-pick">
           <select id="h2h-p1" onchange="renderH2H()"></select>
-          <span>VS</span>
+          <span>contra</span>
           <select id="h2h-p2" onchange="renderH2H()"></select>
         </div>
         <div id="h2h-content"></div>
@@ -313,8 +305,7 @@
   <!-- PANTALLA 3: HISTORIAL (IDENTIDAD AZUL: RESUMEN + LISTA) -->
   <div id="view-history" class="hidden">
     <div class="section-hero hero-history">
-      <div class="section-hero-kicker">Tu actividad</div>
-      <div class="section-hero-title">Historial</div>
+      <h1 class="section-hero-title">Historial</h1>
       <div id="history-summary" class="hero-stats"></div>
     </div>
     <div class="hist-tools">
@@ -363,7 +354,7 @@
       <div class="fixed-ticker-row">
         <div id="game-log-strip" class="ticker-scroll"></div>
         <div id="gold-receive-bar" class="gold-inline-selector hidden">
-          <span class="gold-label">RESTO</span>
+          <span class="gold-label">Resto</span>
           <button type="button" id="gold-side-D" class="btn-icon gold-btn" onclick="setGoldReceiveSide('Drive')">Drive</button>
           <button type="button" id="gold-side-R" class="btn-icon gold-btn" onclick="setGoldReceiveSide('Revés')">Revés</button>
         </div>
@@ -387,9 +378,8 @@
     <div class="court-arena">
       <svg class="court-bg-svg" viewBox="0 0 400 500" preserveAspectRatio="none">
         <defs>
-          <radialGradient id="turfGlow" cx="50%" cy="50%" r="65%"><stop offset="0%" stop-color="#2563EB" stop-opacity="0.42"/><stop offset="100%" stop-color="#0A1936" stop-opacity="0.96"/></radialGradient>
         </defs>
-        <rect width="400" height="500" fill="#0E2756"/><rect width="400" height="500" fill="url(#turfGlow)"/>
+        <rect width="400" height="500" fill="#0D2550"/>
         <rect x="16" y="16" width="368" height="468" fill="none" stroke="rgba(255,255,255,0.26)" stroke-width="2.5"/>
         <line x1="16" y1="100" x2="384" y2="100" stroke="rgba(255,255,255,0.3)" stroke-width="2"/>
         <line x1="16" y1="400" x2="384" y2="400" stroke="rgba(255,255,255,0.3)" stroke-width="2"/>
@@ -437,15 +427,11 @@
     <div class="bento-card">
       <div class="section-header">
         <div class="section-title">Estadísticas</div>
-        <button class="btn-icon btn-accent" onclick="toggleStatsView()">VOLVER</button>
+        <button class="btn-text" onclick="toggleStatsView()">Volver</button>
       </div>
       <div class="u-grid-2 mb-10">
-        <button class="btn-icon btn-tall" onclick="openPosterModal()">
-          <svg class="icon"><use href="#i-share"/></svg> PÓSTER WHATSAPP
-        </button>
-        <button id="btn-manual-save" class="btn-icon btn-tall" onclick="saveMatchToHistory(true)">
-          <svg class="icon"><use href="#i-save"/></svg> GUARDAR EN HISTORIAL
-        </button>
+        <button class="btn-icon btn-tall" onclick="openShareMatchSheet(posterTargetState || state)">Compartir</button>
+        <button id="btn-manual-save" class="btn-icon btn-tall" onclick="saveMatchToHistory(true)">Guardar en el historial</button>
       </div>
 
       <div class="u-grid-4 mb-8">
@@ -474,10 +460,10 @@
 <div id="player-picker-modal" class="sheet-backdrop top-pinned hidden" onclick="closePlayerPicker()">
   <div class="telemetry-sheet full-top-sheet" onclick="event.stopPropagation()">
     <div class="sheet-head no-shrink mb-8">
-      <div class="sheet-title" id="picker-title">SELECCIONAR JUGADOR</div>
+      <div class="sheet-title" id="picker-title">Elegir jugador</div>
       <div class="u-row-6">
-        <button type="button" class="btn-icon btn-accent-text" onclick="openNewFullPlayerFromPicker()">+ FICHA CON FOTO</button>
-        <button class="btn-icon" onclick="closePlayerPicker()">✕</button>
+        <button type="button" class="btn-icon btn-sm" onclick="openNewFullPlayerFromPicker()">Nueva ficha</button>
+        <button class="btn-icon btn-sm" onclick="closePlayerPicker()" aria-label="Cerrar"><svg class="icon"><use href="#i-close"/></svg></button>
       </div>
     </div>
     <input class="no-shrink" type="text" id="picker-search" placeholder="Buscar jugador o escribir nombre nuevo..." oninput="renderPickerList()" onkeydown="handlePickerSearchEnter(event)">
@@ -490,17 +476,16 @@
   <div class="telemetry-sheet" onclick="event.stopPropagation()">
     <div class="sheet-head mb-14">
       <div>
-        <div class="sheet-title">AJUSTES DEL PARTIDO</div>
-        <div class="sheet-sub">Reglamento oficial y método de registro en vivo</div>
+        <div class="sheet-title">Reglas del partido</div>
+        <div class="sheet-sub">Desempate, tercer set, narrador y forma de anotar</div>
       </div>
-      <button class="btn-icon btn-accent" onclick="closeRulesModal()">LISTO</button>
+      <button class="btn-icon btn-accent" onclick="closeRulesModal()">Listo</button>
     </div>
 
     <!-- Grupo 1: Resolución en 40-40 -->
     <div class="settings-group">
       <div class="settings-group-header">
-        <span class="settings-group-title">Regla en 40-40 (Deuce)</span>
-        <span class="settings-group-hint">Sistema de desempate</span>
+        <span class="settings-group-title">Al llegar a 40-40</span>
       </div>
       <div class="ios-segmented cols-3">
         <button type="button" class="ios-seg-option active" id="deuce-adv" onclick="selectDeuceRule('adv')">
@@ -508,11 +493,11 @@
           <span class="opt-sub">Clásico</span>
         </button>
         <button type="button" class="ios-seg-option" id="deuce-star" onclick="selectDeuceRule('star')">
-          <span class="opt-main">Star Point</span>
-          <span class="opt-sub">Oro al 3.er 40-40</span>
+          <span class="opt-main">Star point</span>
+          <span class="opt-sub">Oro al tercer 40-40</span>
         </button>
         <button type="button" class="ios-seg-option" id="deuce-golden" onclick="selectDeuceRule('golden')">
-          <span class="opt-main">Punto de Oro</span>
+          <span class="opt-main">Punto de oro</span>
           <span class="opt-sub">Muerte súbita</span>
         </button>
       </div>
@@ -521,17 +506,17 @@
     <!-- Grupo 2: Formato del 3.er Set -->
     <div class="settings-group">
       <div class="settings-group-header">
-        <span class="settings-group-title">Desempate en 3.er Set</span>
-        <span class="settings-group-hint">En caso de 1-1 en sets</span>
+        <span class="settings-group-title">Tercer set</span>
+        <span class="settings-group-hint">Si se llega a 1-1</span>
       </div>
       <div class="ios-segmented cols-2">
         <button type="button" class="ios-seg-option active" id="third-normal" onclick="selectThirdRule('normal')">
-          <span class="opt-main">Set Completo</span>
-          <span class="opt-sub">A 6 juegos con Tie-Break</span>
+          <span class="opt-main">Set completo</span>
+          <span class="opt-sub">A 6 juegos con tie-break</span>
         </button>
         <button type="button" class="ios-seg-option" id="third-supertb" onclick="selectThirdRule('supertb')">
-          <span class="opt-main">Súper Tie-Break</span>
-          <span class="opt-sub">Directo a 10 puntos</span>
+          <span class="opt-main">Súper tie-break</span>
+          <span class="opt-sub">A 10 puntos</span>
         </button>
       </div>
     </div>
@@ -539,12 +524,12 @@
     <!-- Grupo 3: Narrador de voz -->
     <div class="settings-group">
       <div class="settings-group-header">
-        <span class="settings-group-title">Narrador de Voz</span>
+        <span class="settings-group-title">Narrador de voz</span>
         <span class="settings-group-hint">Canta el marcador tras cada punto</span>
       </div>
       <div class="ios-segmented cols-2">
         <button type="button" class="ios-seg-option" id="voice-off" onclick="if (voiceEnabled) toggleVoiceNarrator()">
-          <span class="opt-main">Silencio</span>
+          <span class="opt-main">Desactivado</span>
           <span class="opt-sub">Sin voz</span>
         </button>
         <button type="button" class="ios-seg-option" id="voice-on" onclick="if (!voiceEnabled) toggleVoiceNarrator()">
@@ -557,8 +542,8 @@
     <!-- Grupo 4: Interacción de Registro durante el Partido (Exclusivo) -->
     <div class="settings-group mb-0">
       <div class="settings-group-header">
-        <span class="settings-group-title">Control de Anotación en Pista</span>
-        <span class="settings-group-hint">Tocar al jugador abre siempre todas las opciones</span>
+        <span class="settings-group-title">Forma de anotar</span>
+        <span class="settings-group-hint">Tocar a un jugador abre siempre todas las opciones</span>
       </div>
       <div class="control-mode-grid">
         <div class="control-mode-card active" id="inp-tap" onclick="selectInputMode('tap')">
@@ -595,7 +580,7 @@
 <div id="action-modal" class="sheet-backdrop hidden" onclick="closeModal()">
   <div class="telemetry-sheet shot-sheet" onclick="event.stopPropagation()">
     <div class="shot-sheet-head">
-      <div><small id="modal-player-side">Drive</small><div id="modal-player-title">JUGADOR</div></div>
+      <div><small id="modal-player-side">Drive</small><div id="modal-player-title">Jugador</div></div>
       <button class="btn-icon" onclick="closeModal()" aria-label="Cerrar"><svg class="icon"><use href="#i-close"/></svg></button>
     </div>
     <div id="shot-type-seg" class="shot-type-seg"></div>
@@ -615,15 +600,13 @@
       <div class="u-row-10">
         <div id="prof-avatar" class="avatar-circle avatar-lg">JR</div>
         <div>
-          <div class="sheet-title" id="prof-name">JUGADOR</div>
+          <div class="sheet-title" id="prof-name">Jugador</div>
           <div class="mt-4" id="prof-meta-badges"></div>
         </div>
       </div>
       <div class="u-row-6">
-        <button id="btn-open-edit-prof" class="btn-icon btn-accent-text">
-          <svg class="icon icon-sm"><use href="#i-edit"/></svg> Editar
-        </button>
-        <button class="btn-icon" onclick="closePlayerProfile()">✕</button>
+        <button id="btn-open-edit-prof" class="btn-icon btn-sm">Editar</button>
+        <button class="btn-icon btn-sm" onclick="closePlayerProfile()" aria-label="Cerrar"><svg class="icon"><use href="#i-close"/></svg></button>
       </div>
     </div>
     <div class="mt-10" id="prof-body"></div>
@@ -634,8 +617,8 @@
 <div id="player-edit-modal" class="sheet-backdrop hidden" onclick="closeEditProfileModal()">
   <div class="telemetry-sheet" onclick="event.stopPropagation()">
     <div class="sheet-head mb-12">
-      <div class="sheet-title" id="edit-modal-title">DATOS DEL JUGADOR</div>
-      <button class="btn-icon" onclick="closeEditProfileModal()">✕</button>
+      <div class="sheet-title" id="edit-modal-title">Datos del jugador</div>
+      <button class="btn-icon btn-sm" onclick="closeEditProfileModal()" aria-label="Cerrar"><svg class="icon"><use href="#i-close"/></svg></button>
     </div>
 
     <!-- Encuadrador Circular Interactivo (Arrastrar + Zoom + Centrar) -->
@@ -646,11 +629,9 @@
         <div class="cropper-guide-ring"></div>
       </div>
       <div class="flex-1">
-        <div class="field-title">Encuadre Circular (Arrastra la foto)</div>
+        <div class="field-title">Foto (arrástrala para encuadrarla)</div>
         <div class="u-wrap-6 mb-8">
-          <button type="button" class="btn-icon btn-accent-text btn-sm" onclick="document.getElementById('edit-avatar-input').click()">
-            <svg class="icon icon-sm"><use href="#i-camera"/></svg> Subir Foto
-          </button>
+          <button type="button" class="btn-icon btn-sm" onclick="document.getElementById('edit-avatar-input').click()">Subir foto</button>
           <button type="button" id="btn-center-avatar" class="btn-icon hidden btn-sm" onclick="resetAvatarCrop()">
             Centrar
           </button>
@@ -681,7 +662,7 @@
       <button type="button" class="seg-btn" id="edit-sex-F" onclick="selectEditSex('F')">Femenino</button>
     </div>
 
-    <span class="field-label">Mano y Posición Habitual</span>
+    <span class="field-label">Mano y lado preferido</span>
     <div class="seg-grid-2 mb-6">
       <button type="button" class="seg-btn active" id="edit-hand-R" onclick="selectEditHand('Diestro')">Diestro</button>
       <button type="button" class="seg-btn" id="edit-hand-L" onclick="selectEditHand('Zurdo')">Zurdo</button>
@@ -692,17 +673,17 @@
       <button type="button" class="seg-btn active" id="edit-side-Ambas" onclick="selectEditPrefSide('Ambas')">Ambas</button>
     </div>
 
-    <span class="field-label">Notas y Observaciones</span>
+    <span class="field-label">Notas</span>
     <textarea id="edit-notes" placeholder="Ej. Torneo San Andrés, buen bloqueo de revés..."></textarea>
 
-    <button class="btn-volt mt-12" onclick="saveEditedProfile()">GUARDAR FICHA</button>
+    <button class="btn-volt mt-12" onclick="saveEditedProfile()">Guardar ficha</button>
   </div>
 </div>
 
 <!-- MODAL DE RESULTADOS DE TORNEOS Y AMERICANOS -->
 <div id="event-modal" class="sheet-backdrop hidden" onclick="closeEventModal()">
   <div class="telemetry-sheet" onclick="event.stopPropagation()">
-    <div class="u-end"><button class="btn-icon" onclick="closeEventModal()"><svg class="icon"><use href="#i-close"/></svg></button></div>
+    <div class="u-end"><button class="btn-icon btn-sm" onclick="closeEventModal()" aria-label="Cerrar"><svg class="icon"><use href="#i-close"/></svg></button></div>
     <div id="event-modal-body"></div>
   </div>
 </div>
@@ -723,13 +704,13 @@
   <div class="telemetry-sheet" onclick="event.stopPropagation()">
     <div class="sheet-head">
       <div class="sheet-title" id="poster-modal-title">Póster del partido</div>
-      <button class="btn-icon" onclick="closePosterModal()">✕</button>
+      <button class="btn-icon btn-sm" onclick="closePosterModal()" aria-label="Cerrar"><svg class="icon"><use href="#i-close"/></svg></button>
     </div>
     <canvas id="poster-canvas" width="1080" height="1350" class="hidden"></canvas>
     <img id="poster-preview" class="poster-img-preview" alt="Resumen del partido">
     <div class="u-row-8">
-      <button class="btn-volt flex-1 btn-volt-sm" onclick="sharePosterWhatsApp()">COMPARTIR EN WHATSAPP</button>
-      <button class="btn-icon btn-tall" onclick="downloadPosterPNG()"><svg class="icon"><use href="#i-download"/></svg> PNG</button>
+      <button class="btn-volt flex-1 btn-volt-sm" onclick="sharePosterWhatsApp()">Compartir imagen</button>
+      <button class="btn-icon btn-tall" onclick="downloadPosterPNG()">Descargar</button>
     </div>
   </div>
 </div>
@@ -761,6 +742,7 @@
 <script src="js/qr.js"></script>
 <script src="js/directo.js"></script>
 <script src="js/links.js"></script>
+<script src="js/inscripcion.js"></script>
 <script src="js/install.js"></script>
 <script src="js/home.js"></script>
 <script src="js/app.js"></script>

@@ -325,6 +325,7 @@ function deleteAmericano(aid) {
 
 // ---------- Alta ----------
 function startAmericanoDraft() {
+  if (eventDraft && eventDraft.signup) closeSignupOnCancel(eventDraft);
   eventDraft = { kind: 'americano', name: '', format: 'americano', players: [], matchKind: 'points', matchValue: 24, courts: null, rounds: null };
   aView = { mode: 'create', aid: null, tab: 'rounds' };
   renderAmericanoView();
@@ -406,6 +407,9 @@ function createAmericanoFromDraft() {
     id: uid('a'), name: d.name.trim(), format: d.format, createdAt: Date.now(), players: [...d.players],
     matchType: { kind: d.matchKind, value: d.matchValue }, courts: def.courts, totalRounds: def.rounds, rounds: [], status: 'active'
   };
+  // Si hubo inscripción con QR, su enlace pasa a ser el directo de la clasificación
+  const live = signupLiveFor(d);
+  if (live) ev.live = live;
   if (d.format === 'mixicano') {
     const f = ev.players.filter(p => ensureProfile(p).gender === 'F').length;
     ev.courts = Math.max(1, Math.min(ev.courts, Math.floor(Math.min(f, ev.players.length - f) / 2)));
@@ -446,6 +450,8 @@ function openAmericano(aid) {
 }
 
 function showAmericanoList() {
+  // Si se sale sin crear el evento, la inscripción con QR se cierra
+  if (aView.mode === 'create' && eventDraft && eventDraft.signup) closeSignupOnCancel(eventDraft);
   aView = { mode: 'list', aid: null, tab: 'rounds' };
   renderAmericanoView();
 }
@@ -468,9 +474,9 @@ function renderAmericanoListHTML() {
   }).join('');
   return `
     <div class="section-hero">
-      <div class="section-hero-kicker">Competición social</div>
-      <div class="section-hero-title">Americano · Mexicano</div>
-      <div class="section-hero-actions"><button class="btn-volt" onclick="startAmericanoDraft()"><svg class="icon icon-lg"><use href="#i-plus"/></svg> Nuevo evento</button></div>
+      <h1 class="section-hero-title">Americanos</h1>
+      <div class="section-hero-kicker">Americano, mexicano y pozo${americanos.length ? ` · ${americanos.length} evento${americanos.length === 1 ? '' : 's'}` : ''}</div>
+      <div class="section-hero-actions"><button class="btn-volt" onclick="startAmericanoDraft()">Nuevo evento</button></div>
     </div>
     ${cards ? `<div class="event-list">${cards}</div>` : `<div class="bento-card"><div class="empty-note">Organiza una tarde de pádel para 4, 8, 12 o más jugadores.<br>La app hace los cruces, reparte los descansos y lleva la clasificación por puntos.</div></div>`}`;
 }
@@ -494,8 +500,7 @@ function renderAmericanoCreateHTML() {
     </div>`;
   return `
     <div class="section-hero">
-      <div class="section-hero-kicker">Nuevo evento</div>
-      <div class="section-hero-title">Configurar</div>
+      <h1 class="section-hero-title">Nuevo evento</h1>
     </div>
     <div class="bento-card">
       <div class="form-label">Nombre</div>
@@ -514,6 +519,7 @@ function renderAmericanoCreateHTML() {
     <div class="bento-card">
       <div class="section-header"><div class="section-title">Jugadores (${n})</div></div>
       ${renderPlayerChooserHTML(d.players, { onToggle: 'toggleAPlayer', onAdd: 'addAPlayer', showGender: d.format === 'mixicano' })}
+      ${signupButtonHTML(d)}
       ${pairsPreview}
     </div>
     <div class="bento-card">
@@ -524,7 +530,7 @@ function renderAmericanoCreateHTML() {
       </div>
     </div>
     <button class="btn-volt" onclick="createAmericanoFromDraft()">Crear y generar cruces</button>
-    <button class="btn-icon btn-block" onclick="showAmericanoList()">Cancelar</button>`;
+    <button class="btn-text btn-block" onclick="showAmericanoList()">Cancelar</button>`;
 }
 
 // ---------- Cronómetro de ronda (partidos por tiempo) ----------
@@ -535,7 +541,7 @@ function roundTimerHTML(ev, ri, r) {
   if (mt.kind !== 'time' || roundComplete(r)) return '';
   const t = ev.timer && ev.timer.round === ri ? ev.timer : null;
   if (!t) {
-    return `<button type="button" class="round-timer-btn" onclick="startRoundTimer(${jsArg(ev.id)}, ${ri})"><svg class="icon"><use href="#i-play"/></svg> Iniciar ${mt.value}:00</button>`;
+    return `<button type="button" class="round-timer-btn" onclick="startRoundTimer(${jsArg(ev.id)}, ${ri})">Iniciar ${mt.value}:00</button>`;
   }
   return `
     <div class="round-timer-box">
@@ -655,12 +661,12 @@ function renderAmericanoDetailHTML(ev) {
     </div>
     <div class="event-share-row">
       ${eventLiveButtonHTML('a', ev)}
-      <button class="btn-icon" onclick="shareAmericanoImage(${jsArg(ev.id)})"><svg class="icon"><use href="#i-share"/></svg> Imagen</button>
+      <button class="btn-icon" onclick="shareAmericanoImage(${jsArg(ev.id)})">Imagen</button>
     </div>
     <div class="sort-strip">
       <button type="button" class="sort-chip ${aView.tab === 'rounds' ? 'active' : ''}" onclick="setAmericanoTab('rounds')">Rondas</button>
       <button type="button" class="sort-chip ${aView.tab === 'table' ? 'active' : ''}" onclick="setAmericanoTab('table')">Clasificación</button>
     </div>
     ${body}
-    <button class="btn-icon btn-block mt-14 btn-danger" onclick="deleteAmericano(${jsArg(ev.id)})"><svg class="icon"><use href="#i-trash"/></svg> Eliminar evento</button>`;
+    <button class="btn-text btn-danger btn-block mt-14" onclick="deleteAmericano(${jsArg(ev.id)})">Eliminar evento</button>`;
 }

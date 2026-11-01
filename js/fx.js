@@ -1,38 +1,27 @@
 // ==========================================================
 // MOVIMIENTO, CONFETI Y SONIDOS
-// Entradas escalonadas al cambiar de sección, contadores que suben, hojas que se cierran arrastrando,
-// confeti en sets y partidos y sonidos cortos (opcionales). Respeta "reducir movimiento" del sistema.
+// Movimiento solo cuando informa: un fundido breve al cambiar de sección, hojas que se cierran arrastrando,
+// confeti al ganar un partido y sonidos cortos (opcionales). Las cifras aparecen ya con su valor (sin contadores
+// que suben). Respeta "reducir movimiento" del sistema.
 // ==========================================================
 const fxReduced = () => window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-// Entrada escalonada de los bloques de una sección
+// Fundido breve de la sección que aparece (sin entradas escalonadas)
 function fxEnter(root) {
   if (!root || fxReduced()) return;
-  const items = [...root.children].filter(el => !el.classList.contains('hidden')).slice(0, 14);
-  items.forEach((el, i) => {
-    el.classList.remove('fx-in');
-    el.style.setProperty('--fx-i', i);
-    void el.offsetWidth;
-    el.classList.add('fx-in');
-  });
+  root.classList.remove('fx-in');
+  void root.offsetWidth;
+  root.classList.add('fx-in');
 }
 
-// Contadores: cualquier elemento con data-count="123" sube desde 0 al aparecer
+// Cifras con data-count="123": se escribe el valor final con su formato (decimales y sufijo)
 function fxCountUp(el) {
   const target = parseFloat(el.dataset.count);
   if (!isFinite(target) || el.dataset.counted === String(target)) return;
   el.dataset.counted = String(target);
   const dec = parseInt(el.dataset.dec || '0', 10);
   const suffix = el.dataset.suffix || '';
-  const fmt = v => v.toLocaleString('es-ES', { minimumFractionDigits: dec, maximumFractionDigits: dec }) + suffix;
-  if (fxReduced() || target === 0) { el.textContent = fmt(target); return; }
-  const t0 = performance.now(), dur = 900;
-  const step = now => {
-    const k = Math.min(1, (now - t0) / dur);
-    el.textContent = fmt(target * (1 - Math.pow(1 - k, 3)));
-    if (k < 1) requestAnimationFrame(step);
-  };
-  requestAnimationFrame(step);
+  el.textContent = target.toLocaleString('es-ES', { minimumFractionDigits: dec, maximumFractionDigits: dec }) + suffix;
 }
 
 function fxScanCounters(root = document) {
@@ -83,7 +72,7 @@ new MutationObserver(muts => {
 })();
 
 // Confeti sobre toda la pantalla
-function fxConfetti({ colors = ['#D4FF2A', '#00F0FF', '#FF2E54', '#FFE066', '#FFFFFF'], count = 120 } = {}) {
+function fxConfetti({ colors = ['#D4FF2A', '#FFFFFF', '#8B95A5'], count = 90 } = {}) {
   if (fxReduced()) return;
   const cv = document.createElement('canvas');
   cv.className = 'confetti-canvas';

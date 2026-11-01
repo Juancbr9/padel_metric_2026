@@ -369,20 +369,19 @@ function openSyncPanel() {
   closeAppMenu();
   if (syncConfig) {
     openEventModal(`
-      <div class="event-modal-title">Sincronizar entre móviles</div>
+      <div class="event-modal-title">Club compartido</div>
       <div class="reset-title">${escapeHtml(syncConfig.name)}</div>
       <div id="sync-panel-status" class="sync-status">${syncStatusHTML()}</div>
       <p class="reset-text">Todos los móviles del club comparten jugadores, partidos, torneos y americanos. Cada móvil funciona sin conexión y se sincroniza solo al guardar y al abrir la app.</p>
       <button class="btn-volt" onclick="syncNow(true)">Sincronizar ahora</button>
       <div class="form-label">Invitar a otro móvil</div>
       <input type="text" readonly value="${escapeHtml(inviteLink())}" onclick="this.select()">
-      <button class="btn-icon btn-block" onclick="shareInvite()"><svg class="icon"><use href="#i-share"/></svg> Enviar invitación</button>
+      <button class="btn-icon btn-block" onclick="shareInvite()">Enviar invitación</button>
       <p class="reset-text mt-10">Cualquiera con este enlace puede ver y cambiar los datos del club: compártelo solo con tu grupo.</p>
       <button class="btn-icon reset-danger" onclick="leaveClub()">Dejar de sincronizar en este móvil</button>`);
     return;
   }
   openEventModal(`
-    <div class="event-modal-title">Sincronizar entre móviles</div>
     <div class="reset-title">Club compartido</div>
     <p class="reset-text">Comparte el ranking, los partidos, los torneos y los americanos entre varios móviles. Una persona crea el club y los demás se unen con un enlace.</p>
     <div class="form-label">¿Te han enviado una invitación?</div>
@@ -390,7 +389,7 @@ function openSyncPanel() {
     <button class="btn-volt mt-8" onclick="joinClubFromForm()">Unirme al club</button>
     <div class="form-label mt-20">O crea un club nuevo</div>
     <input type="text" id="sync-name" placeholder="Nombre del club (ej. Pádel de los jueves)">
-    <button class="btn-icon btn-block u-accent" onclick="createClubFromForm()">Crear club con los datos de este móvil</button>
+    <button class="btn-icon btn-block" onclick="createClubFromForm()">Crear club con los datos de este móvil</button>
     <details class="sync-help mt-10">
       <summary>Usar otro proyecto de Supabase (opcional)</summary>
       <p class="my-8 u-muted">Por defecto se usa la base de datos de Padel Metric. Si prefieres la tuya, ejecuta <strong>supabase/setup.sql</strong> en su SQL Editor y pon aquí su URL y su clave publishable.</p>

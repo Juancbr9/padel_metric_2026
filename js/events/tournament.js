@@ -283,7 +283,7 @@ function openTournamentResult(tid, mid) {
     <div class="empty-note stack-pad">El súper tie-break se anota como un set (por ejemplo 10–8).</div>
     <button class="btn-volt" onclick="saveTournamentResultFromModal(${jsArg(tid)}, ${jsArg(mid)})">Guardar resultado</button>
     <div class="u-grid-2 mt-8">
-      <button class="btn-icon btn-pad u-accent" onclick="startTournamentLiveMatch(${jsArg(tid)}, ${jsArg(mid)})"><svg class="icon"><use href="#i-play"/></svg> Jugar en directo</button>
+      <button class="btn-icon btn-pad u-accent" onclick="startTournamentLiveMatch(${jsArg(tid)}, ${jsArg(mid)})">Jugar en directo</button>
       ${m.winner ? `<button class="btn-icon btn-pad btn-danger" onclick="clearTournamentResult(${jsArg(tid)}, ${jsArg(mid)})">Borrar resultado</button>` : `<button class="btn-icon btn-pad" onclick="closeEventModal()">Cancelar</button>`}
     </div>`);
 }
@@ -347,20 +347,15 @@ function renderTournamentListHTML() {
         </div>
         <div class="event-card-title">${escapeHtml(t.name)}</div>
         <div class="event-card-sub">${t.teams.length} parejas · ${formatEventDate(t.createdAt)}</div>
-        ${t.champion ? `<div class="event-champion"><svg class="icon"><use href="#i-trophy"/></svg> ${escapeHtml(teamName(t, t.champion))}</div>`
+        ${t.champion ? `<div class="event-champion">Campeones: ${escapeHtml(teamName(t, t.champion))}</div>`
           : `<div class="event-progress"><i style="width:${total ? (played / total) * 100 : 0}%"></i></div><div class="event-card-sub">${played} de ${total} partidos jugados</div>`}
       </button>`;
   }).join('');
   return `
     <div class="section-hero">
-      <div class="section-hero-kicker">Competición</div>
-      <div class="section-hero-title">Torneos</div>
-      <div class="hero-stats">
-        <div class="hero-stat"><div class="hero-stat-val">${tournaments.length}</div><div class="hero-stat-lbl">Torneos</div></div>
-        <div class="hero-stat"><div class="hero-stat-val">${active}</div><div class="hero-stat-lbl">En juego</div></div>
-        <div class="hero-stat"><div class="hero-stat-val">${tournaments.filter(t => t.status === 'finished').length}</div><div class="hero-stat-lbl">Finalizados</div></div>
-      </div>
-      <div class="section-hero-actions"><button class="btn-volt" onclick="startTournamentDraft()"><svg class="icon icon-lg"><use href="#i-plus"/></svg> Nuevo torneo</button></div>
+      <h1 class="section-hero-title">Torneos</h1>
+      ${tournaments.length ? `<div class="section-hero-kicker">${tournaments.length} torneo${tournaments.length === 1 ? '' : 's'}${active ? ` · ${active} en juego` : ''}</div>` : ''}
+      <div class="section-hero-actions"><button class="btn-volt" onclick="startTournamentDraft()">Nuevo torneo</button></div>
     </div>
     ${cards ? `<div class="event-list">${cards}</div>` : `<div class="bento-card"><div class="empty-note">Crea tu primer torneo: eliminatoria con cuadro, liga todos contra todos o fase de grupos con cuadro final.<br>Los partidos se pueden jugar con el marcador en directo y el resultado pasa solo al cuadro.</div></div>`}`;
 }
@@ -429,8 +424,7 @@ function renderTournamentCreateHTML() {
   const chooser = renderPlayerChooserHTML(poolSelected, { onToggle: 'toggleTPool', onAdd: 'addTPoolPlayer', exclude: used });
   return `
     <div class="section-hero">
-      <div class="section-hero-kicker">Nuevo torneo</div>
-      <div class="section-hero-title">Configurar</div>
+      <h1 class="section-hero-title">Nuevo torneo</h1>
     </div>
     <div class="bento-card">
       <div class="form-label">Nombre</div>
@@ -504,11 +498,11 @@ function renderTournamentDetailHTML(t) {
     </div>
     <div class="event-share-row">
       ${eventLiveButtonHTML('t', t)}
-      <button class="btn-icon" onclick="shareTournamentImage(${jsArg(t.id)})"><svg class="icon"><use href="#i-share"/></svg> Imagen</button>
+      <button class="btn-icon" onclick="shareTournamentImage(${jsArg(t.id)})">Imagen</button>
     </div>
     <div class="sort-strip">${tabs.map(([k, l]) => `<button type="button" class="sort-chip ${tView.tab === k ? 'active' : ''}" onclick="setTournamentTab('${k}')">${l}</button>`).join('')}</div>
     ${body}
-    <button class="btn-icon btn-block mt-14 btn-danger" onclick="deleteTournament(${jsArg(t.id)})"><svg class="icon"><use href="#i-trash"/></svg> Eliminar torneo</button>`;
+    <button class="btn-text btn-danger btn-block mt-14" onclick="deleteTournament(${jsArg(t.id)})">Eliminar torneo</button>`;
 }
 
 function matchSideHTML(t, m, side) {

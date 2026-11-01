@@ -1,14 +1,6 @@
 // ==========================================================
 // PÁGINA DE INICIO: RESUMEN Y ACCESOS RÁPIDOS
 // ==========================================================
-function greetingText() {
-  const h = new Date().getHours();
-  if (h < 6) return 'Buenas noches';
-  if (h < 14) return 'Buenos días';
-  if (h < 21) return 'Buenas tardes';
-  return 'Buenas noches';
-}
-
 function pausedMatchSummary() {
   try {
     const saved = JSON.parse(localStorage.getItem('pm_partido_activo_v14') || 'null');
@@ -25,6 +17,10 @@ function nextTournamentMatch(t) {
   return t.matches.find(m => m.a && m.b && !m.winner);
 }
 
+function homeSectionHTML(title, link = '', action = '') {
+  return `<div class="home-section"><h2>${title}</h2>${link ? `<button type="button" class="home-link" onclick="${action}">${link} ›</button>` : ''}</div>`;
+}
+
 function renderHome() {
   const box = document.getElementById('view-home');
   if (!box) return;
@@ -38,85 +34,80 @@ function renderHome() {
   const thisWeek = matchHistory.filter(m => (m.id || 0) >= weekAgo).length;
   const hours = matchHistory.reduce((a, m) => a + (m.elapsedSec || 0), 0) / 3600;
   const isEmpty = !matchHistory.length && !tournaments.length && !americanos.length && !dbPlayers.length;
-  const today = new Date().toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long' });
 
   const live = [
     ...activeT.slice(0, 3).map(t => {
       const nm = nextTournamentMatch(t);
       return `
         <button type="button" class="home-live" data-section="events" onclick="openTournament(${jsArg(t.id)})">
-          <span class="home-live-kind">Torneo · ${TOURNAMENT_FORMATS[t.format].main}</span>
+          <span class="home-live-kind">Torneo · ${TOURNAMENT_FORMATS[t.format].main}${t.live && t.live.on ? ' · en directo' : ''}</span>
           <span class="home-live-title">${escapeHtml(t.name)}</span>
-          <span class="home-live-sub">${nm ? `Siguiente: ${escapeHtml(teamName(t, nm.a))} vs ${escapeHtml(teamName(t, nm.b))}` : 'Esperando resultados'}</span>
+          <span class="home-live-sub">${nm ? `Siguiente: ${escapeHtml(teamName(t, nm.a))} contra ${escapeHtml(teamName(t, nm.b))}` : 'Esperando resultados'}</span>
         </button>`;
     }),
     ...activeA.slice(0, 3).map(ev => `
       <button type="button" class="home-live" data-section="events" onclick="switchMainTab('americano'); openAmericano(${jsArg(ev.id)})">
-        <span class="home-live-kind">${AMERICANO_FORMATS[ev.format].main}</span>
+        <span class="home-live-kind">${AMERICANO_FORMATS[ev.format].main}${ev.live && ev.live.on ? ' · en directo' : ''}</span>
         <span class="home-live-title">${escapeHtml(ev.name)}</span>
         <span class="home-live-sub">Ronda ${Math.min(ev.rounds.filter(roundComplete).length + 1, ev.totalRounds)} de ${ev.totalRounds} · ${ev.players.length} jugadores</span>
       </button>`)
   ].join('');
 
+  // Último partido con el mismo aspecto que en el historial
   const lastCard = last ? `
-    <button type="button" class="home-card home-last" onclick="openHistoryMatchStats(0)">
-      <div class="home-card-head"><span>Último partido</span><small>${escapeHtml(last.date || '')}</small></div>
-      ${[0, 1].map(pi => `
-        <div class="home-last-row ${last.winnerPair === pi ? 'won' : ''}">
-          <span>${escapeHtml(pairLabel([last.players[pi * 2].name, last.players[pi * 2 + 1].name]))}</span>
-          <span class="home-last-sets">${last.sets.filter(s => s[0] + s[1] > 0).map(s => `<i>${s[pi]}</i>`).join('')}</span>
-        </div>`).join('')}
-    </button>` : '';
+    <div class="hm-card home-last" role="button" tabindex="0" onclick="openHistoryMatchStats(0)">
+      <div class="hm-top"><span class="hm-date">${escapeHtml(last.date || '')}</span></div>
+      ${historyPairRow(last, 0)}${historyPairRow(last, 1)}
+    </div>` : '';
 
-  const topCard = top.length ? `
-    <button type="button" class="home-card" data-section="ranking" onclick="switchMainTab('ranking')">
-      <div class="home-card-head"><span>Ranking ELO</span><small>Ver todo ›</small></div>
+  const topList = top.length ? `
+    <div class="home-list">
       ${top.map((st, i) => `
-        <div class="home-top-row">
-          <span class="home-top-pos">${i + 1}</span>
+        <button type="button" class="home-row" onclick="openPlayerProfile(${jsArg(st.name)})">
+          <span class="home-row-pos">${i + 1}</span>
           ${renderAvatarHTML(st.name, 'avatar-sm')}
-          <span class="home-top-name">${escapeHtml(st.name)}</span>
-          <span class="home-top-elo" data-count="${st.elo}">${st.elo}</span>
-        </div>`).join('')}
-    </button>` : '';
+          <span class="home-row-name">${escapeHtml(st.name)}</span>
+          <span class="home-row-val">${st.elo}<small>ELO</small></span>
+        </button>`).join('')}
+    </div>` : '';
+
+  // Actividad: una línea discreta al final, sin recuadros
+  const timeTxt = hours >= 1 ? `${hours.toFixed(hours >= 100 ? 0 : 1).replace('.', ',')} h en pista` : `${Math.round(hours * 60)} min en pista`;
+  const activity = [
+    `${matchHistory.length} partido${matchHistory.length === 1 ? '' : 's'}`,
+    thisWeek ? `${thisWeek} esta semana` : '',
+    matchHistory.length ? timeTxt : '',
+    `${dbPlayers.length} jugador${dbPlayers.length === 1 ? '' : 'es'}`
+  ].filter(Boolean).join(' · ');
+
+  const primary = paused ? `
+    <div class="home-resume">
+      <div class="home-resume-text">
+        <small><span class="live-dot"></span>Partido en pausa</small>
+        <strong>${escapeHtml(paused.label)}</strong>
+        <span>${escapeHtml(paused.score)}</span>
+      </div>
+      <button type="button" class="btn-volt" onclick="resumeSavedActiveMatch()">Continuar</button>
+    </div>
+    <button type="button" class="btn-icon btn-block home-new" onclick="switchMainTab('setup')">Nuevo partido</button>`
+    : `<button type="button" class="btn-volt home-cta" onclick="switchMainTab('setup')">Nuevo partido</button>`;
 
   box.innerHTML = `
-    <div class="home-hero">
-      <svg class="home-hero-mark"><use href="#logo-mark"/></svg>
-      <div class="home-hero-date">${today}</div>
-      <div class="home-hero-title">${greetingText()}${myPlayerName && dbPlayers.includes(myPlayerName) ? `, ${escapeHtml(myPlayerName.split(' ')[0])}` : ''}</div>
-      <div class="home-hero-stats">
-        <div><strong data-count="${matchHistory.length}">0</strong><span>partidos</span></div>
-        <div><strong data-count="${thisWeek}">0</strong><span>esta semana</span></div>
-        <div><strong ${hours >= 1 ? `data-count="${hours.toFixed(1)}" data-dec="${hours >= 100 ? 0 : 1}" data-suffix=" h"` : `data-count="${Math.round(hours * 60)}" data-suffix=" min"`}>0</strong><span>en pista</span></div>
-        <div><strong data-count="${dbPlayers.length}">0</strong><span>jugadores</span></div>
-      </div>
-    </div>
-
+    ${primary}
     ${installBannerHTML() || backupReminderHTML()}
-    ${paused ? '' : `<button type="button" class="btn-volt home-cta" onclick="switchMainTab('setup')"><svg class="icon icon-lg"><use href="#i-ball"/></svg> Nuevo partido</button>`}
     ${myHomeCardHTML(statsMap)}
-
-    ${paused ? `
-      <button type="button" class="home-resume" onclick="resumeSavedActiveMatch()">
-        <span class="live-dot"></span>
-        <span class="home-resume-text"><small>Partido en pausa · ${escapeHtml(paused.score)}</small><strong>${escapeHtml(paused.label)}</strong></span>
-        <span class="home-resume-cta">Continuar</span>
-      </button>` : ''}
-
-
-    ${live ? `<div class="home-section-title">En juego</div><div class="home-live-list">${live}</div>` : ''}
-    ${lastCard || topCard ? `<div class="home-section-title">Resumen</div>${lastCard}${topCard}` : ''}
-
+    ${live ? `${homeSectionHTML('En juego')}<div class="home-live-list">${live}</div>` : ''}
+    ${lastCard ? `${homeSectionHTML('Último partido', 'Historial', "switchMainTab('history')")}${lastCard}` : ''}
+    ${topList ? `${homeSectionHTML('Ranking', 'Ver todo', "switchMainTab('ranking')")}${topList}` : ''}
     ${isEmpty ? `
-      <div class="home-card home-welcome">
-        <div class="home-card-head"><span>Primeros pasos</span></div>
-        <ol>
-          <li>Crea jugadores en <strong>Ranking</strong> o directamente al preparar un partido.</li>
-          <li>Juega un <strong>partido</strong> y registra los golpes: verás el mapa de calor y los puntos clave.</li>
-          <li>Organiza un <strong>torneo</strong> o un <strong>americano</strong> con tus amigos.</li>
+      <div class="home-empty">
+        <h2>Para empezar</h2>
+        <ol class="home-steps">
+          <li><span>Pulsa <strong>Nuevo partido</strong>, elige a los cuatro jugadores (o déjalos sin nombre) y anota punto a punto.</span></li>
+          <li><span>Al terminar tendrás el mapa de calor, los puntos clave y la probabilidad de victoria de cada momento.</span></li>
+          <li><span>Para jugar con más gente, crea un <strong>americano</strong> o un <strong>torneo</strong> desde el menú.</span></li>
         </ol>
-        <button class="btn-icon btn-block u-accent" onclick="loadDemoData()">Cargar datos de ejemplo</button>
-      </div>` : ''}`;
+        <button class="btn-icon btn-block mt-14" onclick="loadDemoData()">Ver la app con datos de ejemplo</button>
+      </div>` : `<div class="home-foot">${activity}</div>`}`;
   initCardTilt(box);
 }

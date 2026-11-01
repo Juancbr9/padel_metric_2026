@@ -50,18 +50,18 @@ function drawShareFrame(ctx, W, H, { kicker, title, subtitle }) {
   ctx.fillText('PADEL METRIC', 140, 112);
 
   ctx.fillStyle = SHARE_THEME.accent;
-  ctx.font = '800 26px "Plus Jakarta Sans", sans-serif';
+  ctx.font = '700 26px "Barlow", sans-serif';
   ctx.fillText(kicker.toUpperCase(), 64, 200);
   ctx.fillStyle = SHARE_THEME.text;
   ctx.font = '700 78px "Barlow Condensed", sans-serif';
   ctx.fillText(fitText(ctx, title.toUpperCase(), W - 128), 64, 280);
   if (subtitle) {
     ctx.fillStyle = SHARE_THEME.muted;
-    ctx.font = '600 26px "Plus Jakarta Sans", sans-serif';
+    ctx.font = '600 26px "Barlow", sans-serif';
     ctx.fillText(fitText(ctx, subtitle, W - 128), 64, 324);
   }
   ctx.fillStyle = SHARE_THEME.muted;
-  ctx.font = '600 22px "Plus Jakarta Sans", sans-serif';
+  ctx.font = '600 22px "Barlow", sans-serif';
   ctx.textAlign = 'right';
   ctx.fillText(new Date().toLocaleDateString('es-ES', { day: 'numeric', month: 'long', year: 'numeric' }), W - 64, 112);
   ctx.textAlign = 'left';
@@ -71,12 +71,12 @@ function drawShareFrame(ctx, W, H, { kicker, title, subtitle }) {
 function drawShareTable(ctx, x, y, width, maxBottom, { title, columns, rows, medals = true, highlight = 0 }) {
   if (title) {
     ctx.fillStyle = SHARE_THEME.accent;
-    ctx.font = '800 24px "Plus Jakarta Sans", sans-serif';
+    ctx.font = '700 24px "Barlow", sans-serif';
     ctx.fillText(title.toUpperCase(), x, y);
     y += 22;
   }
   const rowH = Math.max(40, Math.min(64, Math.floor((maxBottom - y - 50) / Math.max(1, rows.length))));
-  ctx.font = '800 20px "Plus Jakarta Sans", sans-serif';
+  ctx.font = '700 20px "Barlow", sans-serif';
   ctx.fillStyle = SHARE_THEME.muted;
   let cx = x + 70;
   columns.forEach(col => {
@@ -99,7 +99,7 @@ function drawShareTable(ctx, x, y, width, maxBottom, { title, columns, rows, med
     } else {
       ctx.fillStyle = SHARE_THEME.muted;
     }
-    ctx.font = `800 ${Math.min(26, rowH * 0.42)}px "JetBrains Mono", monospace`;
+    ctx.font = `700 ${Math.min(26, rowH * 0.42)}px "Barlow Condensed", sans-serif`;
     ctx.textAlign = 'center';
     ctx.fillText(String(i + 1), x + 34, mid);
     let colX = x + 70;
@@ -107,7 +107,7 @@ function drawShareTable(ctx, x, y, width, maxBottom, { title, columns, rows, med
       const col = columns[ci];
       ctx.textAlign = col.align || 'left';
       ctx.fillStyle = ci === row.length - 1 ? SHARE_THEME.accent : SHARE_THEME.text;
-      ctx.font = ci === 0 ? `800 ${Math.min(34, rowH * 0.52)}px "Barlow Condensed", sans-serif` : `700 ${Math.min(26, rowH * 0.42)}px "JetBrains Mono", monospace`;
+      ctx.font = ci === 0 ? `800 ${Math.min(34, rowH * 0.52)}px "Barlow Condensed", sans-serif` : `700 ${Math.min(26, rowH * 0.42)}px "Barlow Condensed", sans-serif`;
       const text = ci === 0 ? fitText(ctx, String(cell).toUpperCase(), col.width - 16) : String(cell);
       ctx.fillText(text, col.align === 'right' ? colX + col.width : colX, mid);
       colX += col.width;
@@ -122,7 +122,7 @@ function openShareImage(drawFn, title) {
   const ctx = canvas.getContext('2d');
   drawFn(ctx, canvas.width, canvas.height);
   ctx.fillStyle = SHARE_THEME.muted;
-  ctx.font = '600 20px "Plus Jakarta Sans", sans-serif';
+  ctx.font = '600 20px "Barlow", sans-serif';
   ctx.textAlign = 'center';
   ctx.fillText('Generado con Padel Metric', canvas.width / 2, canvas.height - 36);
   ctx.textAlign = 'left';
@@ -162,7 +162,7 @@ function shareTournamentImage(tid) {
       ctx.fillStyle = SHARE_THEME.accent;
       ctx.beginPath(); ctx.roundRect(60, y, W - 120, 120, 22); ctx.fill();
       ctx.fillStyle = '#06090F';
-      ctx.font = '800 22px "Plus Jakarta Sans", sans-serif';
+      ctx.font = '700 22px "Barlow", sans-serif';
       ctx.fillText('CAMPEONES', 96, y + 42);
       ctx.font = '700 52px "Barlow Condensed", sans-serif';
       ctx.fillText(fitText(ctx, teamById(t, t.champion).players.join(' / ').toUpperCase(), W - 200), 96, y + 96);
@@ -182,12 +182,12 @@ function shareTournamentImage(tid) {
       });
     } else {
       // Cuadro: resultados por ronda, de la final hacia atrás
-      ctx.font = '800 24px "Plus Jakarta Sans", sans-serif';
+      ctx.font = '700 24px "Barlow", sans-serif';
       for (let r = t.koRounds - 1; r >= 0 && y < H - 140; r--) {
         const ms = t.matches.filter(m => m.stage === 'ko' && m.round === r && !m.bye && m.a && m.b);
         if (!ms.length) continue;
         ctx.fillStyle = SHARE_THEME.accent;
-        ctx.font = '800 24px "Plus Jakarta Sans", sans-serif';
+        ctx.font = '700 24px "Barlow", sans-serif';
         ctx.fillText(koRoundName(t.koRounds, r).toUpperCase(), 64, y + 30);
         y += 46;
         ms.forEach(m => {
@@ -204,7 +204,7 @@ function shareTournamentImage(tid) {
           ctx.fillStyle = m.winner === m.b ? SHARE_THEME.text : SHARE_THEME.muted;
           ctx.fillText(fitText(ctx, name(m.b), 330), 470, y + 41);
           ctx.fillStyle = SHARE_THEME.accent;
-          ctx.font = '700 24px "JetBrains Mono", monospace';
+          ctx.font = '700 24px "Barlow Condensed", sans-serif';
           ctx.textAlign = 'right';
           ctx.fillText(sets, W - 84, y + 40);
           ctx.textAlign = 'left';

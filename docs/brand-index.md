@@ -48,9 +48,10 @@ Se pintan con `class="icon"` (16 px) o `icon icon-lg` (20 px) y toman el color d
 
 | Familia | Pesos cargados | Uso |
 |---|---|---|
-| Barlow Condensed | 600–900, cursiva 700–900 | Logotipo y marcador en directo (cursiva); títulos de sección y nombres de jugador (recta, 700). |
-| Plus Jakarta Sans | 500–800 | Texto de interfaz, botones, etiquetas. |
-| JetBrains Mono | 600–800 | Cifras de marcador, cronómetros y estadísticas tabulares. |
+| Barlow Condensed | 600–900, cursiva 800–900 | Logotipo y marcador en directo (cursiva); títulos de pantalla, nombres sobre la pista y cifras grandes (recta). |
+| Barlow | 400–700 | Texto de interfaz, botones, etiquetas, listas y cifras en texto (con `tabular-nums`). |
+
+No se usan fuentes monoespaciadas: las dos Barlow tienen cifras tabulares, así los números no cambian de ancho. Las imágenes que genera la app (póster, clasificaciones, carta y QR) usan las mismas dos fuentes.
 
 ## Imágenes generadas por la app
 

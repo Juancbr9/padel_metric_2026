@@ -53,7 +53,7 @@ for (const f of files) {
     return page;
   };
   // Servidor de directo simulado (pm_live_publish / pm_live_get) compartido entre páginas
-  const liveStore = {};
+  const liveStore = {}, joinStore = {};
   const mockLive = async (page) => {
     await page.route('**/rest/v1/rpc/pm_live_publish', r => {
       const d = r.request().postDataJSON();
@@ -65,6 +65,22 @@ for (const f of files) {
     await page.route('**/rest/v1/rpc/pm_live_get', r => {
       const row = liveStore[r.request().postDataJSON().p_code];
       r.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(row ? [{ data: row.data, updated_at: row.updated_at, server_now: new Date().toISOString() }] : []) });
+    });
+    // Inscripción con QR: se comporta como las funciones de supabase/inscripcion.sql
+    await page.route('**/rest/v1/rpc/pm_live_join', r => {
+      const d = r.request().postDataJSON();
+      const lobby = liveStore[d.p_code];
+      const ok = /^[a-z0-9]{16,64}$/.test(d.p_player) && lobby && lobby.data.kind === 'signup' && lobby.data.open === true;
+      if (ok) {
+        const joins = joinStore[d.p_code] = joinStore[d.p_code] || {};
+        joins[d.p_player] = { data: d.p_data, created: joins[d.p_player] ? joins[d.p_player].created : Date.now() + Object.keys(joins).length };
+      }
+      r.fulfill({ status: 200, contentType: 'application/json', body: ok ? 'true' : 'false' });
+    });
+    await page.route('**/rest/v1/rpc/pm_live_joins', r => {
+      const joins = joinStore[r.request().postDataJSON().p_code] || {};
+      const rows = Object.entries(joins).sort((a, b) => a[1].created - b[1].created).map(([player, j]) => ({ id: player.slice(0, 12), data: j.data, updated_at: new Date().toISOString() }));
+      r.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(rows) });
     });
     return liveStore;
   };

@@ -243,20 +243,18 @@ function initBackGuard() {
 }
 
 // Novedades: se muestran una vez tras actualizar (no a quien abre la app por primera vez)
-const APP_VERSION = 10;
+const APP_VERSION = 11;
 const APP_NEWS = [
-  ['i-share', 'Comparte un partido con un enlace', 'Resultado, estadísticas y gráfico de probabilidad en un enlace o un QR. Se abre en cualquier móvil sin instalar nada y quien lo recibe puede guardarlo en su historial.'],
-  ['i-broadcast', 'Clasificación en directo', 'En americanos, mexicanos, pozo y torneos: "Emitir en directo" y todos ven la ronda en juego y la clasificación en su móvil o en una tele.'],
-  ['i-save', 'Copia de seguridad en un toque', 'Se envía a Drive, WhatsApp o el correo desde el menú de compartir del móvil, y el inicio te avisa si llevas tiempo sin copia.'],
-  ['i-play', 'Accesos directos', 'Mantén pulsado el icono de la app para ir directo a Nuevo partido, Americano, Ranking o Historial.'],
-  ['i-screen', 'Más rápida con poca cobertura', 'Si la red tarda, la app se abre al momento con la versión guardada. El botón atrás del móvil cierra hojas y menús, y al borrar un partido puedes deshacerlo.']
+  ['Inscripción con QR', 'Al preparar un americano, abre la inscripción: cada jugador escanea el código y se apunta desde su móvil. Cuando crees el evento, el mismo enlace muestra la ronda en juego y la clasificación.'],
+  ['Perfil para compartir', 'Desde la ficha de un jugador, un enlace con su carta, su ELO y su evolución, el balance, la mejor pareja, el rival más difícil y los títulos.'],
+  ['Diseño renovado', 'Letra nueva y más legible, listas en lugar de recuadros, cifras más claras y el verde reservado para la acción principal de cada pantalla.']
 ];
 
 function openNewsSheet() {
   openEventModal(`
     <div class="mo-title">Novedades · versión ${APP_VERSION}</div>
-    <div class="news-list">${APP_NEWS.map(([icon, title, text]) => `
-      <div class="wl-feat"><svg class="icon"><use href="#${icon}"/></svg><div><strong>${title}</strong><span>${text}</span></div></div>`).join('')}
+    <div class="news-list">${APP_NEWS.map(([title, text]) => `
+      <div class="wl-feat"><strong>${title}</strong><span>${text}</span></div>`).join('')}
     </div>
     <button type="button" class="btn-volt btn-block mt-14" onclick="closeEventModal()">Entendido</button>`);
 }

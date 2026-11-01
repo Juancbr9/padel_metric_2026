@@ -129,7 +129,7 @@ function renderGlobalRanking() {
             ${renderAvatarHTML(item.name, '')}
             <div class="rk-info">
               <div class="rk-name">${escapeHtml(item.name)}</div>
-              <div class="rk-sub">${prof.club ? escapeHtml(prof.club) + ' · ' : ''}${item.PJ} PJ · ${item.V} V (${winPct}%)${formDotsHTML(item.form)}</div>
+              <div class="rk-sub">${prof.club ? escapeHtml(prof.club) + ' · ' : ''}${item.PJ ? `${item.V} de ${item.PJ} ganados` : 'Sin partidos'}${formDotsHTML(item.form)}</div>
             </div>
           </div>
           <div class="rk-right">
@@ -139,7 +139,7 @@ function renderGlobalRanking() {
             </div>
             <div class="rk-stat-box">
               <span class="rk-stat-val">${avgR}</span>
-              <span class="rk-stat-lbl">VAL MEDIA</span>
+              <span class="rk-stat-lbl">Val. media</span>
             </div>
           </div>
         </div>
@@ -241,9 +241,9 @@ function eloChartSVG(history) {
   const last = pts[pts.length - 1];
   return `
     <svg class="elo-chart" viewBox="0 0 ${w} ${h}" preserveAspectRatio="none">
-      <polygon points="${area}" fill="rgba(var(--volt-rgb),0.14)"/>
-      <polyline points="${line}" fill="none" stroke="var(--volt)" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round"/>
-      <circle cx="${last[0]}" cy="${last[1]}" r="4" fill="var(--volt)"/>
+      <polygon points="${area}" fill="var(--text-primary)" fill-opacity="0.07"/>
+      <polyline points="${line}" fill="none" stroke="var(--text-primary)" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" vector-effect="non-scaling-stroke"/>
+      <circle cx="${last[0]}" cy="${last[1]}" r="3.5" fill="var(--text-primary)"/>
     </svg>
     <div class="elo-chart-legend"><span>Mín. ${min}</span><span>Máx. ${max}</span></div>`;
 }
@@ -271,13 +271,8 @@ function openPlayerProfile(name, keepTab = false) {
   }
 
   document.getElementById('prof-name').innerText = name;
-  document.getElementById('prof-meta-badges').innerHTML = `
-    ${rankPos ? `<span class="meta-tag accent">N.º ${rankPos} ELO</span>` : ''}
-    <span class="meta-tag">${prof.gender === 'F' ? 'Femenino' : 'Masculino'}</span>
-    <span class="meta-tag">${escapeHtml(prof.hand || 'Diestro')}</span>
-    <span class="meta-tag">${escapeHtml(prof.prefSide || 'Ambas')}</span>
-    ${prof.club ? `<span class="meta-tag">${escapeHtml(prof.club)}</span>` : ''}
-  `;
+  const sideTxt = { Drive: 'Juega de drive', 'Revés': 'Juega de revés' }[prof.prefSide] || 'Juega en los dos lados';
+  document.getElementById('prof-meta-badges').innerHTML = `${rankPos ? `<span class="meta-tag accent">N.º ${rankPos} del ranking</span>` : ''}<span class="meta-tag">${escapeHtml(prof.hand || 'Diestro')}</span><span class="meta-tag">${sideTxt}</span>${prof.club ? `<span class="meta-tag">${escapeHtml(prof.club)}</span>` : ''}`;
 
   document.getElementById('btn-open-edit-prof').onclick = () => {
     closePlayerProfile();
@@ -295,7 +290,7 @@ function openPlayerProfile(name, keepTab = false) {
     body = `
       <div class="kpi-trio">
         <div class="kpi-card"><div class="kpi-label">ELO</div><div class="kpi-value">${st.elo}</div></div>
-        <div class="kpi-card"><div class="kpi-label">Victorias</div><div class="kpi-value">${st.V}/${st.PJ} · ${winPct}%</div></div>
+        <div class="kpi-card"><div class="kpi-label">Victorias</div><div class="kpi-value">${st.V} de ${st.PJ} · ${winPct} %</div></div>
         <div class="kpi-card"><div class="kpi-label">Valoración</div><div class="kpi-value">${avgR}</div></div>
       </div>
       <div class="sheet-category-label">Evolución del ELO</div>
@@ -319,7 +314,8 @@ function openPlayerProfile(name, keepTab = false) {
         ${d.americanoBest ? `<div class="coach-tip"><span class="coach-tag">Americano</span><span>Mejor puesto: <strong>${d.americanoBest.pos}.º</strong> en ${escapeHtml(d.americanoBest.name)}</span></div>` : ''}
       </div>` : ''}
       ${Object.keys(st.badges).length ? `<div class="sheet-category-label">Hitos</div>${badgeChipsHTML(Object.keys(st.badges), st.badges)}` : ''}
-      ${prof.notes ? `<div class="notes-box">${escapeHtml(prof.notes)}</div>` : ''}`;
+      ${prof.notes ? `<div class="notes-box">${escapeHtml(prof.notes)}</div>` : ''}
+      <button type="button" class="btn-icon btn-block mt-14" onclick="openSharePlayerSheet(${jsArg(name)})">Compartir perfil</button>`;
   }
 
   if (profileTab === 'game') {
@@ -377,7 +373,7 @@ function openPlayerProfile(name, keepTab = false) {
     <div class="sort-strip mt-6">${tabs.map(([k, l]) => `<button type="button" class="sort-chip ${profileTab === k ? 'active' : ''}" onclick="setProfileTab('${k}')">${l}</button>`).join('')}</div>
     ${body}
     <button type="button" class="btn-icon btn-block mt-12 btn-danger" onclick="deletePlayerFromDB(${jsArg(name)})">
-      <svg class="icon"><use href="#i-trash"/></svg> Eliminar jugador
+      Eliminar jugador
     </button>
   `;
 

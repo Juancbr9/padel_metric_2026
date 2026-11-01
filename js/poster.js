@@ -27,7 +27,7 @@ async function drawPosterCanvas(matchData) {
   ctx.fillText('PADEL METRIC', 64, 105);
 
   ctx.fillStyle = '#94A3B8';
-  ctx.font = '700 28px "JetBrains Mono", monospace';
+  ctx.font = '700 28px "Barlow Condensed", sans-serif';
   ctx.fillText(matchData.date || 'PARTIDO OFICIAL', 64, 150);
 
   ctx.fillStyle = '#0D1117';
@@ -51,7 +51,7 @@ async function drawPosterCanvas(matchData) {
   matchData.sets.forEach((s, idx) => {
     const sx = 740 + idx * 95;
     ctx.fillStyle = '#F8FAFC';
-    ctx.font = '800 52px "JetBrains Mono", monospace';
+    ctx.font = '700 52px "Barlow Condensed", sans-serif';
     ctx.fillText(String(s[0]), sx, 285);
     ctx.fillText(String(s[1]), sx, 405);
   });
@@ -112,7 +112,7 @@ async function drawPosterCanvas(matchData) {
 
     const rating = calcPlayerRating(p).toFixed(1);
     ctx.fillStyle = '#00E676';
-    ctx.font = '700 28px "JetBrains Mono", monospace';
+    ctx.font = '700 28px "Barlow Condensed", sans-serif';
     ctx.fillText(`W: ${p.W}`, 196, y + 106);
 
     ctx.fillStyle = '#FF2E54';
@@ -122,7 +122,7 @@ async function drawPosterCanvas(matchData) {
     ctx.fillText(`EF: ${p.EF}`, 520, y + 106);
 
     ctx.fillStyle = '#D4FF2A';
-    ctx.font = '800 44px "JetBrains Mono", monospace';
+    ctx.font = '700 44px "Barlow Condensed", sans-serif';
     ctx.fillText(`VAL ${rating}`, 790, y + 84);
   }
 

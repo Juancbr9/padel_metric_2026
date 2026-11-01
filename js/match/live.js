@@ -436,7 +436,7 @@ function celebrateEvent(ev) {
   const layer = document.getElementById('cele-layer');
   if (ev.kind === 'match') {
     fxSound('match');
-    fxConfetti({ colors: ev.pair ? ['#FF2E54', '#FFE066', '#FFFFFF'] : ['#00F0FF', '#D4FF2A', '#FFFFFF'], count: 160 });
+    fxConfetti({ colors: ev.pair ? ['#FF2E54', '#FFFFFF'] : ['#00F0FF', '#FFFFFF'], count: 110 });
     clearTimeout(matchEndTimer);
     matchEndTimer = setTimeout(openMatchEnd, 900);
     return;
@@ -447,7 +447,6 @@ function celebrateEvent(ev) {
     kind = 'Set';
     score = `${s[0]}-${s[1]}`;
     fxSound('set');
-    fxConfetti({ colors: ev.pair ? ['#FF2E54', '#FFFFFF'] : ['#00F0FF', '#FFFFFF'], count: 70 });
   } else {
     const last = state.points[state.points.length - 1];
     if (last && last.sv != null && (last.sv < 2 ? 0 : 1) !== ev.pair) kind = 'Break';
@@ -476,21 +475,20 @@ function openMatchEnd() {
   const mvp = [...state.players].sort((a, b) => calcPlayerRating(b) - calcPlayerRating(a))[0];
   const chart = wpChartSVG(state, { w: 320, h: 92, idPrefix: 'me' });
   document.getElementById('match-end-card').innerHTML = `
-    <div class="me-trophy"><svg class="icon"><use href="#i-trophy"/></svg></div>
-    <div class="me-kicker">Partido finalizado</div>
+    <div class="me-kicker">Partido finalizado · ${escapeHtml(formatMatchDuration(state.elapsedSec))}</div>
     <div class="me-winners ${w ? 'b' : 'a'}">${escapeHtml(livePairName(w))}</div>
     <div class="me-losers">${escapeHtml(full(w))} ganan a ${escapeHtml(full(l))}</div>
-    <div class="me-sets">${sets.map(({ s, i }) => `<div class="me-set"><small>${i === 2 && state.thirdSetRule === 'supertb' ? 'STB' : `SET ${i + 1}`}</small>${s[0]}-${s[1]}</div>`).join('')}</div>
+    <div class="me-sets">${sets.map(({ s, i }) => `<div class="me-set"><small>${i === 2 && state.thirdSetRule === 'supertb' ? 'Súper TB' : `Set ${i + 1}`}</small>${s[0]}-${s[1]}</div>`).join('')}</div>
     <div class="me-stats">
-      <div class="me-stat"><strong>${formatMatchDuration(state.elapsedSec)}</strong><span>Duración</span></div>
       <div class="me-stat"><strong>${(state.points || []).length || '-'}</strong><span>Puntos</span></div>
+      <div class="me-stat"><strong>${state.players.reduce((a, p) => a + (p.W || 0), 0)}</strong><span>Winners</span></div>
       <div class="me-stat"><strong>${escapeHtml(liveSurname(mvp))}</strong><span>Mejor · ${calcPlayerRating(mvp).toFixed(1)}</span></div>
     </div>
     ${chart ? `<div class="me-chart"><div class="me-chart-title"><span>Probabilidad de victoria</span><span>${escapeHtml(livePairName(0))}</span></div>${chart}</div>` : ''}
     <div class="me-actions">
       <button class="btn-volt" onclick="closeMatchEnd(); toggleStatsView();">Ver estadísticas</button>
-      <button class="btn-icon" onclick="openShareMatchSheet(state)"><svg class="icon"><use href="#i-share"/></svg> Compartir</button>
-      <button class="btn-icon" onclick="closeMatchEnd(); exitMatchScreen();"><svg class="icon"><use href="#i-exit"/></svg> Salir</button>
+      <button class="btn-icon" onclick="openShareMatchSheet(state)">Compartir</button>
+      <button class="btn-icon" onclick="closeMatchEnd(); exitMatchScreen();">Salir</button>
     </div>`;
   document.getElementById('match-end').classList.remove('hidden');
 }
@@ -514,8 +512,8 @@ function openMatchOptions() {
     ${row('Narrador de voz', 'Canta el marcador tras cada punto', `<button type="button" class="btn-icon" onclick="toggleVoiceNarrator(); openMatchOptions();">${voiceEnabled ? 'Desactivar' : 'Activar'}</button>`)}
     ${row('Saque', 'Corrige quién saca si no coincide con la pista', `<button type="button" class="btn-icon" onclick="cycleServerManual(); openMatchOptions();">Siguiente</button>`)}
     <div class="mo-actions">
-      <button type="button" class="btn-icon" onclick="closeEventModal(); openShareMatchSheet(state)"><svg class="icon"><use href="#i-share"/></svg> Compartir</button>
-      <button type="button" class="btn-icon mo-finish" onclick="closeEventModal(); finishMatchManually()"><svg class="icon"><use href="#i-flag"/></svg> Finalizar partido</button>
+      <button type="button" class="btn-icon" onclick="closeEventModal(); openShareMatchSheet(state)">Compartir</button>
+      <button type="button" class="btn-icon mo-finish" onclick="closeEventModal(); finishMatchManually()">Finalizar partido</button>
     </div>`);
 }
 
@@ -696,7 +694,7 @@ function renderZonePicker() {
       : 'Automático: la zona se deduce del golpe (toca una casilla para precisar)';
   }
   const tg = document.getElementById('zone-toggle');
-  if (tg) tg.innerHTML = `<svg class="icon"><use href="#i-target"/></svg> Zona: ${modalZone.z ? `${ZONE_LABELS[modalZone.z]} · ${modalZone.l === 'D' ? 'drive' : 'revés'}` : 'automática según el golpe'}<span>${document.getElementById('zone-box').classList.contains('hidden') ? 'Cambiar' : 'Ocultar'}</span>`;
+  if (tg) tg.innerHTML = `Zona: ${modalZone.z ? `${ZONE_LABELS[modalZone.z]} · ${modalZone.l === 'D' ? 'drive' : 'revés'}` : 'automática según el golpe'}<span>${document.getElementById('zone-box').classList.contains('hidden') ? 'Cambiar' : 'Ocultar'}</span>`;
 }
 
 function exitMatchScreen() {

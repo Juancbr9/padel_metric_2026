@@ -98,14 +98,14 @@ function renderStats(mode) {
 
     container.innerHTML = `
       <div class="tv-compare-row">
-        <div class="tv-compare-header"><span class="pair-a-txt">${p1W}</span><span>WINNERS</span><span class="pair-b-txt">${p2W}</span></div>
+        <div class="tv-compare-header"><span class="pair-a-txt">${p1W}</span><span>Winners</span><span class="pair-b-txt">${p2W}</span></div>
         <div class="tv-compare-track">
           <div class="tv-bar-p1" style="width:${(p1W / wTot) * 100}%"></div>
           <div class="tv-bar-p2" style="width:${(p2W / wTot) * 100}%"></div>
         </div>
       </div>
       <div class="tv-compare-row">
-        <div class="tv-compare-header"><span class="pair-a-txt">${p1ENF}</span><span>ERRORES NO FORZADOS</span><span class="pair-b-txt">${p2ENF}</span></div>
+        <div class="tv-compare-header"><span class="pair-a-txt">${p1ENF}</span><span>Errores no forzados</span><span class="pair-b-txt">${p2ENF}</span></div>
         <div class="tv-compare-track">
           <div class="tv-bar-p1" style="width:${(p1ENF / enfTot) * 100}%"></div>
           <div class="tv-bar-p2" style="width:${(p2ENF / enfTot) * 100}%"></div>
@@ -169,15 +169,15 @@ function renderKeyMomentsPanel(target) {
   return `
     ${wpPanelHTML(target)}
     <div class="sheet-category-label">Puntos clave</div>
-    ${row('BOLAS DE BREAK GANADAS', frac(A.bpWon, A.bpChances), frac(B.bpWon, B.bpChances))}
-    ${row('BOLAS DE BREAK SALVADAS', frac(A.bpSaved, A.bpFaced), frac(B.bpSaved, B.bpFaced))}
-    ${row('PUNTOS DE ORO', { n: A.goldWon, txt: A.goldWon }, { n: B.goldWon, txt: B.goldWon })}
-    ${row('PUNTOS EN TIE-BREAK', { n: A.tbWon, txt: A.tbWon }, { n: B.tbWon, txt: B.tbWon })}
-    ${row('RACHA MÁXIMA (PTOS SEGUIDOS)', { n: A.maxRun, txt: A.maxRun }, { n: B.maxRun, txt: B.maxRun })}
+    ${row('Bolas de break ganadas', frac(A.bpWon, A.bpChances), frac(B.bpWon, B.bpChances))}
+    ${row('Bolas de break salvadas', frac(A.bpSaved, A.bpFaced), frac(B.bpSaved, B.bpFaced))}
+    ${row('Puntos de oro', { n: A.goldWon, txt: A.goldWon }, { n: B.goldWon, txt: B.goldWon })}
+    ${row('Puntos en tie-break', { n: A.tbWon, txt: A.tbWon }, { n: B.tbWon, txt: B.tbWon })}
+    ${row('Racha máxima de puntos seguidos', { n: A.maxRun, txt: A.maxRun }, { n: B.maxRun, txt: B.maxRun })}
     <div class="sheet-category-label">Saque y resto</div>
-    ${row('PUNTOS GANADOS CON 1.ER SAQUE', frac(A.firstWon, A.first), frac(B.firstWon, B.first))}
-    ${row('PUNTOS GANADOS CON 2.º SAQUE', frac(A.secondWon, A.second), frac(B.secondWon, B.second))}
-    ${row('PUNTOS GANADOS AL RESTO', frac(A.returnWon, A.returnPts), frac(B.returnWon, B.returnPts))}
+    ${row('Puntos ganados con primer saque', frac(A.firstWon, A.first), frac(B.firstWon, B.first))}
+    ${row('Puntos ganados con segundo saque', frac(A.secondWon, A.second), frac(B.secondWon, B.second))}
+    ${row('Puntos ganados al resto', frac(A.returnWon, A.returnPts), frac(B.returnWon, B.returnPts))}
     ${clutchTop ? `<div class="notes-box mt-8"><strong>Puntos decisivos:</strong> ${clutchTop[0]} hizo ${clutchTop[1]} winner${clutchTop[1] > 1 ? 's' : ''} en bolas de break, puntos de oro o tie-break.</div>` : ''}
     <div class="sheet-category-label">Análisis del partido</div>
     <div class="coach-list">${tips.map(t => `<div class="coach-tip"><span class="coach-tag">${t.tag}</span><span>${t.text}</span></div>`).join('')}</div>

@@ -361,7 +361,7 @@ function finishMatchManually() {
   persistActiveMatchState();
   updateUI();
   showToast('Partido finalizado y guardado en estadísticas');
-  fxConfetti({ colors: state.winnerPair ? ['#FF2E54', '#FFE066', '#FFFFFF'] : ['#00F0FF', '#D4FF2A', '#FFFFFF'], count: 140 });
+  fxConfetti({ colors: state.winnerPair ? ['#FF2E54', '#FFFFFF'] : ['#00F0FF', '#FFFFFF'], count: 110 });
   clearTimeout(matchEndTimer);
   matchEndTimer = setTimeout(openMatchEnd, 700);
 }

@@ -90,7 +90,7 @@ function renderSetupCourt() {
         <span class="lineup-pos-tag" style="color:${pairColors[i]};">P${i<2?1:2} · ${FIXED_COURT_SIDES[i]}</span>
         <button type="button" class="srv-toggle-btn ${isSrv ? 'active' : ''}" onclick="event.stopPropagation(); selectInitialServer(${i});" title="Marcar como sacador inicial">
           <svg class="icon icon-xs"><use href="#i-ball"/></svg>
-          ${isSrv ? 'SACA' : ''}
+          ${isSrv ? 'Saca' : ''}
         </button>
       </div>
       <div class="lineup-player-row">
@@ -105,8 +105,8 @@ function renderSetupCourt() {
     `;
   }
 
-  const deuceLabels = { adv: 'Ventaja', star: 'Star Point', golden: 'Punto de Oro' };
-  const thirdLabels = { normal: '3 Sets', supertb: 'Súper TB' };
+  const deuceLabels = { adv: 'Ventaja', star: 'Star point', golden: 'Punto de oro' };
+  const thirdLabels = { normal: '3 sets', supertb: 'Súper tie-break' };
   const inputLabels = { tap: 'Elegir golpe', swipe: 'Rápido' };
   const sumEl = document.getElementById('rules-summary-text');
   if (sumEl) {

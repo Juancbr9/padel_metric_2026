@@ -30,6 +30,8 @@ Marcador, estadísticas y competiciones de pádel. Se instala en el móvil y fun
 
 **Compartir**
 - **Enlace del partido**: botón **Compartir** al acabar un partido, en sus opciones o en el historial. Crea un enlace y un QR con el resultado, las estadísticas de los cuatro jugadores y la curva de probabilidad. Se abre en cualquier móvil sin instalar nada y quien use Padel Metric puede **guardarlo en su historial**. Los datos van comprimidos dentro del propio enlace: no se suben a ningún servidor y el enlace no caduca.
+- **Inscripción con QR** (americanos): en **Nuevo evento → Inscripción con QR**, cada jugador escanea el código y se apunta desde su móvil con su nombre (en el mixto, también si es hombre o mujer). La lista llega sola al evento, cada uno puede cambiar su nombre o borrarse y el organizador puede quitar a quien quiera. Al crear el evento, el mismo enlace pasa a mostrar la ronda en juego y la clasificación. Necesita ejecutar una vez `supabase/inscripcion.sql` en el proyecto de Supabase.
+- **Perfil para compartir**: desde la ficha de un jugador (o su carta), **Compartir perfil** crea un enlace con su carta, el ELO y su evolución, el balance, la mejor pareja, el rival más difícil, los títulos y sus golpes. Se abre en cualquier móvil y muestra los datos del día en que se compartió.
 - **Clasificación en directo**: en americanos, mexicanos, pozo y torneos, **Emitir en directo** genera un enlace y un QR. Jugadores y público ven la ronda en juego y la clasificación (o el cuadro) en su móvil o en una tele, y se actualiza sola con cada resultado.
 - **Imágenes para WhatsApp** de clasificaciones de americanos, ligas, grupos y cuadros de torneo.
 - **Sincronizar entre móviles**: un club compartido en Supabase (gratis) para que todo el grupo vea el mismo ranking, partidos, torneos y americanos. Guía en [`supabase/LEEME.md`](supabase/LEEME.md).
@@ -42,9 +44,13 @@ Marcador, estadísticas y competiciones de pádel. Se instala en el móvil y fun
 - Al borrar un partido del historial se puede **deshacer** durante unos segundos.
 - Tras cada actualización se muestran una vez las **novedades** (también en Ajustes).
 
+## Diseño
+
+Sistema de diseño en [`DESIGN.md`](DESIGN.md): fondo negro, un único acento lima reservado para la acción principal, tipografía Barlow con cifras tabulares y una lista de "señales de diseño hecho con IA" que la app evita (franjas laterales de color, rótulos en mayúsculas encima de los títulos, recuadros de cifras, tarjetas dentro de tarjetas, iconos en todos los botones, desenfoques, degradados, contadores animados, saludos genéricos).
+
 ## Pruebas automáticas
 
-`npm test` abre la app en un navegador sin ventana y comprueba la bienvenida, el menú, un partido completo (saque, golpes, deshacer, tie-break y cierre), el enlace del partido, la clasificación en directo, los datos (deshacer, copia, novedades y restaurar de fábrica), el botón atrás y el diseño (sin desbordes a 360 px en modo oscuro y claro). Necesita Node 18 o superior y Playwright (`npm install --no-save playwright` y `npx playwright install chromium`). En GitHub se ejecutan solas en cada subida a `main` (pestaña **Actions**).
+`npm test` abre la app en un navegador sin ventana y comprueba la bienvenida, el menú, un partido completo (saque, golpes, deshacer, tie-break y cierre), el enlace del partido, la clasificación en directo, los datos (deshacer, copia, novedades y restaurar de fábrica), el botón atrás, el diseño (sin desbordes a 360 px en modo oscuro y claro), la inscripción con QR (cuatro jugadores apuntándose desde sus móviles) y el perfil para compartir. Necesita Node 18 o superior y Playwright (`npm install --no-save playwright` y `npx playwright install chromium`). En GitHub se ejecutan solas en cada subida a `main` (pestaña **Actions**).
 
 ## App para Android
 

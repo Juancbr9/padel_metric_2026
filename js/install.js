@@ -58,13 +58,13 @@ function openInstallSheet(tab) {
   openEventModal(`
     <div class="mo-title">Instalar y compartir</div>
     <p class="bc-intro">Pásale este enlace a tus compañeros: lo abren en el navegador del móvil, lo instalan como una app y listo. No hace falta tienda de aplicaciones.</p>
-    ${isInstalledApp() ? '<div class="in-ok"><svg class="icon"><use href="#i-ball"/></svg> En este dispositivo ya usas la app instalada</div>' : ''}
+    ${isInstalledApp() ? '<div class="in-ok">En este dispositivo ya usas la app instalada</div>' : ''}
     <div class="bc-qr">${QR.svg(url, 2)}</div>
     <div class="bc-link">${escapeHtml(url)}</div>
     <div class="bc-actions">
-      <button class="btn-volt" onclick="shareAppLink()"><svg class="icon"><use href="#i-share"/></svg> Enviar enlace</button>
-      <button class="btn-icon" onclick="copyAppLink()"><svg class="icon"><use href="#i-copy"/></svg> Copiar</button>
-      <button class="btn-icon" onclick="shareAppQR()"><svg class="icon"><use href="#i-qr"/></svg> Imagen del QR</button>
+      <button class="btn-volt" onclick="shareAppLink()">Enviar enlace</button>
+      <button class="btn-icon" onclick="copyAppLink()">Copiar</button>
+      <button class="btn-icon" onclick="shareAppQR()">Imagen del QR</button>
     </div>
     <div class="menu-group-title">Cómo instalarla</div>
     <div class="in-tabs">${[['android', 'Android'], ['ios', 'iPhone'], ['desktop', 'Ordenador']].map(([k, l]) =>
@@ -95,9 +95,9 @@ function shareAppQR() {
     ctx.beginPath(); ctx.roundRect(x - 30, y - 30, size + 60, size + 60, 36); ctx.fill();
     ctx.drawImage(img, x, y, size, size);
     ctx.fillStyle = '#F8FAFC'; ctx.textAlign = 'center';
-    ctx.font = '700 30px "Plus Jakarta Sans", sans-serif';
+    ctx.font = '700 30px "Barlow", sans-serif';
     ctx.fillText('Escanéalo con la cámara del móvil', W / 2, y + size + 100);
-    ctx.fillStyle = '#94A3B8'; ctx.font = '600 26px "JetBrains Mono", monospace';
+    ctx.fillStyle = '#94A3B8'; ctx.font = '600 26px "Barlow Condensed", sans-serif';
     ctx.fillText(url.replace(/^https:\/\//, ''), W / 2, y + size + 150);
     ctx.textAlign = 'left';
   }, 'Código QR de la app');

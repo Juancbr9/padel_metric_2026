@@ -21,3 +21,13 @@ Si algún día prefieres una base de datos propia: crea un proyecto en [supabase
 ## Directo para espectadores
 
 El botón **Emitir** del partido publica el marcador en la tabla `pm_live` del mismo proyecto. El enlace (o el código QR) lleva un código público para mirar; solo el móvil que creó el directo tiene la clave secreta para actualizarlo. Los directos de más de 3 días se borran solos. El SQL está al final de `setup.sql`.
+
+## Inscripción con QR (americanos)
+
+Para que los jugadores se apunten a un americano escaneando un QR hace falta un paso más en Supabase, **una sola vez**:
+
+1. Entra en [supabase.com](https://supabase.com) y abre el proyecto **padel-metric**.
+2. En el menú de la izquierda, **SQL Editor** → **New query**.
+3. Pega todo el contenido de [`inscripcion.sql`](inscripcion.sql) y pulsa **Run**. Debe responder "Success. No rows returned".
+
+Crea la tabla `pm_live_join` y dos funciones: `pm_live_join` (apuntarse, cambiar el nombre o borrarse, solo mientras la inscripción esté abierta y con un máximo de 64 personas) y `pm_live_joins` (leer la lista sin las claves de cada uno). Las inscripciones de más de 3 días se borran solas. Si un proyecto nuevo ejecuta `setup.sql` completo, ya lo incluye.

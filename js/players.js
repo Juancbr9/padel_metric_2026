@@ -4,7 +4,7 @@
 function openPlayerPicker(slotIdx) {
   vibrate(15);
   activePickerSlot = slotIdx;
-  document.getElementById('picker-title').innerText = `PAREJA ${slotIdx < 2 ? 1 : 2} · ${FIXED_COURT_SIDES[slotIdx].toUpperCase()}`;
+  document.getElementById('picker-title').innerText = `Pareja ${slotIdx < 2 ? 1 : 2} · ${FIXED_COURT_SIDES[slotIdx].toLowerCase()}`;
   const inp = document.getElementById('picker-search');
   inp.value = '';
   renderPickerList();
@@ -75,9 +75,9 @@ function renderPickerList() {
     html += `
       <div class="picker-item create-instant" onclick="createAndAssignOnTheFly('${safeName}')">
         <span class="picker-name">
-          + CREAR Y CONVOCAR A "${rawQuery}"
+          Añadir a «${rawQuery}»
         </span>
-        <span class="picker-badge accent">RÁPIDO</span>
+        <span class="picker-badge">Nuevo</span>
       </div>
     `;
   }
@@ -88,11 +88,11 @@ function renderPickerList() {
       <div class="u-row-10">
         <span class="avatar-circle">J${activePickerSlot + 1}</span>
         <div>
-          <div class="picker-name">Jugador ${activePickerSlot + 1} (Genérico)</div>
-          <div class="picker-sub">Sin guardar estadísticas individuales en BD</div>
+          <div class="picker-name">Jugador ${activePickerSlot + 1} sin nombre</div>
+          <div class="picker-sub">Sus estadísticas no se guardan en el ranking</div>
         </div>
       </div>
-      <span class="picker-badge">LIBRE</span>
+      <span class="picker-badge"></span>
     </div>
   `;
 
@@ -110,7 +110,7 @@ function renderPickerList() {
     const isCurrent = (usedIdx === activePickerSlot);
     const isOtherSlot = (usedIdx !== -1 && usedIdx !== activePickerSlot);
     const safeName = name.replace(/'/g, "\\'");
-    const subInfo = [prof.club, prof.prefSide ? `Lado: ${prof.prefSide}` : ''].filter(Boolean).join(' · ') || `${st.PJ} PJ · ${st.V} V`;
+    const subInfo = [prof.club, { Drive: 'Drive', 'Revés': 'Revés', Ambas: 'Ambos lados' }[prof.prefSide] || ''].filter(Boolean).join(' · ') || (st.PJ ? `${st.V} de ${st.PJ} ganados` : 'Sin partidos');
 
     html += `
       <div class="picker-item ${isCurrent ? 'current-slot' : ''} ${isOtherSlot ? 'disabled-slot' : ''}" onclick="assignPlayerToSlot('${safeName}')">
@@ -122,7 +122,7 @@ function renderPickerList() {
           </div>
         </div>
         <span class="picker-badge accent">
-          ${isOtherSlot ? `EN PISTA` : `VAL ${avgR}`}
+          ${isOtherSlot ? `En pista` : `Val. ${avgR}`}
         </span>
       </div>
     `;
@@ -272,7 +272,7 @@ function updateEditAvatarInitialsPreview() {
 
 function openEditProfileModal(playerKey = null, prefillName = '') {
   editingOriginalKey = playerKey;
-  document.getElementById('edit-modal-title').innerText = playerKey ? 'EDITAR JUGADOR' : 'NUEVO JUGADOR';
+  document.getElementById('edit-modal-title').innerText = playerKey ? 'Editar jugador' : 'Nuevo jugador';
 
   if (playerKey) {
     const prof = ensureProfile(playerKey);

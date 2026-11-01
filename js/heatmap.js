@@ -55,7 +55,7 @@ function renderFullCourtHeatSVG(cells, type) {
       <line x1="${X0}" y1="${NET - BAND}" x2="${X0 + CW}" y2="${NET - BAND}" stroke="rgba(255,255,255,0.35)" stroke-width="1.5"/>
       <line x1="${X0}" y1="${NET + BAND}" x2="${X0 + CW}" y2="${NET + BAND}" stroke="rgba(255,255,255,0.35)" stroke-width="1.5"/>
       <line x1="150" y1="${NET - BAND}" x2="150" y2="${NET + BAND}" stroke="rgba(255,255,255,0.35)" stroke-width="1.5"/>
-      <line x1="2" y1="${NET}" x2="298" y2="${NET}" stroke="#D4FF2A" stroke-width="3"/>
+      <line x1="2" y1="${NET}" x2="298" y2="${NET}" stroke="#F5F7FA" stroke-width="3"/>
       <text x="150" y="${NET - 4}" class="heat-net">RED</text>
       ${labels}
       <text x="286" y="${NET - 5}" class="heat-pair" fill="#00F0FF" text-anchor="end">▲ PAREJA 1</text>
@@ -78,7 +78,7 @@ function renderHalfCourtHeatSVG(zoneLaneCounts, type = 'all') {
   return `
     <svg class="heat-court half" viewBox="0 0 300 206" role="img" aria-label="Mapa de calor del jugador">
       <rect x="10" y="22" width="280" height="180" rx="6" fill="#0E2756" stroke="rgba(255,255,255,0.3)"/>
-      <line x1="2" y1="20" x2="298" y2="20" stroke="#D4FF2A" stroke-width="3"/>
+      <line x1="2" y1="20" x2="298" y2="20" stroke="#F5F7FA" stroke-width="3"/>
       <text x="150" y="14" class="heat-net">RED</text>
       ${body}
     </svg>`;

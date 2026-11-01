@@ -105,7 +105,7 @@ function generateRealisticArenaCoverDataURL() {
   ctx.fillStyle = '#F8FAFC';
   ctx.fillRect(0, netY, 1080, 12);
   ctx.fillStyle = '#0F172A';
-  ctx.font = '800 8px "JetBrains Mono", monospace';
+  ctx.font = '700 8px "Barlow Condensed", sans-serif';
   for (let tx = 40; tx < 1040; tx += 210) {
     ctx.fillText('PADEL METRIC PRO TOUR', tx, netY + 9);
   }
