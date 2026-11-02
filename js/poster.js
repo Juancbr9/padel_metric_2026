@@ -15,6 +15,8 @@ function closePosterModal() {
 
 async function drawPosterCanvas(matchData) {
   const canvas = document.getElementById('poster-canvas');
+  canvas.width = 1080;
+  canvas.height = 1350;
   const ctx = canvas.getContext('2d');
   const W = canvas.width, H = canvas.height;
 

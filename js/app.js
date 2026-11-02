@@ -246,12 +246,11 @@ function initBackGuard() {
 }
 
 // Novedades: se muestran una vez tras actualizar (no a quien abre la app por primera vez)
-const APP_VERSION = 12;
+const APP_VERSION = 13;
 const APP_NEWS = [
-  ['Cartas de jugador propias', 'La carta es ahora una pista de pádel vista desde arriba: el jugador en un campo, la red en medio y sus números en el otro. Cada uno elige el color de su pista (azul, verde, terracota…) y puede poner la pala que usa.'],
-  ['¿Quién eres?', 'Elige tu jugador desde el inicio o el menú: verás tu carta y tu temporada al abrir la app y el ranking te marcará.'],
-  ['Tema claro, oscuro o automático', 'En Ajustes, el tema puede seguir al del móvil. La barra de arriba del navegador cambia de color con él.'],
-  ['Pantallas más ordenadas', 'Nuevo partido con las reglas a la vista y sin foto de portada, estadísticas con el resultado arriba, ranking con menos botones y pantallas vacías que explican qué hacer.']
+  ['Temporada en historias, renovada', 'Elige la temporada (cada año o toda la historia) y mira tus partidos mes a mes, tu mejor partido, tus títulos y cómo has cambiado frente al año anterior. El ELO de cada temporada es ahora exacto.'],
+  ['Resumen para compartir', 'Al final de las historias, "Compartir el resumen" crea una imagen vertical lista para las historias de WhatsApp o Instagram.'],
+  ['Más fácil de manejar', 'Desliza hacia abajo para cerrar, mantén pulsado para pausar y, en el ordenador, usa las flechas. Si cambias de aplicación, la historia se detiene.']
 ];
 
 function openNewsSheet() {

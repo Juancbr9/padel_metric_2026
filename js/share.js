@@ -117,8 +117,11 @@ function drawShareTable(ctx, x, y, width, maxBottom, { title, columns, rows, med
   return y + rows.length * rowH + 16;
 }
 
-function openShareImage(drawFn, title) {
+// height: 1350 (publicación) o 1920 (historia vertical). El lienzo se reajusta en cada imagen.
+function openShareImage(drawFn, title, { height = 1350 } = {}) {
   const canvas = document.getElementById('poster-canvas');
+  canvas.width = 1080;
+  canvas.height = height;
   const ctx = canvas.getContext('2d');
   drawFn(ctx, canvas.width, canvas.height);
   ctx.fillStyle = SHARE_THEME.muted;

@@ -322,7 +322,7 @@ td:first-child, th:first-child { text-align: left; font-family: var(--font-sans)
 .news-list .wl-feat { background: none; border: none; border-radius: 0; padding: 12px 0; }
 .news-list .wl-feat + .wl-feat { border-top: 1px solid var(--border-subtle); }
 .news-list .wl-feat span { color: var(--text-secondary); }
-.poster-img-preview { width: 100%; border-radius: var(--r-lg); border: 1px solid var(--border-specular); margin: 10px 0; display: block; }
+.poster-img-preview { width: auto; max-width: 100%; max-height: 62vh; border-radius: var(--r-lg); border: 1px solid var(--border-specular); margin: 10px auto; display: block; }
 .event-modal-title { font-size: 0.82rem; font-weight: 600; color: var(--text-secondary); margin-top: -26px; }
 
 /* Selector de jugadores: lista con separadores */
@@ -1241,12 +1241,29 @@ body.spectator-mode > header, body.spectator-mode .container, body.spectator-mod
 .w-big b { font-weight: 700; }
 .w-name { font-family: var(--font-display); font-weight: 700; font-size: 2.6rem; line-height: 0.95; text-transform: uppercase; }
 .w-sub { font-size: 1.05rem; line-height: 1.5; color: rgba(255,255,255,0.85); }
-.w-row { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); margin-top: 14px; }
-.w-row div { padding: 0 10px; min-width: 0; }
-.w-row div:first-child { padding-left: 0; }
-.w-row div + div { border-left: 1px solid rgba(255,255,255,0.14); }
-.w-row b { display: block; font-family: var(--font-display); font-weight: 700; font-size: 2rem; line-height: 1; }
-.w-row span { font-size: 0.8rem; font-weight: 500; color: rgba(255,255,255,0.7); }
+/* Datos en lista: etiqueta a la izquierda, cifra a la derecha y una línea fina entre filas */
+.w-lines { margin-top: 12px; border-top: 1px solid rgba(255,255,255,0.14); }
+.w-lines div { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; padding: 11px 0; border-bottom: 1px solid rgba(255,255,255,0.14); }
+.w-lines span { font-size: 0.95rem; color: rgba(255,255,255,0.72); min-width: 0; }
+.w-lines b { font-family: var(--font-display); font-weight: 700; font-size: 1.45rem; line-height: 1; text-align: right; white-space: nowrap; font-variant-numeric: tabular-nums; }
+/* Selector de temporada en la portada */
+.w-seasons { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 18px; }
+.w-season { min-height: 40px; padding: 0 16px; border-radius: 20px; border: 1px solid rgba(255,255,255,0.22); background: transparent; color: #FFFFFF; font: 600 0.95rem var(--font-sans); font-variant-numeric: tabular-nums; }
+.w-season.on { background: #FFFFFF; color: #06090F; border-color: #FFFFFF; }
+/* Partidos por mes: barra gris = partidos, parte blanca = victorias */
+.w-months { width: 100%; height: auto; margin-top: 10px; overflow: visible; }
+.w-months rect { transform-box: fill-box; transform-origin: bottom; animation: wGrow 0.7s var(--ease-out) both; }
+.w-months .lost { fill: rgba(255,255,255,0.24); }
+.w-months .won { fill: #FFFFFF; }
+.w-months .none { fill: rgba(255,255,255,0.12); animation: none; }
+.w-months text { fill: rgba(255,255,255,0.6); font-size: 11px; font-weight: 600; text-anchor: middle; }
+@keyframes wGrow { from { transform: scaleY(0); } to { transform: scaleY(1); } }
+.w-legend { display: flex; gap: 16px; font-size: 0.82rem; color: rgba(255,255,255,0.7); }
+.w-legend span::before { content: ''; display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 6px; vertical-align: -1px; }
+.w-legend .won::before { background: #FFFFFF; }
+.w-legend .lost::before { background: rgba(255,255,255,0.24); }
+/* Dibujo del golpe (el mismo esquema que en el panel del partido) */
+.w-shotfig { width: 150px; height: 84px; color: #FFFFFF; }
 .w-chart { width: 100%; height: auto; margin-top: 8px; overflow: visible; }
 .w-chart path { fill: none; stroke: #D4FF2A; stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; stroke-dasharray: 1; stroke-dashoffset: 1; animation: wDraw 1.6s var(--ease-out) 0.4s forwards; }
 @keyframes wDraw { to { stroke-dashoffset: 0; } }

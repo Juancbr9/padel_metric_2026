@@ -23,7 +23,7 @@ Marcador, estadísticas y competiciones de pádel. Se instala en el móvil y fun
 - **Puntos clave**: gráfico de la probabilidad de victoria punto a punto (se puede recorrer con el dedo) y el **momento clave** del partido, bolas de break, puntos de oro, tie-breaks, rachas, saque y resto, más un análisis automático del partido.
 - **Ranking ELO** con podio, forma reciente, cara a cara y rendimiento por parejas.
 - **Carta de jugador**: una pista de pádel vista desde arriba con el jugador en un campo y sus números en el otro: media, ELO, balance y seis atributos (red, fondo, saque, resto, presión y regularidad) calculados con sus puntos. Cada jugador elige el color de su pista y puede poner la pala que usa; también hay imagen para compartir.
-- **Tu temporada en historias**: resumen del año en pantallas que pasan solas (partidos, ELO, mejor pareja, rival, golpe, presión, remontada, racha y carta).
+- **Tu temporada en historias**: resumen en pantallas que pasan solas, con selector de temporada (cada año o toda la historia): partidos, mes a mes, ELO de la temporada, mejor partido, mejor pareja, rival, golpe (con su dibujo), presión, remontada, títulos, comparación con el año anterior, racha y carta. Se comparte como imagen vertical para historias (1080 × 1920).
 - **Ficha de jugador**: evolución del ELO, rachas, sets y juegos, mejor compañero, rival más difícil, golpes ganadores, mapa de calor y últimos partidos.
 - **Historial** en tarjetas agrupadas por mes, con búsqueda por jugador, filtros (mis partidos, torneo, masculino, femenino, mixto), mini gráfico de probabilidad, póster para WhatsApp y exportación a Excel.
 - **Ranking** por pestañas: jugadores, parejas y cara a cara (enfrentamientos, comparación con barras y partidos entre ellos).

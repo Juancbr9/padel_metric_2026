@@ -32,6 +32,7 @@ const url = `http://127.0.0.1:${server.address().port}/`;
 class AssertError extends Error {}
 const assert = (cond, msg) => { if (!cond) throw new AssertError(msg); };
 assert.equal = (a, b, msg) => { if (a !== b) throw new AssertError(`${msg}: se esperaba ${JSON.stringify(b)} y llegó ${JSON.stringify(a)}`); };
+assert.deepEqual = (a, b, msg) => assert.equal(JSON.stringify(a), JSON.stringify(b), msg);
 
 const browser = await chromium.launch();
 const filter = process.argv[2] || '';
