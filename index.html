@@ -156,7 +156,7 @@
     </div>
     <div class="menu-footer">
       <svg class="menu-footer-logo"><use href="#logo-mark"/></svg>
-      <span id="app-version-label">Padel Metric · v11</span>
+      <span id="app-version-label">Padel Metric · v12</span>
     </div>
   </nav>
 </div>
@@ -180,18 +180,12 @@
       </div>
     </div>
 
-    <div id="hero-card-box" class="hero-padel-card">
-      <div class="hero-top-bar">
-        <button type="button" class="rules-pill-btn" onclick="openRulesModal()" title="Ajustes de Formato y Control del Partido">
-          <svg class="icon icon-sm"><use href="#i-sliders"/></svg>
-          <span id="rules-summary-text">3 Sets · Ventaja · Toque</span>
-        </button>
-        <button type="button" class="btn-custom-cover" onclick="clearSetupCourt()" title="Quitar a los jugadores" aria-label="Quitar a los jugadores"><svg class="icon icon-sm"><use href="#i-trash"/></svg></button>
-        <input type="file" id="cover-upload" accept="image/*" class="hidden" onchange="handleCustomCover(event)">
-      </div>
-      <div class="hero-headline">Nuevo partido</div>
+    <div class="section-hero">
+      <h1 class="section-hero-title">Nuevo partido</h1>
+      <div class="section-hero-kicker">Toca cada posición para elegir al jugador y la pelota de quien saca primero.</div>
     </div>
 
+    <div class="setup-head"><h2>Jugadores</h2><button type="button" class="home-link" onclick="clearSetupCourt()">Vaciar la pista</button></div>
     <div class="lineup-court-arena">
       <svg class="court-bg-svg" viewBox="0 0 400 420" preserveAspectRatio="none">
         <defs>
@@ -237,6 +231,9 @@
       <button type="button" class="btn-icon btn-accent-text" onclick="balancePairsAutomatically()">Equilibrar</button>
     </div>
 
+    <div class="setup-head"><h2>Reglas</h2></div>
+    <div id="setup-rules" class="setup-rules"></div>
+
     <button class="btn-volt" onclick="startMatch()">Empezar partido</button>
   </div>
 
@@ -246,6 +243,7 @@
       <h1 class="section-hero-title">Ranking</h1>
       <div id="ranking-podium" class="podium"></div>
     </div>
+    <div id="ranking-empty" class="hidden"></div>
 
     <div class="rk-tabs" id="rk-tabs">
       <button type="button" class="active" data-tab="players" onclick="setRankingTab('players')">Jugadores</button>
@@ -253,36 +251,29 @@
       <button type="button" data-tab="h2h" onclick="setRankingTab('h2h')">Cara a cara</button>
     </div>
     <div id="rk-panel-players">
-    <div class="bento-card">
-      <div class="section-header">
-        <div class="section-title">Jugadores</div>
-        <button class="btn-icon btn-sm" onclick="openEditProfileModal(null)">Nuevo jugador</button>
+      <div class="hist-search"><svg class="icon"><use href="#i-target"/></svg><input type="search" id="search-player-input" placeholder="Buscar jugador, club o nota" oninput="renderGlobalRanking()"></div>
+      <div class="rk-filter-row">
+        <div class="rk-gender">
+          <button type="button" class="sort-chip active" id="sexflt-all" onclick="setRankingGenderFilter('all')">Todos</button>
+          <button type="button" class="sort-chip" id="sexflt-M" onclick="setRankingGenderFilter('M')">Masculino</button>
+          <button type="button" class="sort-chip" id="sexflt-F" onclick="setRankingGenderFilter('F')">Femenino</button>
+        </div>
+        <label class="rk-sort"><span>Ordenar</span>
+          <select id="rk-sort" onchange="setRankingSort(this.value)">
+            <option value="elo">ELO</option>
+            <option value="V">Victorias</option>
+            <option value="winPct">% de victorias</option>
+            <option value="avgR">Valoración</option>
+            <option value="W">Winners</option>
+            <option value="lowENF">Menos errores</option>
+            <option value="bal">Balance</option>
+          </select>
+        </label>
       </div>
-
-      <div class="input-row mb-8">
-        <input type="text" id="search-player-input" placeholder="Buscar por nombre, apellidos, club o nota..." oninput="renderGlobalRanking()">
+      <div class="bento-card">
+        <div class="section-header"><div class="section-title">Jugadores</div><button class="btn-icon btn-sm" onclick="openEditProfileModal(null)">Nuevo jugador</button></div>
+        <div id="ranking-table-wrap"></div>
       </div>
-
-      <div class="seg-grid-3 mb-8">
-        <button type="button" class="seg-btn active compact" id="sexflt-all" onclick="setRankingGenderFilter('all')">Todos</button>
-        <button type="button" class="seg-btn compact" id="sexflt-M" onclick="setRankingGenderFilter('M')">Masculino</button>
-        <button type="button" class="seg-btn compact" id="sexflt-F" onclick="setRankingGenderFilter('F')">Femenino</button>
-      </div>
-
-      <div class="sort-strip">
-        <button type="button" class="sort-chip active" id="sort-elo" onclick="setRankingSort('elo')">ELO</button>
-        <button type="button" class="sort-chip" id="sort-V" onclick="setRankingSort('V')">Victorias</button>
-        <button type="button" class="sort-chip" id="sort-winPct" onclick="setRankingSort('winPct')">% Victorias</button>
-        <button type="button" class="sort-chip" id="sort-avgR" onclick="setRankingSort('avgR')">Valoración</button>
-        <button type="button" class="sort-chip" id="sort-W" onclick="setRankingSort('W')">Winners</button>
-        <button type="button" class="sort-chip" id="sort-lowENF" onclick="setRankingSort('lowENF')">Menos errores</button>
-        <button type="button" class="sort-chip" id="sort-bal" onclick="setRankingSort('bal')">Balance</button>
-      </div>
-
-      <div class="kpi-trio" id="global-leaders"></div>
-      <div id="ranking-table-wrap"></div>
-    </div>
-
     </div>
     <div id="rk-panel-pairs" class="hidden">
       <div class="bento-card">
@@ -424,32 +415,29 @@
 
   <!-- PANTALLA 5: ESTADÍSTICAS DEL PARTIDO -->
   <div id="view-stats" class="hidden">
-    <div class="bento-card">
-      <div class="section-header">
-        <div class="section-title">Estadísticas</div>
-        <button class="btn-text" onclick="toggleStatsView()">Volver</button>
-      </div>
-      <div class="u-grid-2 mb-10">
-        <button class="btn-icon btn-tall" onclick="openShareMatchSheet(posterTargetState || state)">Compartir</button>
-        <button id="btn-manual-save" class="btn-icon btn-tall" onclick="saveMatchToHistory(true)">Guardar en el historial</button>
-      </div>
-
-      <div class="u-grid-4 mb-8">
-        <button class="seg-btn active compact" id="setflt-all" onclick="selectSetFilter('all')">Total</button>
-        <button class="seg-btn compact" id="setflt-0" onclick="selectSetFilter(0)">Set 1</button>
-        <button class="seg-btn compact" id="setflt-1" onclick="selectSetFilter(1)">Set 2</button>
-        <button class="seg-btn compact" id="setflt-2" onclick="selectSetFilter(2)">Set 3</button>
-      </div>
-
-      <div class="kpi-trio" id="mvp-highlights"></div>
-      <div id="stats-tabs" class="sort-strip mt-8">
-        <button type="button" class="sort-chip active" data-mode="ind" onclick="renderStats('ind')">Jugadores</button>
-        <button type="button" class="sort-chip" data-mode="pair" onclick="renderStats('pair')">Parejas</button>
-        <button type="button" class="sort-chip" data-mode="heatmap" onclick="renderStats('heatmap')">Mapa de calor</button>
-        <button type="button" class="sort-chip" data-mode="clave" onclick="renderStats('clave')">Puntos clave</button>
-        <button type="button" class="sort-chip" data-mode="shots" onclick="renderStats('shots')">Golpes</button>
-      </div>
-      <div class="u-scroll-x" id="stats-content"></div>
+    <div class="section-header stats-top">
+      <h1 class="section-title">Estadísticas</h1>
+      <button class="btn-text" onclick="toggleStatsView()">Volver</button>
+    </div>
+    <div id="stats-match-head"></div>
+    <div id="stats-tabs" class="sort-strip mt-8">
+      <button type="button" class="sort-chip active" data-mode="ind" onclick="renderStats('ind')">Jugadores</button>
+      <button type="button" class="sort-chip" data-mode="pair" onclick="renderStats('pair')">Parejas</button>
+      <button type="button" class="sort-chip" data-mode="heatmap" onclick="renderStats('heatmap')">Mapa de calor</button>
+      <button type="button" class="sort-chip" data-mode="clave" onclick="renderStats('clave')">Puntos clave</button>
+      <button type="button" class="sort-chip" data-mode="shots" onclick="renderStats('shots')">Golpes</button>
+    </div>
+    <div class="ios-segmented stats-sets">
+      <button class="ios-seg-option active" id="setflt-all" onclick="selectSetFilter('all')"><span class="opt-main">Total</span></button>
+      <button class="ios-seg-option" id="setflt-0" onclick="selectSetFilter(0)"><span class="opt-main">Set 1</span></button>
+      <button class="ios-seg-option" id="setflt-1" onclick="selectSetFilter(1)"><span class="opt-main">Set 2</span></button>
+      <button class="ios-seg-option" id="setflt-2" onclick="selectSetFilter(2)"><span class="opt-main">Set 3</span></button>
+    </div>
+    <div class="kpi-trio" id="mvp-highlights"></div>
+    <div class="bento-card"><div class="u-scroll-x" id="stats-content"></div></div>
+    <div class="u-grid-2 stats-actions">
+      <button class="btn-icon btn-tall" onclick="openShareMatchSheet(posterTargetState || state)">Compartir</button>
+      <button id="btn-manual-save" class="btn-icon btn-tall" onclick="saveMatchToHistory(true)">Guardar en el historial</button>
     </div>
   </div>
 </div>
@@ -655,6 +643,9 @@
     <div class="input-row">
       <input type="text" id="edit-club" placeholder="Club habitual o instalación">
     </div>
+    <div class="input-row">
+      <input type="text" id="edit-racket" maxlength="40" placeholder="Pala que usa (opcional)">
+    </div>
 
     <span class="field-label">Sexo</span>
     <div class="seg-grid-2">
@@ -672,6 +663,9 @@
       <button type="button" class="seg-btn" id="edit-side-Revés" onclick="selectEditPrefSide('Revés')">Revés</button>
       <button type="button" class="seg-btn active" id="edit-side-Ambas" onclick="selectEditPrefSide('Ambas')">Ambas</button>
     </div>
+
+    <span class="field-label">Color de su carta</span>
+    <div class="pc-swatches mb-10" id="edit-card-colors"></div>
 
     <span class="field-label">Notas</span>
     <textarea id="edit-notes" placeholder="Ej. Torneo San Andrés, buen bloqueo de revés..."></textarea>

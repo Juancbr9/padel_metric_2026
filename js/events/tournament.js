@@ -357,7 +357,9 @@ function renderTournamentListHTML() {
       ${tournaments.length ? `<div class="section-hero-kicker">${tournaments.length} torneo${tournaments.length === 1 ? '' : 's'}${active ? ` · ${active} en juego` : ''}</div>` : ''}
       <div class="section-hero-actions"><button class="btn-volt" onclick="startTournamentDraft()">Nuevo torneo</button></div>
     </div>
-    ${cards ? `<div class="event-list">${cards}</div>` : `<div class="bento-card"><div class="empty-note">Crea tu primer torneo: eliminatoria con cuadro, liga todos contra todos o fase de grupos con cuadro final.<br>Los partidos se pueden jugar con el marcador en directo y el resultado pasa solo al cuadro.</div></div>`}`;
+    ${cards ? `<div class="event-list">${cards}</div>` : emptyStateHTML('Sin torneos todavía',
+      'Elige entre eliminatoria con cuadro, liga todos contra todos o fase de grupos con cuadro final. Las parejas se ordenan por ELO, cada partido se puede jugar con el marcador en directo y el resultado pasa solo al cuadro.',
+      `<button class="btn-icon" onclick="loadDemoData()">Ver un torneo de ejemplo</button>`)}`;
 }
 
 // ---------- Alta de torneo ----------

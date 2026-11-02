@@ -94,7 +94,7 @@ function renderHome() {
 
   box.innerHTML = `
     ${primary}
-    ${installBannerHTML() || backupReminderHTML()}
+    ${installBannerHTML() || backupReminderHTML() || chooseMeBannerHTML()}
     ${myHomeCardHTML(statsMap)}
     ${live ? `${homeSectionHTML('En juego')}<div class="home-live-list">${live}</div>` : ''}
     ${lastCard ? `${homeSectionHTML('Último partido', 'Historial', "switchMainTab('history')")}${lastCard}` : ''}

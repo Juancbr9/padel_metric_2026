@@ -40,10 +40,22 @@ function getFilteredPlayerStats(p) {
   return p.setStats[currentSetFilter] || { W: 0, ENF: 0, EF: 0 };
 }
 
+// Cabecera de las estadísticas: el resultado del partido, como en el historial
+function renderStatsHead(target) {
+  const box = document.getElementById('stats-match-head');
+  if (box && target && target.players) {
+    const info = [target.date || '', target.elapsedSec ? formatMatchDuration(target.elapsedSec) : '', target.matchOver ? '' : 'en juego'].filter(Boolean).join(' · ');
+    box.innerHTML = `<div class="hm-card stats-head"><div class="hm-top"><span class="hm-date">${escapeHtml(info)}</span></div>${historyPairRow(target, 0)}${historyPairRow(target, 1)}</div>`;
+  }
+  // Guardar a mano solo tiene sentido en un partido que se está jugando
+  document.getElementById('btn-manual-save')?.classList.toggle('hidden', !!statsSourceIsHistory);
+}
+
 function renderStats(mode) {
   currentStatsMode = mode;
   const target = posterTargetState || state;
   if (!target) return;
+  renderStatsHead(target);
   document.querySelectorAll('#stats-tabs .sort-chip').forEach(b => b.classList.toggle('active', b.dataset.mode === mode));
 
   const playersData = target.players.map(p => {

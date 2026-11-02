@@ -67,7 +67,6 @@ function balancePairsAutomatically() {
 }
 
 function renderSetupCourt() {
-  const pairColors = ['#00F0FF', '#00F0FF', '#FF2E54', '#FF2E54'];
   for (let i = 0; i < 4; i++) {
     const val = setupConfig.slots[i];
     if (!val.startsWith('GEN_') && !dbPlayers.includes(val)) {
@@ -80,14 +79,18 @@ function renderSetupCourt() {
     if (!card) continue;
 
     const prof = !isGeneric ? ensureProfile(currentVal) : null;
-    const clubLine = (prof && prof.club) ? `<div class="lineup-club-sub">${prof.club}</div>` : '';
+    // Apellido grande (como en el marcador) y debajo el nombre y el club
+    const parts = isGeneric ? [] : String(currentVal).trim().split(/\s+/);
+    const surname = parts.length > 1 ? parts.slice(1).join(' ') : (parts[0] || '');
+    const subLine = !isGeneric ? [parts.length > 1 ? parts[0] : '', prof && prof.club].filter(Boolean).join(' · ') : 'Toca para elegir';
+    const clubLine = subLine ? `<div class="lineup-club-sub">${escapeHtml(subLine)}</div>` : '';
     const avClass = i < 2 ? 'avatar-p1' : 'avatar-p2';
     const avatarNode = renderAvatarHTML(currentVal, avClass, '', isGeneric, `J${i+1}`);
 
     card.className = `lineup-slot-card ${!isGeneric ? 'assigned' : ''} ${isSrv ? 'initial-srv' : ''}`;
     card.innerHTML = `
       <div class="lineup-slot-top">
-        <span class="lineup-pos-tag" style="color:${pairColors[i]};">P${i<2?1:2} · ${FIXED_COURT_SIDES[i]}</span>
+        <span class="lineup-pos-tag ${i < 2 ? 'pair-a-txt' : 'pair-b-txt'}">Pareja ${i<2?1:2} · ${FIXED_COURT_SIDES[i].toLowerCase()}</span>
         <button type="button" class="srv-toggle-btn ${isSrv ? 'active' : ''}" onclick="event.stopPropagation(); selectInitialServer(${i});" title="Marcar como sacador inicial">
           <svg class="icon icon-xs"><use href="#i-ball"/></svg>
           ${isSrv ? 'Saca' : ''}
@@ -97,7 +100,7 @@ function renderSetupCourt() {
         ${avatarNode}
         <div class="u-min0 flex-1">
           <div class="lineup-player-label ${isGeneric ? 'placeholder' : ''}">
-            ${isGeneric ? `Jugador ${i+1}` : currentVal}
+            ${isGeneric ? `Jugador ${i+1}` : escapeHtml(surname)}
           </div>
           ${clubLine}
         </div>
@@ -105,16 +108,24 @@ function renderSetupCourt() {
     `;
   }
 
-  const deuceLabels = { adv: 'Ventaja', star: 'Star point', golden: 'Punto de oro' };
-  const thirdLabels = { normal: '3 sets', supertb: 'Súper tie-break' };
-  const inputLabels = { tap: 'Elegir golpe', swipe: 'Rápido' };
-  const sumEl = document.getElementById('rules-summary-text');
-  if (sumEl) {
-    sumEl.innerText = `${thirdLabels[setupConfig.thirdSetRule]} · ${deuceLabels[setupConfig.deuceRule]} · ${inputLabels[setupConfig.inputMode]}`;
-  }
-
+  renderSetupRules();
   updatePreMatchProbability();
   checkSavedActiveMatch();
+}
+
+// Reglas del partido a la vista (las mismas que la hoja de reglas): un segmentado por regla
+function renderSetupRules() {
+  const box = document.getElementById('setup-rules');
+  if (!box) return;
+  const seg = (opts, current, fn) => `<div class="ios-segmented cols-${opts.length}">${opts.map(([v, main]) =>
+    `<button type="button" class="ios-seg-option ${v === current ? 'active' : ''}" onclick="${fn}('${v}')"><span class="opt-main">${main}</span></button>`).join('')}</div>`;
+  box.innerHTML = `
+    <div class="setup-rule"><div class="setup-rule-label">Al llegar a 40-40</div>
+      ${seg([['adv', 'Ventaja'], ['star', 'Star point'], ['golden', 'Punto de oro']], setupConfig.deuceRule, 'selectDeuceRule')}</div>
+    <div class="setup-rule"><div class="setup-rule-label">Si se llega a 1-1 en sets</div>
+      ${seg([['normal', 'Tercer set'], ['supertb', 'Súper tie-break']], setupConfig.thirdSetRule, 'selectThirdRule')}</div>
+    <div class="setup-rule"><div class="setup-rule-label">Al deslizar sobre un jugador</div>
+      ${seg([['tap', 'Elegir el golpe'], ['swipe', 'Anotar al momento']], setupConfig.inputMode, 'selectInputMode')}</div>`;
 }
 
 function selectInitialServer(slotIdx) {

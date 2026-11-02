@@ -6,6 +6,8 @@ export default async ({ newPage, url, assert }) => {
   await a.waitForTimeout(800);
   const name = await a.evaluate(() => Object.values(computeAllPlayersStats().statsMap).filter(s => s.PJ > 0).sort((x, y) => y.elo - x.elo)[0].name);
   const expected = await a.evaluate(n => { const st = computeAllPlayersStats().statsMap[n]; return { elo: st.elo, PJ: st.PJ, V: st.V, ovr: computePlayerCard(n).overall }; }, name);
+  // Personaliza su carta: color de pista y pala
+  await a.evaluate(n => { const pr = ensureProfile(n); pr.cardColor = 'terracota'; pr.racket = 'Pala de prueba'; saveDB(); }, name);
   await a.evaluate(n => { switchMainTab('ranking'); openPlayerProfile(n); }, name);
   await a.click('#prof-body button:has-text("Compartir perfil")');
   await a.waitForFunction(() => shareSheetLink && shareSheetLink.includes('#jugador='));
@@ -17,7 +19,9 @@ export default async ({ newPage, url, assert }) => {
   await b.waitForSelector('.sp-name');
   assert.equal(await b.textContent('.sp-name'), name, 'Se ve el nombre');
   assert((await b.textContent('.sp-meta')).includes(`ELO ${expected.elo}`), 'Y su ELO');
-  assert.equal(await b.textContent('.pcard-ovr strong'), String(expected.ovr), 'La carta tiene su media');
+  assert.equal(await b.textContent('.pcard-nums div:first-child strong'), String(expected.ovr), 'La carta tiene su media');
+  assert((await b.getAttribute('.pcard', 'style')).includes('#9A4A2F'), 'La carta conserva el color de pista elegido');
+  assert((await b.textContent('.pcard-foot')).includes('Pala de prueba'), 'Y la pala');
   assert((await b.textContent('.sm-facts')).includes(String(expected.PJ)), 'Partidos jugados');
   assert(await b.isVisible('.sp-chart'), 'Gráfico de evolución del ELO');
   assert(await b.isVisible('text=Mejor compañero'), 'Mejor compañero');

@@ -9,6 +9,21 @@ const CARD_ATTRS = [
 ];
 const CARD_ATTR_NAMES = { red: 'Red y volea', fondo: 'Fondo', saque: 'Saque', resto: 'Resto', presion: 'Presión', regularidad: 'Regularidad' };
 const CARD_TIERS = [[84, 'elite', 'Élite'], [72, 'oro', 'Oro'], [60, 'plata', 'Plata'], [0, 'bronce', 'Bronce']];
+// Nombres cortos de los atributos dentro de la carta
+const CARD_ATTR_SHORT = { red: 'Red', fondo: 'Fondo', saque: 'Saque', resto: 'Resto', presion: 'Presión', regularidad: 'Regularidad' };
+// Color de la pista de cada carta (colores reales de pista). Cada jugador elige el suyo; si no, se le asigna uno por su nombre
+const CARD_COURTS = [
+  ['azul', 'Azul', '#1E4D8C'], ['noche', 'Azul noche', '#17284A'], ['verde', 'Verde', '#1D6646'],
+  ['terracota', 'Terracota', '#9A4A2F'], ['gris', 'Gris', '#39424F'], ['negro', 'Negra', '#121519']
+];
+
+function cardCourtOf(name, prof) {
+  const chosen = prof && CARD_COURTS.find(c => c[0] === prof.cardColor);
+  if (chosen) return chosen;
+  let h = 0;
+  for (const ch of String(name || '')) h = (h * 31 + ch.charCodeAt(0)) >>> 0;
+  return CARD_COURTS[h % CARD_COURTS.length];
+}
 
 let myPlayerName = localStorage.getItem('pm_yo_v1') || null;
 
@@ -53,32 +68,56 @@ function computePlayerCard(name, statsMap = computeAllPlayersStats().statsMap) {
   const overall = Math.round(st.PJ ? 0.6 * avgAttr + 0.4 * eloScore : Math.min(avgAttr, 60));
   const tier = CARD_TIERS.find(([min]) => overall >= min);
   const best = CARD_ATTRS.reduce((a, [k]) => (attrs[k] > attrs[a] ? k : a), 'red');
-  return { name, attrs, overall, tier: tier[1], tierLabel: tier[2], best, elo: st.elo, PJ: st.PJ, V: st.V, form: st.form, hasPoints: c.pts > 0 };
+  const rank = st.PJ ? Object.values(statsMap).filter(x => x.PJ > 0).sort((x, y) => y.elo - x.elo).findIndex(x => x.name === name) + 1 : 0;
+  return { name, attrs, overall, tier: tier[1], tierLabel: tier[2], best, elo: st.elo, PJ: st.PJ, V: st.V, form: st.form, hasPoints: c.pts > 0, rank };
 }
 
-// profile: datos de la ficha para dibujarla (la vista pública pasa los suyos y no toca la base de datos)
-function playerCardHTML(card, { big = false, profile = null } = {}) {
+// Carta de jugador con forma de pista de pádel vista desde arriba: el jugador en su campo, la red en medio
+// y sus números en el otro campo. profile: datos de la ficha (la vista pública pasa los suyos y no toca la base
+// de datos). mini: versión pequeña para el inicio (solo identidad y media).
+function playerCardHTML(card, { big = false, mini = false, profile = null } = {}) {
   const prof = profile || ensureProfile(card.name);
   const parts = card.name.trim().split(/\s+/);
+  const first = parts.length > 1 ? parts[0] : '';
   const surname = parts.length > 1 ? parts.slice(1).join(' ') : parts[0];
-  const side = prof.prefSide && prof.prefSide !== 'Ambas' ? prof.prefSide : 'Pádel';
+  const court = cardCourtOf(card.name, prof);
+  const side = { Drive: 'Drive', 'Revés': 'Revés' }[prof.prefSide] || 'Drive y revés';
   const photo = prof.photo ? `<img src="${prof.photo}" alt="">` : `<span>${escapeHtml(getInitials(card.name))}</span>`;
+  const lost = Math.max(0, (card.PJ || 0) - (card.V || 0));
+  const foot = [prof.racket ? `Pala ${prof.racket}` : '', prof.club].filter(Boolean).join(' · ');
   return `
-    <div class="pcard tier-${card.tier} ${big ? 'big' : ''}" data-tilt>
-      <div class="pcard-shine"></div>
-      <div class="pcard-top">
-        <div class="pcard-ovr"><strong>${card.overall}</strong><span>${escapeHtml(side)}</span></div>
-        <div class="pcard-photo">${photo}</div>
+    <div class="pcard ${big ? 'big' : ''} ${mini ? 'mini' : ''}" style="--court:${court[2]}" data-tilt>
+      <svg class="pcard-lines" viewBox="0 0 100 200" preserveAspectRatio="none" aria-hidden="true">
+        <rect x="6" y="4" width="88" height="192"/><line x1="6" y1="44" x2="94" y2="44"/><line x1="50" y1="44" x2="50" y2="100"/>
+        <line x1="6" y1="156" x2="94" y2="156"/><line x1="50" y1="100" x2="50" y2="156"/>
+      </svg>
+      <div class="pcard-half">
+        <div class="pcard-head">
+          <span class="pcard-rank">${card.rank ? `N.º ${card.rank}` : 'Sin ranking'}</span>
+          <svg class="pcard-logo"><use href="#logo-mark"/></svg>
+        </div>
+        <div class="pcard-id">
+          <div class="pcard-photo">${photo}</div>
+          <div class="pcard-names">${first ? `<span>${escapeHtml(first)}</span>` : ''}<strong>${escapeHtml(surname)}</strong></div>
+          <div class="pcard-meta">${escapeHtml(side)}${prof.hand ? ` · ${escapeHtml(prof.hand.toLowerCase())}` : ''}</div>
+        </div>
       </div>
-      <div class="pcard-name">${escapeHtml(surname)}</div>
-      <div class="pcard-attrs">
-        ${CARD_ATTRS.map(([k, lbl]) => `<div class="${k === card.best ? 'best' : ''}"><strong>${card.attrs[k]}</strong><span>${lbl}</span></div>`).join('')}
+      <div class="pcard-net"><span>Padel Metric</span></div>
+      <div class="pcard-half">
+        <div class="pcard-nums">
+          <div><strong>${card.overall}</strong><span>Media</span></div>
+          <div><strong>${card.elo}</strong><span>ELO</span></div>
+          <div><strong>${card.V || 0}-${lost}</strong><span>Balance</span></div>
+        </div>
+        <div class="pcard-attrs">
+          ${CARD_ATTRS.map(([k]) => `<div class="${k === card.best ? 'best' : ''}"><span>${CARD_ATTR_SHORT[k]}</span><i><b style="width:${card.attrs[k]}%"></b></i><strong>${card.attrs[k]}</strong></div>`).join('')}
+        </div>
+        <div class="pcard-foot">${escapeHtml(foot || 'Padel Metric')}</div>
       </div>
-      <div class="pcard-foot"><span>${card.tierLabel}</span><span>ELO ${card.elo}</span><span>${card.PJ} PJ</span></div>
     </div>`;
 }
 
-// Inclinación con el dedo o el ratón y brillo holográfico que sigue al movimiento
+// Inclinación suave con el dedo o el ratón
 function initCardTilt(root = document) {
   root.querySelectorAll('[data-tilt]').forEach(el => {
     if (el.dataset.tiltReady) return;
@@ -86,10 +125,8 @@ function initCardTilt(root = document) {
     const move = e => {
       const r = el.getBoundingClientRect();
       const x = (e.clientX - r.left) / r.width, y = (e.clientY - r.top) / r.height;
-      el.style.setProperty('--rx', `${(0.5 - y) * 16}deg`);
-      el.style.setProperty('--ry', `${(x - 0.5) * 18}deg`);
-      el.style.setProperty('--mx', `${x * 100}%`);
-      el.style.setProperty('--my', `${y * 100}%`);
+      el.style.setProperty('--rx', `${(0.5 - y) * 8}deg`);
+      el.style.setProperty('--ry', `${(x - 0.5) * 10}deg`);
     };
     el.addEventListener('pointermove', move);
     el.addEventListener('pointerdown', move);
@@ -99,18 +136,78 @@ function initCardTilt(root = document) {
 
 function playerCardTabHTML(name) {
   const card = computePlayerCard(name);
+  const prof = ensureProfile(name);
+  const court = cardCourtOf(name, prof);
   const isMe = myPlayerName === name;
   return `
     <div class="pcard-stage">${playerCardHTML(card, { big: true })}</div>
-    <div class="pcard-legend">
-      ${CARD_ATTRS.map(([k]) => `<div><span>${CARD_ATTR_NAMES[k]}</span><div class="shot-bar-track"><i style="width:${card.attrs[k]}%"></i></div><strong>${card.attrs[k]}</strong></div>`).join('')}
+    <div class="pc-colors">
+      <div class="pc-colors-label">Color de la pista <span>${court[1]}${prof.cardColor ? '' : ' · asignado'}</span></div>
+      <div class="pc-swatches">${CARD_COURTS.map(([key, label, hex]) => `<button type="button" class="pc-swatch ${court[0] === key ? 'on' : ''}" style="--sw:${hex}" aria-label="${label}" onclick="setCardColor(${jsArg(name)}, '${key}')"></button>`).join('')}</div>
     </div>
-    <p class="pcard-note">${card.hasPoints ? 'Calculada con todos sus puntos registrados: zonas de golpeo, saque, resto, puntos decisivos y errores. La media incluye su ELO.' : 'Aún no hay partidos con registro punto a punto: la carta se irá afinando al jugar.'}</p>
+    <p class="pcard-note">${card.hasPoints ? 'Los atributos se calculan con todos sus puntos registrados (zonas de golpeo, saque, resto, puntos decisivos y errores); la media incluye su ELO.' : 'Aún no hay partidos con registro punto a punto: la carta se irá completando al jugar.'}${prof.racket ? '' : ' Añade su pala en Editar para que salga en la carta.'}</p>
     <div class="pcard-actions">
       <button class="btn-volt" onclick="openSharePlayerSheet(${jsArg(name)})">Compartir perfil</button>
-      <button class="btn-icon" onclick="closePlayerProfile(); openWrapped(${jsArg(name)})">Ver su temporada en historias</button>
+      <button class="btn-icon" onclick="sharePlayerCard(${jsArg(name)})">Imagen de la carta</button>
+      <button class="btn-icon" onclick="closePlayerProfile(); openWrapped(${jsArg(name)})">Su temporada en historias</button>
       <button class="btn-icon ${isMe ? 'is-me' : ''}" onclick="setMyPlayer(${jsArg(name)})">${isMe ? 'Este eres tú · quitar' : 'Soy yo'}</button>
     </div>`;
+}
+
+function setCardColor(name, key) {
+  if (!CARD_COURTS.some(c => c[0] === key)) return;
+  ensureProfile(name).cardColor = key;
+  saveDB();
+  vibrate(10);
+  openPlayerProfile(name, true);
+  if (currentTab === 'home') renderHome();
+}
+
+// Elegir quién eres en esta app: lista de jugadores con buscador
+function openChooseMeSheet() {
+  closeAppMenu();
+  const { statsMap } = computeAllPlayersStats();
+  const list = [...dbPlayers].sort((a, b) => ((statsMap[b] && statsMap[b].PJ) || 0) - ((statsMap[a] && statsMap[a].PJ) || 0) || a.localeCompare(b, 'es'));
+  if (!list.length) {
+    openEditProfileModal(null);
+    showToast('Crea primero tu ficha de jugador');
+    return;
+  }
+  openEventModal(`
+    <div class="mo-title">¿Quién eres?</div>
+    <p class="bc-intro">Elige tu jugador: el inicio mostrará tu carta, tu ELO y tu temporada, y el ranking y el historial te marcarán.</p>
+    <input type="search" id="me-search" placeholder="Buscar" oninput="filterChooseMe(this.value)">
+    <div class="me-list" id="me-list">${list.map(n => {
+      const st = statsMap[n];
+      return `<button type="button" class="me-row" data-q="${escapeHtml(n.toLowerCase())}" onclick="chooseMe(${jsArg(n)})">
+        ${renderAvatarHTML(n, '')}<span class="me-row-txt"><strong>${escapeHtml(n)}</strong><small>${st && st.PJ ? `${st.PJ} partidos · ELO ${st.elo}` : 'Sin partidos todavía'}</small></span>
+        ${n === myPlayerName ? '<span class="me-tag">Tú</span>' : ''}</button>`;
+    }).join('')}</div>
+    <button class="btn-text btn-block" onclick="closeEventModal(); openEditProfileModal(null)">No estoy en la lista: crear mi ficha</button>`);
+}
+
+function filterChooseMe(q) {
+  const t = String(q || '').trim().toLowerCase();
+  document.querySelectorAll('#me-list .me-row').forEach(r => r.classList.toggle('hidden', !!t && !r.dataset.q.includes(t)));
+}
+
+function chooseMe(name) {
+  myPlayerName = name;
+  try { localStorage.setItem('pm_yo_v1', name); } catch (e) {}
+  closeEventModal();
+  vibrate(12);
+  showToast(`Perfil propio: ${name}`);
+  if (currentTab === 'home') renderHome();
+  if (currentTab === 'ranking') renderGlobalRanking();
+}
+
+// Aviso en el inicio para elegir quién eres (solo si hay jugadores y aún no lo has elegido)
+function chooseMeBannerHTML() {
+  if ((myPlayerName && dbPlayers.includes(myPlayerName)) || !dbPlayers.length || !matchHistory.length) return '';
+  return `<div class="home-install">
+    <svg class="icon icon-lg"><use href="#i-users"/></svg>
+    <button type="button" class="home-install-main" onclick="openChooseMeSheet()"><strong>¿Quién eres?</strong><small>Elige tu jugador y verás aquí tu carta y tu temporada</small></button>
+  </div>`;
 }
 
 function setMyPlayer(name) {
@@ -125,62 +222,74 @@ function setMyPlayer(name) {
 }
 
 // ---------- Imagen para compartir (1080 × 1350) ----------
-const CARD_COLORS = {
-  bronce: ['#8A5A36', '#3B2414', '#E7B38A'], plata: ['#9AA7B8', '#2B3442', '#F1F5F9'],
-  oro: ['#D9A51F', '#8A6510', '#FFF1B8'], elite: ['#1A2230', '#0D1117', '#D4FF2A']
-};
-
+// Imagen de la carta (1080 × 1350) con el mismo diseño de pista que en la app
 async function sharePlayerCard(name) {
   const card = computePlayerCard(name);
   const prof = ensureProfile(name);
+  const court = cardCourtOf(name, prof);
   let img = null;
   if (prof.photo) {
     img = new Image();
     img.src = prof.photo;
     try { await img.decode(); } catch (e) { img = null; }
   }
+  const parts = name.trim().split(/\s+/);
+  const first = parts.length > 1 ? parts[0] : '';
+  const surname = parts.length > 1 ? parts.slice(1).join(' ') : parts[0];
+  const side = { Drive: 'Drive', 'Revés': 'Revés' }[prof.prefSide] || 'Drive y revés';
   openShareImage((ctx, W, H) => {
-    drawShareFrame(ctx, W, H, { kicker: 'Carta de jugador', title: name, subtitle: `${card.tierLabel} · ELO ${card.elo} · ${card.PJ} partidos · ${card.PJ ? Math.round((card.V / card.PJ) * 100) : 0} % de victorias` });
-    const [c1, c2, c3] = CARD_COLORS[card.tier];
-    const cw = 560, ch = 760, cx = (W - cw) / 2, cy = 400;
-    const shape = () => {
-      ctx.beginPath();
-      ctx.moveTo(cx + 40, cy); ctx.lineTo(cx + cw - 40, cy); ctx.lineTo(cx + cw, cy + 60);
-      ctx.lineTo(cx + cw, cy + ch - 120); ctx.lineTo(cx + cw / 2, cy + ch); ctx.lineTo(cx, cy + ch - 120);
-      ctx.lineTo(cx, cy + 60); ctx.closePath();
-    };
-    const g = ctx.createLinearGradient(cx, cy, cx + cw, cy + ch);
-    g.addColorStop(0, c1); g.addColorStop(1, c2);
-    ctx.save(); shape(); ctx.fillStyle = g; ctx.shadowColor = 'rgba(0,0,0,0.5)'; ctx.shadowBlur = 50; ctx.fill(); ctx.restore();
-    ctx.save(); shape(); ctx.clip();
-    const sh = ctx.createLinearGradient(cx, cy, cx + cw, cy + ch * 0.6);
-    sh.addColorStop(0.3, 'rgba(255,255,255,0)'); sh.addColorStop(0.45, 'rgba(255,255,255,0.22)'); sh.addColorStop(0.6, 'rgba(255,255,255,0)');
-    ctx.fillStyle = sh; ctx.fillRect(cx, cy, cw, ch);
-    // Foto o iniciales
-    const pr = 150, px = cx + cw - pr - 60, py = cy + 70;
-    ctx.save(); ctx.beginPath(); ctx.arc(px + pr / 2 + 20, py + pr / 2 + 20, pr / 2 + 20, 0, Math.PI * 2); ctx.clip();
-    if (img) ctx.drawImage(img, px, py, pr + 40, pr + 40);
-    else { ctx.fillStyle = 'rgba(0,0,0,0.25)'; ctx.fillRect(px, py, pr + 40, pr + 40); ctx.fillStyle = c3; ctx.font = '900 96px "Barlow Condensed", sans-serif'; ctx.textAlign = 'center'; ctx.fillText(getInitials(name), px + pr / 2 + 20, py + pr / 2 + 54); ctx.textAlign = 'left'; }
-    ctx.restore();
-    ctx.restore();
-    ctx.fillStyle = c3;
-    ctx.font = '900 150px "Barlow Condensed", sans-serif';
-    ctx.fillText(String(card.overall), cx + 50, cy + 190);
-    ctx.font = '700 30px "Barlow", sans-serif';
-    ctx.fillText((prof.prefSide && prof.prefSide !== 'Ambas' ? prof.prefSide : 'Pádel').toUpperCase(), cx + 56, cy + 236);
-    const parts = name.trim().split(/\s+/);
-    ctx.font = '700 84px "Barlow Condensed", sans-serif';
-    ctx.textAlign = 'center';
-    ctx.fillText(fitText(ctx, (parts.length > 1 ? parts.slice(1).join(' ') : parts[0]).toUpperCase(), cw - 80), W / 2, cy + 400);
-    ctx.fillStyle = 'rgba(255,255,255,0.25)'; ctx.fillRect(cx + 70, cy + 425, cw - 140, 3);
-    CARD_ATTRS.forEach(([k, lbl], i) => {
-      const col = i % 2, row = Math.floor(i / 2);
-      const x = cx + 140 + col * 250, y = cy + 500 + row * 70;
-      ctx.textAlign = 'right'; ctx.fillStyle = c3; ctx.font = '900 56px "Barlow Condensed", sans-serif';
-      ctx.fillText(String(card.attrs[k]), x + 30, y);
-      ctx.textAlign = 'left'; ctx.fillStyle = 'rgba(255,255,255,0.85)'; ctx.font = '700 30px "Barlow", sans-serif';
-      ctx.fillText(lbl, x + 45, y - 4);
+    ctx.fillStyle = SHARE_THEME.bg1;
+    ctx.fillRect(0, 0, W, H);
+    // Carta con la proporción de una pista: dos campos iguales y la red en medio
+    const cw = 640, ch = 1150, cx = (W - cw) / 2, cy = 80, mid = cy + ch / 2;
+    ctx.fillStyle = court[2];
+    ctx.beginPath(); ctx.roundRect(cx, cy, cw, ch, 34); ctx.fill();
+    const lx = cx + cw * 0.06, rx = cx + cw * 0.94, ty = cy + ch * 0.02, by = cy + ch * 0.98;
+    const sTop = cy + ch * 0.22, sBot = cy + ch * 0.78;
+    ctx.strokeStyle = 'rgba(255,255,255,0.22)'; ctx.lineWidth = 4;
+    ctx.strokeRect(lx, ty, rx - lx, by - ty);
+    [[lx, sTop, rx, sTop], [W / 2, sTop, W / 2, mid], [lx, sBot, rx, sBot], [W / 2, mid, W / 2, sBot]].forEach(([x1, y1, x2, y2]) => {
+      ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2, y2); ctx.stroke();
     });
+    // Campo de arriba: el jugador
+    ctx.textAlign = 'left'; ctx.fillStyle = 'rgba(255,255,255,0.85)'; ctx.font = '600 30px "Barlow", sans-serif';
+    ctx.fillText(card.rank ? `N.º ${card.rank}` : 'Sin ranking', cx + 62, cy + 78);
+    drawLogoMark(ctx, cx + cw - 104, cy + 42, 50, '#FFFFFF');
+    const r = 96, pcx = W / 2, pcy = cy + 238;
+    ctx.save(); ctx.beginPath(); ctx.arc(pcx, pcy, r, 0, Math.PI * 2); ctx.closePath();
+    ctx.fillStyle = 'rgba(0,0,0,0.25)'; ctx.fill(); ctx.clip();
+    if (img) ctx.drawImage(img, pcx - r, pcy - r, r * 2, r * 2);
+    else { ctx.fillStyle = '#FFFFFF'; ctx.font = '700 80px "Barlow Condensed", sans-serif'; ctx.textAlign = 'center'; ctx.fillText(getInitials(name), pcx, pcy + 28); }
+    ctx.restore();
+    ctx.strokeStyle = 'rgba(255,255,255,0.88)'; ctx.lineWidth = 5; ctx.beginPath(); ctx.arc(pcx, pcy, r, 0, Math.PI * 2); ctx.stroke();
+    ctx.textAlign = 'center';
+    if (first) { ctx.fillStyle = 'rgba(255,255,255,0.8)'; ctx.font = '600 34px "Barlow", sans-serif'; ctx.fillText(first, W / 2, cy + 384); }
+    ctx.fillStyle = '#FFFFFF'; ctx.font = '700 86px "Barlow Condensed", sans-serif';
+    ctx.fillText(fitText(ctx, surname.toUpperCase(), cw - 110), W / 2, cy + (first ? 462 : 450));
+    ctx.fillStyle = 'rgba(255,255,255,0.75)'; ctx.font = '500 28px "Barlow", sans-serif';
+    ctx.fillText(`${side}${prof.hand ? ` · ${prof.hand.toLowerCase()}` : ''}`, W / 2, cy + 506);
+    // Red
+    ctx.fillStyle = 'rgba(3,5,8,0.5)'; ctx.fillRect(cx, mid - 22, cw, 44);
+    ctx.fillStyle = '#FFFFFF'; ctx.fillRect(cx, mid - 22, cw, 6);
+    ctx.font = 'italic 900 26px "Barlow Condensed", sans-serif'; ctx.fillText('PADEL METRIC', W / 2, mid + 14);
+    // Campo de abajo: media, ELO, balance y atributos
+    const nums = [[card.overall, 'Media'], [card.elo, 'ELO'], [`${card.V || 0}-${Math.max(0, (card.PJ || 0) - (card.V || 0))}`, 'Balance']];
+    nums.forEach(([v, l], i) => {
+      const x = cx + cw * (i + 0.5) / 3;
+      ctx.fillStyle = '#FFFFFF'; ctx.font = '700 74px "Barlow Condensed", sans-serif'; ctx.fillText(String(v), x, mid + 118);
+      ctx.fillStyle = 'rgba(255,255,255,0.72)'; ctx.font = '500 26px "Barlow", sans-serif'; ctx.fillText(l, x, mid + 152);
+    });
+    CARD_ATTRS.forEach(([k], i) => {
+      const y = mid + 222 + i * 50;
+      ctx.textAlign = 'left'; ctx.fillStyle = k === card.best ? '#FFFFFF' : 'rgba(255,255,255,0.82)'; ctx.font = `${k === card.best ? 700 : 500} 28px "Barlow", sans-serif`;
+      ctx.fillText(CARD_ATTR_SHORT[k], cx + 70, y);
+      const bx = cx + 250, bw = cw - 390;
+      ctx.fillStyle = 'rgba(255,255,255,0.2)'; ctx.beginPath(); ctx.roundRect(bx, y - 13, bw, 10, 5); ctx.fill();
+      ctx.fillStyle = '#FFFFFF'; ctx.beginPath(); ctx.roundRect(bx, y - 13, bw * card.attrs[k] / 100, 10, 5); ctx.fill();
+      ctx.textAlign = 'right'; ctx.font = '700 38px "Barlow Condensed", sans-serif'; ctx.fillText(String(card.attrs[k]), cx + cw - 70, y + 3);
+    });
+    const foot = [prof.racket ? `Pala ${prof.racket}` : '', prof.club].filter(Boolean).join(' · ');
+    if (foot) { ctx.textAlign = 'center'; ctx.fillStyle = 'rgba(255,255,255,0.75)'; ctx.font = '500 26px "Barlow", sans-serif'; ctx.fillText(fitText(ctx, foot, cw - 140), W / 2, cy + ch - 58); }
     ctx.textAlign = 'left';
   }, 'Carta de jugador');
 }
@@ -193,7 +302,7 @@ function myHomeCardHTML(statsMap) {
   const pos = ranked.findIndex(s => s.name === myPlayerName) + 1;
   return `
     <div class="home-me" role="button" tabindex="0" onclick="openPlayerProfile(${jsArg(myPlayerName)}); setProfileTab('card')">
-      <div class="home-me-card">${playerCardHTML(card)}</div>
+      <div class="home-me-card">${playerCardHTML(card, { mini: true })}</div>
       <div class="home-me-info">
         <strong>${escapeHtml(myPlayerName)}</strong>
         <span>ELO <b>${card.elo}</b>${pos ? ` · ${pos}.º del ranking` : ''}</span>

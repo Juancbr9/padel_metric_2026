@@ -279,7 +279,9 @@ function openEditProfileModal(playerKey = null, prefillName = '') {
     document.getElementById('edit-first-name').value = prof.firstName || playerKey;
     document.getElementById('edit-last-name').value = prof.lastName || '';
     document.getElementById('edit-club').value = prof.club || '';
+    document.getElementById('edit-racket').value = prof.racket || '';
     document.getElementById('edit-notes').value = prof.notes || '';
+    editFormState.cardColor = prof.cardColor || null;
     selectEditSex(prof.gender || 'M');
     selectEditHand(prof.hand || 'Diestro');
     selectEditPrefSide(prof.prefSide || 'Ambas');
@@ -293,7 +295,9 @@ function openEditProfileModal(playerKey = null, prefillName = '') {
     document.getElementById('edit-first-name').value = parts[0] || '';
     document.getElementById('edit-last-name').value = parts.slice(1).join(' ') || '';
     document.getElementById('edit-club').value = '';
+    document.getElementById('edit-racket').value = '';
     document.getElementById('edit-notes').value = '';
+    editFormState.cardColor = null;
     selectEditSex('M');
     selectEditHand('Diestro');
     selectEditPrefSide('Ambas');
@@ -301,7 +305,24 @@ function openEditProfileModal(playerKey = null, prefillName = '') {
   }
 
   updateEditAvatarInitialsPreview();
+  renderEditCardColors();
   document.getElementById('player-edit-modal').classList.remove('hidden');
+}
+
+// Color de la pista de su carta (sin elegir: se usa uno según el nombre)
+function renderEditCardColors() {
+  const box = document.getElementById('edit-card-colors');
+  if (!box) return;
+  const fn = (document.getElementById('edit-first-name').value || '').trim();
+  const ln = (document.getElementById('edit-last-name').value || '').trim();
+  const current = cardCourtOf(ln ? `${fn} ${ln}` : fn, { cardColor: editFormState.cardColor });
+  box.innerHTML = CARD_COURTS.map(([key, label, hex]) => `<button type="button" class="pc-swatch ${current[0] === key ? 'on' : ''}" style="--sw:${hex}" aria-label="${label}" onclick="selectEditCardColor('${key}')"></button>`).join('');
+}
+
+function selectEditCardColor(key) {
+  editFormState.cardColor = key;
+  vibrate(8);
+  renderEditCardColors();
 }
 
 function closeEditProfileModal() {
@@ -360,6 +381,8 @@ function saveEditedProfile() {
     hand: editFormState.hand,
     prefSide: editFormState.prefSide,
     notes: (document.getElementById('edit-notes').value || '').trim(),
+    racket: (document.getElementById('edit-racket').value || '').trim().slice(0, 40),
+    cardColor: editFormState.cardColor || null,
     photo: finalPhotoData
   };
 

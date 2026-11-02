@@ -281,7 +281,7 @@ function playerToShare(name) {
     (st.form || []).map(r => (r === 'W' ? 'W' : 'L')).join(''), [d.setsWon, d.setsLost], [d.gamesWon, d.gamesLost], d.bestStreak,
     partner ? [partner.name, partner.pj, partner.v] : 0, rival ? [rival.name, rival.pj, rival.pj - rival.v] : 0,
     d.titles.slice(0, 3), d.americanoBest ? [d.americanoBest.pos, d.americanoBest.name] : 0, shots, eloLine,
-    prof.hand || '', prof.prefSide || '', prof.club || '', Math.round(d.timeSec / 60), Date.now()];
+    prof.hand || '', prof.prefSide || '', prof.club || '', Math.round(d.timeSec / 60), Date.now(), cardCourtOf(name, prof)[0], prof.racket || ''];
 }
 
 function shareToPlayer(a) {
@@ -302,7 +302,8 @@ function shareToPlayer(a) {
     amBest: Array.isArray(a[18]) ? [num(a[18][0]), str(a[18][1], 80)] : null,
     shots: (Array.isArray(a[19]) ? a[19] : []).slice(0, 3).map(x => [str(x && x[0], 30), num(x && x[1])]),
     eloLine: (Array.isArray(a[20]) ? a[20] : []).slice(0, 40).map(num),
-    hand: str(a[21], 20), side: str(a[22], 20), club: str(a[23]), minutes: num(a[24]), at: Math.round(+a[25]) || Date.now()
+    hand: str(a[21], 20), side: str(a[22], 20), club: str(a[23]), minutes: num(a[24]), at: Math.round(+a[25]) || Date.now(),
+    cardColor: CARD_COURTS.some(c => c[0] === a[26]) ? a[26] : null, racket: str(a[27], 40), rank: num(a[7])
   };
 }
 
@@ -377,7 +378,7 @@ function renderSharedPlayer() {
   const when = new Date(p.at).toLocaleDateString('es-ES', { day: 'numeric', month: 'long', year: 'numeric' });
   box.innerHTML = `${spectatorHeadHTML()}
     <div class="sp-hero">
-      ${playerCardHTML(p, { profile: { prefSide: p.side, photo: null } })}
+      ${playerCardHTML(p, { profile: { prefSide: p.side, hand: p.hand, club: p.club, racket: p.racket, cardColor: p.cardColor, photo: null } })}
       <div class="sp-id">
         <div class="sp-name">${escapeHtml(p.name)}</div>
         <div class="sp-meta">${[p.pos ? `N.º ${p.pos} de ${p.of} en el ranking` : '', `ELO ${p.elo}`].filter(Boolean).join(' · ')}</div>

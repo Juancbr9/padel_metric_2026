@@ -56,9 +56,10 @@ No se usan fuentes monoespaciadas: las dos Barlow tienen cifras tabulares, así 
 ## Imágenes generadas por la app
 
 - **Póster del partido** y **clasificaciones** (1080 × 1350, `js/poster.js` y `js/share.js`): fondo oscuro plano, logo, título y tabla.
+- **Carta de jugador** (`playerCardHTML` y `sharePlayerCard`): pista de pádel vista desde arriba en el color de pista de cada jugador (`CARD_COURTS` en `js/card.js`: azul `#1E4D8C`, azul noche `#17284A`, verde `#1D6646`, terracota `#9A4A2F`, gris `#39424F`, negra `#121519`), líneas blancas al 22 % y la red con el rótulo del logotipo.
 - **Ficha pública del partido** (`#partido=…`, `js/links.js`) y **clasificación en directo** (`#directo=…` con datos de evento, `js/directo.js`): páginas siempre oscuras con los colores fijos de la vista del espectador.
 - **Carta de jugador** (`sharePlayerCard` en `js/card.js`) y **QR de la app** (`shareAppQR` en `js/install.js`).
-- **Portada del partido** (`pm_custom_cover`): foto opcional del usuario sobre la cabecera de "Nuevo partido".
+- La antigua **portada del partido** (`pm_custom_cover`) se ha eliminado: la app borra esa imagen al abrirse.
 
 ## Accesos directos y capturas de instalación
 

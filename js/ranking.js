@@ -83,13 +83,26 @@ function setRankingGenderFilter(flt) {
 
 function setRankingSort(sortKey) {
   rankingSortBy = sortKey;
-  ['elo', 'V', 'winPct', 'avgR', 'W', 'lowENF', 'bal'].forEach(k => {
-    document.getElementById(`sort-${k}`)?.classList.toggle('active', k === sortKey);
-  });
+  const sel = document.getElementById('rk-sort');
+  if (sel && sel.value !== sortKey) sel.value = sortKey;
   renderGlobalRanking();
 }
 
 function renderGlobalRanking() {
+  // Sin jugadores: se explica la sección en lugar de enseñar filtros vacíos
+  const empty = !dbPlayers.length;
+  document.getElementById('ranking-empty')?.classList.toggle('hidden', !empty);
+  if (empty) {
+    ['ranking-podium', 'rk-tabs', 'rk-panel-players', 'rk-panel-pairs', 'rk-panel-h2h'].forEach(id => document.getElementById(id)?.classList.add('hidden'));
+    const box = document.getElementById('ranking-empty');
+    if (box) box.innerHTML = emptyStateHTML('Todavía no hay jugadores',
+      'El ranking ELO se forma solo con los partidos que juegas: cada victoria suma y cada derrota resta según el nivel del rival. Añade a tus compañeros o elígelos directamente al preparar un partido.',
+      `<button class="btn-volt" onclick="openEditProfileModal(null)">Añadir jugador</button><button class="btn-icon" onclick="loadDemoData()">Ver con datos de ejemplo</button>`);
+    return;
+  }
+  document.getElementById('ranking-podium')?.classList.remove('hidden');
+  document.getElementById('rk-tabs')?.classList.remove('hidden');
+  ['players', 'pairs', 'h2h'].forEach(t => document.getElementById(`rk-panel-${t}`)?.classList.toggle('hidden', t !== rankingTab));
   const { statsMap } = computeAllPlayersStats();
   const q = (document.getElementById('search-player-input')?.value || '').trim().toLowerCase();
 
@@ -123,12 +136,12 @@ function renderGlobalRanking() {
       const avgR = item.PJ ? (item.ratingSum / item.PJ).toFixed(1) : '6.5';
       const winPct = item.PJ ? Math.round((item.V / item.PJ) * 100) : 0;
       return `
-        <div class="rk-player-row" onclick="openPlayerProfile(${jsArg(item.name)})">
+        <div class="rk-player-row ${item.name === myPlayerName ? 'is-me' : ''}" onclick="openPlayerProfile(${jsArg(item.name)})">
           <div class="rk-left">
             <span class="rk-rank-num">${i + 1}</span>
             ${renderAvatarHTML(item.name, '')}
             <div class="rk-info">
-              <div class="rk-name">${escapeHtml(item.name)}</div>
+              <div class="rk-name">${escapeHtml(item.name)}${item.name === myPlayerName ? '<span class="me-tag">Tú</span>' : ''}</div>
               <div class="rk-sub">${prof.club ? escapeHtml(prof.club) + ' · ' : ''}${item.PJ ? `${item.V} de ${item.PJ} ganados` : 'Sin partidos'}${formDotsHTML(item.form)}</div>
             </div>
           </div>

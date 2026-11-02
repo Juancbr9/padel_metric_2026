@@ -69,7 +69,7 @@ function renderDrawerMe() {
   const box = document.getElementById('drawer-me');
   if (!box) return;
   if (!myPlayerName || !dbPlayers.includes(myPlayerName)) {
-    box.innerHTML = `<button type="button" class="drawer-me empty" onclick="closeAppMenu(); openMyCard()">
+    box.innerHTML = `<button type="button" class="drawer-me empty" onclick="openChooseMeSheet()">
       <span class="drawer-ico"><svg class="icon"><use href="#i-users"/></svg></span>
       <span class="drawer-txt"><strong>Elige tu perfil</strong><small>Para ver tu carta, tu ELO y tu temporada</small></span></button>`;
     return;
@@ -87,8 +87,7 @@ function openMyCard() {
     setProfileTab('card');
     return;
   }
-  switchMainTab('ranking');
-  showToast('Toca tu nombre, abre la pestaña Carta y pulsa "Soy yo"');
+  openChooseMeSheet();
 }
 
 // Ajustes: interruptores y reglas en una sola hoja
@@ -97,19 +96,22 @@ function openSettingsSheet() {
     <svg class="icon"><use href="#${icon}"/></svg><span>${label}</span><span class="switch" id="sw-${id}"></span></button>`;
   openEventModal(`
     <div class="mo-title">Ajustes</div>
+    <div class="menu-group-title">Tema</div>
+    <div class="ios-segmented cols-3" id="theme-seg">
+      <button type="button" class="ios-seg-option" data-theme="dark" onclick="setThemePref('dark')"><span class="opt-main">Oscuro</span></button>
+      <button type="button" class="ios-seg-option" data-theme="light" onclick="setThemePref('light')"><span class="opt-main">Claro</span></button>
+      <button type="button" class="ios-seg-option" data-theme="auto" onclick="setThemePref('auto')"><span class="opt-main">Automático</span><span class="opt-sub">Como el móvil</span></button>
+    </div>
+    <div class="menu-group-title">Durante el partido</div>
     <div class="menu-list">
-      ${sw('theme', 'i-moon', 'Modo claro', 'toggleThemeMode()')}
       ${sw('voice', 'i-volume', 'Narrador de voz', 'toggleVoiceNarrator()')}
       ${sw('vibration', 'i-vibrate', 'Vibración al anotar', "toggleAppSetting('vibration')")}
       ${sw('wakeLock', 'i-screen', 'Pantalla siempre encendida en partido', "toggleAppSetting('wakeLock')")}
       ${sw('sound', 'i-music', 'Sonidos en juegos, sets y partido', "toggleAppSetting('sound')")}
     </div>
-    <div class="menu-group-title">Partido</div>
-    <div class="menu-list">
+    <div class="menu-list mt-8">
       <button type="button" class="menu-row" onclick="closeEventModal(); openRulesModal()">
-        <svg class="icon"><use href="#i-sliders"/></svg><span>Reglas y modo de anotación</span><span class="menu-row-hint">›</span></button>
-      <button type="button" class="menu-row" onclick="closeEventModal(); document.getElementById('cover-upload').click()">
-        <svg class="icon"><use href="#i-camera"/></svg><span>Foto de portada del partido</span><span class="menu-row-hint">›</span></button>
+        <svg class="icon"><use href="#i-sliders"/></svg><span>Reglas por defecto</span><span class="menu-row-hint">›</span></button>
     </div>
     <div class="menu-group-title">Datos</div>
     <div class="menu-list">
@@ -145,7 +147,8 @@ function openDataSheet() {
 }
 
 function renderMenuSwitches() {
-  document.getElementById('sw-theme')?.classList.toggle('on', document.body.classList.contains('light-mode'));
+  const pref = themePref();
+  document.querySelectorAll('#theme-seg [data-theme]').forEach(b => b.classList.toggle('active', b.dataset.theme === pref));
   document.getElementById('sw-voice')?.classList.toggle('on', voiceEnabled);
   document.getElementById('sw-vibration')?.classList.toggle('on', appSettings.vibration);
   document.getElementById('sw-wakeLock')?.classList.toggle('on', appSettings.wakeLock);
@@ -243,11 +246,12 @@ function initBackGuard() {
 }
 
 // Novedades: se muestran una vez tras actualizar (no a quien abre la app por primera vez)
-const APP_VERSION = 11;
+const APP_VERSION = 12;
 const APP_NEWS = [
-  ['Inscripción con QR', 'Al preparar un americano, abre la inscripción: cada jugador escanea el código y se apunta desde su móvil. Cuando crees el evento, el mismo enlace muestra la ronda en juego y la clasificación.'],
-  ['Perfil para compartir', 'Desde la ficha de un jugador, un enlace con su carta, su ELO y su evolución, el balance, la mejor pareja, el rival más difícil y los títulos.'],
-  ['Diseño renovado', 'Letra nueva y más legible, listas en lugar de recuadros, cifras más claras y el verde reservado para la acción principal de cada pantalla.']
+  ['Cartas de jugador propias', 'La carta es ahora una pista de pádel vista desde arriba: el jugador en un campo, la red en medio y sus números en el otro. Cada uno elige el color de su pista (azul, verde, terracota…) y puede poner la pala que usa.'],
+  ['¿Quién eres?', 'Elige tu jugador desde el inicio o el menú: verás tu carta y tu temporada al abrir la app y el ranking te marcará.'],
+  ['Tema claro, oscuro o automático', 'En Ajustes, el tema puede seguir al del móvil. La barra de arriba del navegador cambia de color con él.'],
+  ['Pantallas más ordenadas', 'Nuevo partido con las reglas a la vista y sin foto de portada, estadísticas con el resultado arriba, ranking con menos botones y pantallas vacías que explican qué hacer.']
 ];
 
 function openNewsSheet() {
@@ -281,7 +285,8 @@ function setupAppDownload() {
 }
 
 window.addEventListener('DOMContentLoaded', () => {
-  loadCustomCover();
+  // La foto de portada ya no existe: se libera el espacio que ocupaba
+  try { localStorage.removeItem('pm_custom_cover'); } catch (e) {}
   initAvatarCropperEvents();
   initPlayerCardInteractions();
   renderVoiceToggle();

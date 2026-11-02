@@ -62,8 +62,14 @@ function renderHistoryList() {
   if (historyFilter === 'me' && !filters.some(([k]) => k === 'me')) historyFilter = 'all';
   const fbox = document.getElementById('history-filters');
   if (fbox) fbox.innerHTML = filters.map(([k, l]) => `<button type="button" class="sort-chip ${historyFilter === k ? 'active' : ''}" onclick="setHistoryFilter('${k}')">${l}</button>`).join('');
-  if (matchHistory.length === 0) {
-    el.innerHTML = `<div class="empty-note">Todavía no hay partidos guardados. Juega uno desde <strong>Partido</strong> y aparecerá aquí con sus estadísticas.</div>`;
+  // Sin partidos: ni resumen ni buscador, solo qué es el historial y cómo empezar
+  const none = matchHistory.length === 0;
+  document.getElementById('history-summary')?.classList.toggle('hidden', none);
+  document.querySelector('#view-history .hist-tools')?.classList.toggle('hidden', none);
+  if (none) {
+    el.innerHTML = emptyStateHTML('Aún no hay partidos',
+      'Cada partido que termines se guarda aquí con su resultado, sus estadísticas, el mapa de calor y la probabilidad de victoria punto a punto. Desde cada uno puedes compartir un enlace o un póster.',
+      `<button class="btn-volt" onclick="switchMainTab('setup')">Jugar un partido</button><button class="btn-icon" onclick="loadDemoData()">Ver con datos de ejemplo</button>`);
     return;
   }
   const q = (document.getElementById('history-search')?.value || '').trim().toLowerCase();

@@ -20,7 +20,7 @@ let rankingSortBy = 'elo';
 let rankingGenderFilter = 'all';
 let editingOriginalKey = null;
 let pendingAssignSlotAfterCreate = null;
-let editFormState = { gender: 'M', hand: 'Diestro', prefSide: 'Ambas', photo: null };
+let editFormState = { gender: 'M', hand: 'Diestro', prefSide: 'Ambas', photo: null, cardColor: null };
 
 // Estado del encuadrador circular interactivo
 let cropState = {

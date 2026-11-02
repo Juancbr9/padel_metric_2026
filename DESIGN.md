@@ -42,7 +42,9 @@ Activos de marca (logo, iconos, tipografías): [`docs/brand-index.md`](docs/bran
 | `--danger` | `#FF453A` | Estado: error no forzado, borrar, desconexión. |
 | `--amber` | `#FF9F0A` | Estado: error forzado, aviso, segundo saque. |
 
-### 2.2 Modo claro
+### 2.2 Modo claro y tema automático
+
+El tema se elige en Ajustes: **Oscuro** (por defecto), **Claro** o **Automático** (sigue al del móvil con `prefers-color-scheme`). `applyTheme()` pone `body.light-mode` y cambia la `meta theme-color` (`#030508` / `#F4F6F8`). Lo que es una ilustración o un rótulo (la pista, el marcador, las cartas, las páginas públicas) conserva sus colores en los dos temas; en modo claro, las fichas de los jugadores sobre la pista de "Nuevo partido" son blancas.
 
 Mismo sistema con valores claros: fondo `#F4F6F8`, tarjetas `#FFFFFF`, borde `rgba(15,23,42,0.08)`, texto `#0B1220` / `#5B6474` / `#8A93A0`. El acento se oscurece para leerse sobre blanco (`--volt: #4D7C0F`, `--on-volt: #FFFFFF`). Parejas `#0284C7` y `#E11D48`; estados `#248A3D`, `#D70015` y `#C93400`.
 
@@ -52,7 +54,7 @@ Mismo sistema con valores claros: fondo `#F4F6F8`, tarjetas `#FFFFFF`, borde `rg
 - **El lima no va en cifras, pestañas, chips, barras de progreso, iconos ni enlaces.** La opción activa de un segmentado es `--surface-2` con texto principal; un chip activo es invertido (fondo `--text-primary`, texto `--bg-obsidian`); un enlace es texto principal o secundario.
 - **Cian y rojo son exclusivos de las parejas** (marcador, barras de comparación, gráficos de probabilidad, avatares de un partido). La pareja se marca con un **cuadrado pequeño de su color** delante del nombre, nunca con una franja lateral.
 - **Estados con su color y siempre con texto o icono**, nunca solo color.
-- Prohibido introducir colores nuevos fuera de esta tabla. Excepciones documentadas: los tres colores de zona del panel de golpes (red `#22D3EE`, transición `#F5C04A`, fondo `#A78BFA`), los niveles de la carta de jugador (bronce, plata, oro, élite) y los colores de los estados del marcador (break, punto de oro, set), que son datos.
+- Prohibido introducir colores nuevos fuera de esta tabla. Excepciones documentadas: los tres colores de zona del panel de golpes (red `#22D3EE`, transición `#F5C04A`, fondo `#A78BFA`), los colores de pista de la carta de jugador (`CARD_COURTS`) y los colores de los estados del marcador (break, punto de oro, set), que son datos.
 
 ---
 
@@ -78,6 +80,8 @@ Investigación de noviembre de 2026 sobre lo que delata una interfaz generada po
 | Icono dentro de un cuadrado o círculo de color en cada elemento de un menú o lista | Icono solo, en gris; o sin icono |
 | Icono en todos los botones con texto | Botones solo con texto; el icono solo cuando el botón no tiene texto (con `aria-label`) |
 | Fuentes por defecto de la IA (Inter, Plus Jakarta Sans, Geist) y monoespaciada "de programador" para las cifras | Barlow y Barlow Condensed con cifras tabulares |
+| Plantillas copiadas de otros productos (la carta "tipo FIFA": escudo, media gigante, atributos de tres letras, niveles de metal) | Diseño propio del deporte: la carta es una pista de pádel personalizable |
+| Imágenes decorativas de relleno (la antigua portada del partido) | Nada: el contenido empieza arriba |
 | Color de marca en más de tres sitios (botones, cifras, pestañas, bordes, iconos) | El lima solo en la acción principal |
 | Degradados morados o multicolor, halos radiales, aurora de fondo, brillos de neón | Superficies planas |
 | Paneles translúcidos con desenfoque (`backdrop-filter`) sin motivo | Superficies opacas |
@@ -135,6 +139,8 @@ Investigación de noviembre de 2026 sobre lo que delata una interfaz generada po
 - **Cifras de resumen:** número en Barlow Condensed y etiqueta debajo en `--text-secondary`, sin recuadro (`.hero-stat`, `.kpi-card`, `.me-stat`, `.sm-facts`).
 - **Clasificaciones:** posición en `--text-tertiary` (en blanco y negrita dentro de la zona de clasificados) y una línea `--border-strong` donde termina esa zona.
 - **Interruptores:** pista `--surface-2`; encendido en `--volt`.
+- **Carta de jugador (`.pcard`):** una pista de pádel vista desde arriba, no un escudo de videojuego. Dos campos iguales (proporción de pista) con las líneas en blanco al 22 %: arriba el jugador (foto o iniciales, nombre pequeño y apellido grande, lado y mano), en medio la red con el rótulo "Padel Metric", abajo media, ELO y balance, los seis atributos con su nombre completo y una barra, y al pie la pala y el club. El fondo es el **color de pista que elige cada jugador** (`CARD_COURTS`: azul, azul noche, verde, terracota, gris, negra); si no elige, se le asigna uno por su nombre. Sin niveles bronce/plata/oro, sin brillo holográfico y sin abreviaturas de tres letras. Se escala con su tamaño de letra: normal, `.big` (ficha) y `.mini` (inicio).
+- **Pantallas vacías (`emptyStateHTML`):** título, una o dos frases de qué es la sección y qué hacer, y la acción; alineado a la izquierda, sin icono ni caja. Los filtros y buscadores no se enseñan si no hay nada que filtrar.
 - **Marcador en directo:** siempre oscuro (rótulo de televisión), cifras en Barlow Condensed, cuadrado del color de la pareja delante del nombre, punto lima de saque, barra de probabilidad con los colores de pareja.
 - **Tarjetas de jugador en pista:** opacas sobre la pista, cuadrado de color de la pareja junto al lado (drive / revés), borde lima si saca, valoración como cifra (sin anillo).
 - **Panel de golpes:** casillas planas con el esquema en el color de su zona.

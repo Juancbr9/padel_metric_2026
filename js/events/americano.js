@@ -478,7 +478,9 @@ function renderAmericanoListHTML() {
       <div class="section-hero-kicker">Americano, mexicano y pozo${americanos.length ? ` · ${americanos.length} evento${americanos.length === 1 ? '' : 's'}` : ''}</div>
       <div class="section-hero-actions"><button class="btn-volt" onclick="startAmericanoDraft()">Nuevo evento</button></div>
     </div>
-    ${cards ? `<div class="event-list">${cards}</div>` : `<div class="bento-card"><div class="empty-note">Organiza una tarde de pádel para 4, 8, 12 o más jugadores.<br>La app hace los cruces, reparte los descansos y lleva la clasificación por puntos.</div></div>`}`;
+    ${cards ? `<div class="event-list">${cards}</div>` : emptyStateHTML('Sin eventos todavía',
+      'Organiza una tarde de pádel para 4, 8, 12 o más jugadores. La app hace los cruces de cada ronda, reparte los descansos y lleva la clasificación. Los jugadores pueden apuntarse escaneando un QR.',
+      `<button class="btn-icon" onclick="loadDemoData()">Ver un americano de ejemplo</button>`)}`;
 }
 
 function renderAmericanoCreateHTML() {
