@@ -15,16 +15,37 @@ export default async ({ newPage, url, assert }) => {
   });
   assert.equal(servers.join(','), '0,3,1,2', 'Orden de saque');
 
-  // Golpe con el panel: tocar tarjeta y elegir un winner
+  // Modo sencillo (por defecto): tocar la tarjeta abre tres botones
+  assert.equal(await p.evaluate(() => state.inputMode), 'swipe', 'Por defecto, modo sencillo');
   const before = await p.evaluate(() => state.players[0].W);
   await p.click('#pcard-0');
   await p.waitForTimeout(150);
-  await p.click('#shot-grid .tile-win >> nth=0');
+  assert.equal(await p.locator('#shot-grid .shot-tile').count(), 0, 'En sencillo no se elige golpe');
+  await p.click('#shot-grid .simple-act.w');
   await p.waitForTimeout(150);
   assert.equal(await p.evaluate(() => state.players[0].W), before + 1, 'El winner suma al jugador');
   await p.click('#btn-undo');
   await p.waitForTimeout(150);
   assert.equal(await p.evaluate(() => state.players[0].W), before, 'Deshacer quita el winner');
+
+  // Modo avanzado: golpe y sitio en la pista, con la perspectiva elegida
+  await p.evaluate(() => { setMatchInputMode('tap'); setMatchView('p1'); closeEventModal(); });
+  assert(await p.evaluate(() => document.querySelector('.court-arena').classList.contains('view-p1')), 'La pista se gira a la perspectiva elegida');
+  await p.click('#pcard-2');
+  await p.waitForTimeout(150);
+  await p.click('#shot-grid .tile-win >> nth=0');
+  await p.waitForTimeout(150);
+  assert(await p.isVisible('.court-pick svg'), 'Después del golpe se marca el sitio');
+  // Vista detrás de la pareja 1: la pareja 2 (la que golpea) está arriba; tocamos cerca de la red, a la izquierda
+  const box = await p.locator('.court-pick svg').boundingBox();
+  await p.mouse.click(box.x + box.width * 0.2, box.y + box.height * 0.42);
+  await p.waitForTimeout(400);
+  const last = await p.evaluate(() => state.points[state.points.length - 1]);
+  assert(last.cx != null && last.cy > 0.5, 'Se guarda el sitio exacto en el campo de la pareja 2');
+  assert.equal(last.z, 'R', 'Cerca de la red es zona de red');
+  assert.equal(last.l, 'D', 'Desde detrás de la pareja 1, la izquierda de la pareja 2 es su drive');
+  await p.click('#btn-undo');
+  await p.evaluate(() => { setMatchInputMode('swipe'); closeEventModal(); });
 
   // Tie-break a 6-6
   await p.evaluate(() => { state.sets[state.currentSet] = [6, 5]; state.pts = [0, 0]; for (let i = 0; i < 4; i++) addNeutralPoint(1); });

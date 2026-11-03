@@ -13,7 +13,8 @@ let setupConfig = {
   slots: ['GEN_0', 'GEN_1', 'GEN_2', 'GEN_3'],
   deuceRule: 'adv',
   thirdSetRule: 'normal',
-  inputMode: 'tap', // 'tap' o 'swipe'
+  inputMode: 'swipe', // 'swipe' = sencillo (por defecto) o 'tap' = avanzado (golpe y sitio)
+  view: 'p2', // perspectiva en el modo avanzado: 'p2', 'p1' o 'side'
   initialServer: 0
 };
 let rankingSortBy = 'elo';

@@ -187,7 +187,7 @@ function renderSpectator(d) {
   const box = document.getElementById('view-spectator');
   const head = spectatorHeadHTML();
   if (!d || d.missing || d.error) {
-    box.innerHTML = `${head}<div class="spx-empty">${!d ? 'Conectando con el directo…' : d.missing ? 'Este directo no existe o ya ha caducado.' : `No se puede conectar: ${escapeHtml(d.error)}`}</div>`;
+    box.innerHTML = `${head}${!d ? pmLoaderHTML('Conectando con el directo…') : `<div class="spx-empty">${d.missing ? 'Este directo no existe o ya ha caducado.' : `No se puede conectar: ${escapeHtml(d.error)}`}</div>`}`;
     return;
   }
   spectatorLast = d;

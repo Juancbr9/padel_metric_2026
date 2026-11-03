@@ -326,7 +326,8 @@ function deleteAmericano(aid) {
 // ---------- Alta ----------
 function startAmericanoDraft() {
   if (eventDraft && eventDraft.signup) closeSignupOnCancel(eventDraft);
-  eventDraft = { kind: 'americano', name: '', format: 'americano', players: [], matchKind: 'points', matchValue: 24, courts: null, rounds: null };
+  eventDraft = { kind: 'americano', name: '', format: 'americano', players: [], matchKind: 'points', matchValue: 24, courts: null, rounds: null, duration: 0 };
+  chooserQuery = '';
   aView = { mode: 'create', aid: null, tab: 'rounds' };
   renderAmericanoView();
 }
@@ -335,6 +336,8 @@ function setADraft(key, val) {
   eventDraft[key] = key === 'matchValue' ? parseInt(val, 10) : val;
   if (key === 'matchKind') eventDraft.matchValue = MATCH_TYPES[val].values[val === 'set' ? 1 : Math.min(2, MATCH_TYPES[val].values.length - 1)];
   if (key === 'format') { eventDraft.courts = null; eventDraft.rounds = null; }
+  if (key === 'duration') { eventDraft.duration = parseInt(val, 10) || 0; eventDraft.rounds = null; }
+  if (key === 'matchKind' || key === 'matchValue') { if (eventDraft.duration) eventDraft.rounds = null; }
   renderAmericanoView();
 }
 
@@ -363,6 +366,21 @@ function balanceADraftPairs() {
   renderAmericanoView();
 }
 
+// Duración total del evento: se estiman los minutos de cada ronda según el tipo de partido (incluido el cambio de
+// pista) y de ahí salen las rondas que caben
+const EVENT_DURATIONS = [[0, 'Sin límite'], [60, '1 h'], [90, '1 h 30'], [120, '2 h'], [150, '2 h 30'], [180, '3 h']];
+function roundMinutes(kind, value) {
+  if (kind === 'points') return Math.round(value * 0.5 + 2);
+  if (kind === 'games') return Math.round(value * 4.5 + 2);
+  if (kind === 'time') return value + 2;
+  return { 4: 27, 6: 42, 9: 57 }[value] || 42;
+}
+
+function durationLabel(min) {
+  const h = Math.floor(min / 60), m = Math.round(min % 60);
+  return h ? `${h} h${m ? ` ${String(m).padStart(2, '0')} min` : ''}` : `${m} min`;
+}
+
 function draftDefaults(d) {
   const n = d.players.length;
   const teams = Math.floor(n / 2);
@@ -370,12 +388,27 @@ function draftDefaults(d) {
   if (d.format === 'pozo') return { courts: maxCourts, maxCourts, rounds: d.rounds || 6 };
   const courts = Math.min(d.courts || maxCourts, maxCourts);
   let rounds = d.rounds;
+  if (!rounds && d.duration && d.format !== 'fixed') rounds = Math.max(1, Math.min(30, Math.floor(d.duration / roundMinutes(d.matchKind, d.matchValue))));
   if (!rounds) {
     if (d.format === 'fixed') rounds = Math.max(1, teams % 2 ? teams : teams - 1);
     else if (d.format === 'americano') rounds = Math.max(3, n % 4 === 0 ? n - 1 : n);
     else rounds = 5;
   }
   return { courts, maxCourts, rounds };
+}
+
+// Resumen del plan: jugadores por ronda, descansos, minutos por ronda, partidos de cada jugador y duración estimada
+function eventPlanText(d, def, n, resting) {
+  const rounds = d.format === 'fixed' ? (Math.floor(n / 2) % 2 ? Math.floor(n / 2) : Math.floor(n / 2) - 1) : def.rounds;
+  const perRound = roundMinutes(d.matchKind, d.matchValue);
+  const total = rounds * perRound;
+  const onCourt = Math.min(n, def.courts * 4);
+  const perPlayer = n ? Math.round((rounds * onCourt) / n * 10) / 10 : 0;
+  const parts = [`${onCourt} en pista por ronda${resting ? `, ${resting} descansa${resting > 1 ? 'n' : ''} por turnos` : ''}`,
+    `${rounds} ronda${rounds === 1 ? '' : 's'} de unos ${perRound} min`, `unos ${String(perPlayer).replace('.', ',')} partidos por jugador`,
+    `duración estimada ${durationLabel(total)}`];
+  const over = d.duration && total > d.duration + 5;
+  return parts.join(' · ') + (over ? `. No cabe en ${durationLabel(d.duration)}: baja las rondas o elige partidos más cortos.` : '.');
 }
 
 function stepADraft(key, delta) {
@@ -405,7 +438,8 @@ function createAmericanoFromDraft() {
   const def = draftDefaults(d);
   const ev = {
     id: uid('a'), name: d.name.trim(), format: d.format, createdAt: Date.now(), players: [...d.players],
-    matchType: { kind: d.matchKind, value: d.matchValue }, courts: def.courts, totalRounds: def.rounds, rounds: [], status: 'active'
+    matchType: { kind: d.matchKind, value: d.matchValue }, courts: def.courts, totalRounds: def.rounds, rounds: [], status: 'active',
+    ...(d.duration ? { duration: d.duration } : {})
   };
   // Si hubo inscripción con QR, su enlace pasa a ser el directo de la clasificación
   const live = signupLiveFor(d);
@@ -525,10 +559,12 @@ function renderAmericanoCreateHTML() {
       ${pairsPreview}
     </div>
     <div class="bento-card">
-      ${['fixed', 'pozo'].includes(d.format) ? `<div class="stepper"><span class="stepper-label">Pistas</span><span class="stepper-val">${def.courts}</span></div>` : stepper('courts', def.courts, 'Pistas')}
+      <div class="form-label">Duración total</div>
+      <div class="dur-chips">${EVENT_DURATIONS.map(([v, t]) => `<button type="button" class="sort-chip ${d.duration === v ? 'active' : ''}" onclick="setADraft('duration', ${v})">${t}</button>`).join('')}</div>
+      ${d.format === 'pozo' ? `<div class="stepper"><span class="stepper-label">Pistas</span><span class="stepper-val">${def.courts}</span></div><div class="empty-note u-left">En el Pozo juegan todos a la vez: una pista por cada 4 jugadores.</div>` : stepper('courts', def.courts, 'Pistas')}
       ${d.format === 'fixed' ? '' : stepper('rounds', def.rounds, 'Rondas')}
       <div class="empty-note u-left mt-8">
-        ${err ? escapeHtml(err) : `${def.courts * 4} jugadores en pista por ronda${resting ? ` · ${resting} descansa${resting > 1 ? 'n' : ''} por turnos` : ''}${d.format === 'fixed' ? ` · ${Math.floor(n / 2) % 2 ? Math.floor(n / 2) : Math.floor(n / 2) - 1} rondas` : ''}`}
+        ${err ? escapeHtml(err) : eventPlanText(d, def, n, resting)}
       </div>
     </div>
     <button class="btn-volt" onclick="createAmericanoFromDraft()">Crear y generar cruces</button>

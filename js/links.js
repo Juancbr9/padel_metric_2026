@@ -140,14 +140,20 @@ async function openShareMatchSheet(m) {
   shareSheetLink = null;
   shareSheetText = matchShareText(m);
   vibrate(10);
+  const row = (title, sub, action) => `<button type="button" class="share-opt" onclick="${action}"><span><strong>${title}</strong><small>${sub}</small></span><span class="menu-row-hint">›</span></button>`;
   openEventModal(`
     <div class="mo-title">Compartir partido</div>
-    <p class="bc-intro">Envía el resultado y las estadísticas con un enlace. Se abre en cualquier móvil sin instalar nada y quien use Padel Metric puede guardarlo en su historial. Los datos viajan dentro del propio enlace.</p>
-    <div class="bc-qr" id="share-qr"><div class="share-qr-wait">Preparando enlace…</div></div>
-    <div class="bc-actions">
+    <div class="share-opts">
+      ${row('Imagen del resultado', 'Póster para WhatsApp o Instagram, también con la foto del grupo', 'closeEventModal(); closeMatchEnd(); openPosterModal()')}
+      ${row('Imagen de las estadísticas', 'Saque, resto, bolas de break y cada jugador', 'closeEventModal(); closeMatchEnd(); shareMatchStatsImage(posterTargetState)')}
+      ${row('Resumen en texto', 'Las estadísticas y la crónica, para pegar en un mensaje', 'closeEventModal(); closeMatchEnd(); openMatchSummaryFor(posterTargetState)')}
+    </div>
+    <div class="menu-group-title">Enlace del partido</div>
+    <p class="bc-intro">Se abre en cualquier móvil sin instalar nada; quien use Padel Metric puede guardarlo en su historial.</p>
+    <div class="bc-qr" id="share-qr">${pmLoaderHTML('Preparando el enlace…')}</div>
+    <div class="u-grid-2">
       <button class="btn-volt" id="share-send" onclick="sendMatchLink()" disabled>Enviar enlace</button>
       <button class="btn-icon" onclick="copyMatchLink()">Copiar enlace</button>
-      <button class="btn-icon" onclick="closeEventModal(); closeMatchEnd(); openPosterModal()">Póster</button>
     </div>`);
   try {
     shareSheetLink = `${appPublicUrl()}#partido=${await matchShareCode(m)}`;

@@ -20,6 +20,7 @@ function syncPosterPhotoTools() {
   const lbl = document.getElementById('poster-photo-label');
   if (lbl) lbl.innerText = posterPhoto ? 'Cambiar la foto' : 'Con la foto del grupo';
   document.getElementById('poster-photo-adjust')?.classList.toggle('hidden', !posterPhoto);
+  document.getElementById('poster-faces-btn')?.classList.toggle('hidden', !posterPhoto);
 }
 
 function choosePosterPhoto(input) {
@@ -169,37 +170,24 @@ async function drawPosterCanvas(matchData) {
     if (k === 0) { ctx.fillStyle = C.line; ctx.fillRect(X + 16, y + rowH, R - X - 32, 2); }
   });
 
-  // Estadísticas como en el circuito profesional (barras pareja contra pareja)
-  let y = boxY + rowH * 2 + 88;
-  ctx.fillStyle = C.text; ctx.font = font(700, 40, 'Barlow Condensed');
-  ctx.fillText('ESTADÍSTICAS', X, y);
-  y += 16;
-  const rows = proStatsRows(m).filter(r => r[0] !== 'Racha más larga de puntos').slice(0, 7);
-  rows.forEach(([label, va, vb, a, b, low]) => {
-    const better = a === b ? 0 : (low ? a < b : a > b) ? 1 : 2;
-    ctx.font = font(better === 1 ? 700 : 500, 34, 'Barlow Condensed'); ctx.fillStyle = better === 1 ? C.text : '#AEB6C2';
-    ctx.textAlign = 'left'; ctx.fillText(String(va), X, y + 38);
-    ctx.font = font(better === 2 ? 700 : 500, 34, 'Barlow Condensed'); ctx.fillStyle = better === 2 ? C.text : '#AEB6C2';
-    ctx.textAlign = 'right'; ctx.fillText(String(vb), R, y + 38);
-    ctx.textAlign = 'center'; ctx.fillStyle = C.muted; ctx.font = font(500, 24); ctx.fillText(label, W / 2, y + 34);
-    ctx.textAlign = 'left';
-    const tot = Math.abs(a) + Math.abs(b) || 1, bw = R - X, wa = Math.max(4, (Math.abs(a) / tot) * bw - 3);
-    ctx.fillStyle = C.a; ctx.beginPath(); ctx.roundRect(X, y + 54, wa, 8, 4); ctx.fill();
-    ctx.fillStyle = C.b; ctx.beginPath(); ctx.roundRect(X + wa + 6, y + 54, bw - wa - 6, 8, 4); ctx.fill();
-    y += 76;
-  });
+  // Cuatro datos clave con barras (todas las estadísticas van en su propia imagen: shareMatchStatsImage)
+  let y = boxY + rowH * 2 + 70;
+  const keys = ['Puntos ganados', 'Puntos ganados con el 1.er saque', 'Bolas de break convertidas', 'Winners', 'Juegos ganados'];
+  const rows = proStatsRows(m).filter(r => keys.includes(r[0])).slice(0, 4);
+  y = drawStatBars(ctx, rows, X, R, y, 92, 38);
 
-  // Mejor del partido
+  // Mejor del partido, con su foto o sus iniciales
   const best = m.players.map((p, i) => ({ p, i, r: calcPlayerRating(p) })).sort((a, b) => b.r - a.r)[0];
   if (best && !best.p.isGeneric) {
-    y += 16;
+    y += 10;
     ctx.fillStyle = C.line; ctx.fillRect(X, y, R - X, 2);
-    y += 56;
-    ctx.fillStyle = C.muted; ctx.font = font(500, 26); ctx.fillText('Mejor del partido', X, y);
-    ctx.fillStyle = C.text; ctx.font = font(700, 44, 'Barlow Condensed');
-    ctx.fillText(liveSurname(best.p, m).toUpperCase(), X + 230, y + 4);
-    ctx.textAlign = 'right'; ctx.fillStyle = C.text; ctx.font = font(600, 26);
-    ctx.fillText(`${best.r.toFixed(1).replace('.', ',')} de valoración · ${best.p.W || 0} winners`, R, y);
+    const cy = y + 90;
+    await drawPosterAvatar(ctx, best.p, X + 52, cy, 52, best.i < 2 ? C.a : C.b);
+    ctx.fillStyle = C.muted; ctx.font = font(500, 26); ctx.fillText('Mejor del partido', X + 130, cy - 14);
+    ctx.fillStyle = C.text; ctx.font = font(700, 54, 'Barlow Condensed');
+    ctx.fillText(fitText(ctx, liveSurname(best.p, m).toUpperCase(), 420), X + 130, cy + 38);
+    ctx.textAlign = 'right'; ctx.font = font(700, 64, 'Barlow Condensed'); ctx.fillText(best.r.toFixed(1).replace('.', ','), R, cy + 12);
+    ctx.fillStyle = C.muted; ctx.font = font(500, 24); ctx.fillText(`valoración · ${best.p.W || 0} winners`, R, cy + 46);
     ctx.textAlign = 'left';
   }
 
@@ -232,4 +220,90 @@ async function sharePosterWhatsApp() {
     }
     downloadPosterPNG();
   }, 'image/png');
+}
+
+// Barras pareja contra pareja (cian / rojo) con la cifra de cada una y la etiqueta en medio
+function drawStatBars(ctx, rows, X, R, y, step = 80, size = 34) {
+  const W = X + R;
+  rows.forEach(([label, va, vb, a, b, low]) => {
+    const better = a === b ? 0 : (low ? a < b : a > b) ? 1 : 2;
+    ctx.font = `${better === 1 ? 700 : 500} ${size}px "Barlow Condensed", sans-serif`; ctx.fillStyle = better === 1 ? '#F5F7FA' : '#AEB6C2';
+    ctx.textAlign = 'left'; ctx.fillText(String(va), X, y + size);
+    ctx.font = `${better === 2 ? 700 : 500} ${size}px "Barlow Condensed", sans-serif`; ctx.fillStyle = better === 2 ? '#F5F7FA' : '#AEB6C2';
+    ctx.textAlign = 'right'; ctx.fillText(String(vb), R, y + size);
+    ctx.textAlign = 'center'; ctx.fillStyle = '#8B95A5'; ctx.font = `500 ${Math.round(size * 0.68)}px "Barlow", sans-serif`; ctx.fillText(label, W / 2, y + size - 4);
+    ctx.textAlign = 'left';
+    const tot = Math.abs(a) + Math.abs(b) || 1, bw = R - X, wa = Math.max(4, (Math.abs(a) / tot) * bw - 3);
+    ctx.fillStyle = '#00F0FF'; ctx.beginPath(); ctx.roundRect(X, y + size + 16, wa, 9, 4.5); ctx.fill();
+    ctx.fillStyle = '#FF2E54'; ctx.beginPath(); ctx.roundRect(X + wa + 6, y + size + 16, bw - wa - 6, 9, 4.5); ctx.fill();
+    y += step;
+  });
+  return y;
+}
+
+// Foto del jugador en círculo (o sus iniciales) con el aro del color de su pareja
+async function drawPosterAvatar(ctx, p, cx, cy, r, color) {
+  const prof = (!p.isGeneric && dbProfiles[p.name]) ? dbProfiles[p.name] : null;
+  let drawn = false;
+  if (prof && prof.photo) {
+    const im = new Image(); im.src = prof.photo;
+    try { await im.decode(); ctx.save(); ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI * 2); ctx.clip(); ctx.drawImage(im, cx - r, cy - r, r * 2, r * 2); ctx.restore(); drawn = true; } catch (e) {}
+  }
+  if (!drawn) {
+    ctx.fillStyle = '#151B24'; ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = color; ctx.font = `700 ${Math.round(r * 0.8)}px "Barlow Condensed", sans-serif`; ctx.textAlign = 'center';
+    ctx.fillText(p.isGeneric ? 'J' : getInitials(p.name), cx, cy + r * 0.28); ctx.textAlign = 'left';
+  }
+  ctx.strokeStyle = color; ctx.lineWidth = 4; ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI * 2); ctx.stroke();
+}
+
+// Imagen de las estadísticas del partido (1080 × 1350): resultado, estadísticas del circuito y cada jugador
+function shareMatchStatsImage(m) {
+  m = m || posterTargetState || state;
+  if (!m || !m.players) return;
+  posterTargetState = m;
+  const sets = (m.sets || []).filter(s => s[0] + s[1] > 0);
+  openShareImage((ctx, W, H) => {
+    const X = 64, R = W - 64;
+    ctx.fillStyle = '#030508'; ctx.fillRect(0, 0, W, H);
+    drawLogoMark(ctx, X, 50, 52, '#D4FF2A');
+    ctx.fillStyle = '#F5F7FA'; ctx.font = 'italic 900 34px "Barlow Condensed", sans-serif'; ctx.fillText('PADEL METRIC', X + 64, 88);
+    ctx.textAlign = 'right'; ctx.fillStyle = '#8B95A5'; ctx.font = '500 24px "Barlow", sans-serif';
+    ctx.fillText([m.date, m.elapsedSec ? formatMatchDuration(m.elapsedSec) : ''].filter(Boolean).join(' · '), R, 88); ctx.textAlign = 'left';
+    ctx.fillStyle = '#F5F7FA'; ctx.font = '700 60px "Barlow Condensed", sans-serif'; ctx.fillText('ESTADÍSTICAS DEL PARTIDO', X, 178);
+    // Marcador compacto
+    let y = 214;
+    [0, 1].forEach(k => {
+      const mid = y + 34 + k * 58, won = m.winnerPair === k;
+      ctx.fillStyle = k ? '#FF2E54' : '#00F0FF'; ctx.fillRect(X, mid - 20, 16, 16);
+      ctx.fillStyle = won ? '#F5F7FA' : '#AEB6C2'; ctx.font = `${won ? 700 : 600} 38px "Barlow Condensed", sans-serif`;
+      ctx.fillText(fitText(ctx, livePairName(k, m).toUpperCase(), 600), X + 30, mid);
+      sets.forEach((s, c) => {
+        ctx.textAlign = 'center'; ctx.fillStyle = s[k] > s[1 - k] ? '#F5F7FA' : '#6B7584'; ctx.font = '700 44px "Barlow Condensed", sans-serif';
+        ctx.fillText(String(s[k]), R - (sets.length - c - 0.5) * 72, mid); ctx.textAlign = 'left';
+      });
+    });
+    y += 150;
+    ctx.fillStyle = 'rgba(255,255,255,0.1)'; ctx.fillRect(X, y, R - X, 2);
+    y = drawStatBars(ctx, proStatsRows(m).slice(0, 8), X, R, y + 26, 74, 30);
+    // Cada jugador
+    y += 12;
+    ctx.fillStyle = 'rgba(255,255,255,0.1)'; ctx.fillRect(X, y, R - X, 2);
+    y += 48;
+    const cols = [['W', 'Winners', 560], ['ENF', 'Err. NF', 700], ['EF', 'Err. F', 830], ['val', 'Valor.', R]];
+    ctx.fillStyle = '#8B95A5'; ctx.font = '600 22px "Barlow", sans-serif'; ctx.fillText('Jugador', X, y);
+    cols.forEach(([, l, x]) => { ctx.textAlign = 'right'; ctx.fillText(l, x, y); ctx.textAlign = 'left'; });
+    const best = Math.max(...m.players.map(p => calcPlayerRating(p)));
+    m.players.forEach((p, i) => {
+      const ry = y + 52 + i * 54;
+      ctx.fillStyle = i < 2 ? '#00F0FF' : '#FF2E54'; ctx.fillRect(X, ry - 18, 14, 14);
+      ctx.fillStyle = '#F5F7FA'; ctx.font = '600 32px "Barlow Condensed", sans-serif'; ctx.fillText(fitText(ctx, p.isGeneric ? `Jugador ${i + 1}` : p.name, 440), X + 26, ry);
+      const r = calcPlayerRating(p);
+      const vals = { W: p.W || 0, ENF: p.ENF || 0, EF: p.EF || 0, val: r.toFixed(1).replace('.', ',') };
+      cols.forEach(([k, , x]) => {
+        ctx.textAlign = 'right'; ctx.fillStyle = k === 'val' && r === best ? '#F5F7FA' : '#C9D1DC';
+        ctx.font = `${k === 'val' && r === best ? 700 : 500} 32px "Barlow Condensed", sans-serif`; ctx.fillText(String(vals[k]), x, ry); ctx.textAlign = 'left';
+      });
+    });
+  }, 'Estadísticas del partido');
 }

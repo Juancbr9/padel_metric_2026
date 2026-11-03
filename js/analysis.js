@@ -25,6 +25,7 @@ function playerPair(match, name) {
 function computeZoneCounts(match, { setFilter = 'all', player = 'all' } = {}) {
   const cells = {};
   const byPlayer = {};
+  const dots = [];
   let withZone = 0;
   matchPoints(match, setFilter).forEach(pt => {
     if (!pt.n || !pt.z) return;
@@ -36,12 +37,13 @@ function computeZoneCounts(match, { setFilter = 'all', player = 'all' } = {}) {
     const isE = ERROR_TYPES.includes(pt.t);
     if (!isW && !isE) return;
     withZone++;
+    if (pt.cx != null) dots.push({ cx: pt.cx, cy: pt.cy, W: isW });
     cells[key] = cells[key] || { W: 0, E: 0 };
     cells[key][isW ? 'W' : 'E']++;
     byPlayer[pt.n] = byPlayer[pt.n] || { R: { W: 0, E: 0 }, T: { W: 0, E: 0 }, F: { W: 0, E: 0 } };
     byPlayer[pt.n][pt.z][isW ? 'W' : 'E']++;
   });
-  return { cells, byPlayer, withZone };
+  return { cells, byPlayer, withZone, dots };
 }
 
 function computePressureStats(match, setFilter = 'all') {
@@ -95,7 +97,7 @@ function generateCoachInsights(match, setFilter = 'all') {
   const tips = [];
   const pts = matchPoints(match, setFilter);
   if (pts.length < 6) {
-    return [{ tag: 'Datos', text: 'Registra más puntos con el modo Toque para poder analizar el partido.' }];
+    return [{ tag: 'Datos', text: 'Registra más puntos para poder analizar el partido.' }];
   }
   const { pair } = computePressureStats(match, setFilter);
   const { byPlayer } = computeZoneCounts(match, { setFilter });

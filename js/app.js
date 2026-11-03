@@ -107,10 +107,6 @@ function openSettingsSheet() {
       <button type="button" class="ios-seg-option" data-theme="light" onclick="setThemePref('light')"><span class="opt-main">Claro</span></button>
       <button type="button" class="ios-seg-option" data-theme="auto" onclick="setThemePref('auto')"><span class="opt-main">Automático</span><span class="opt-sub">Como el móvil</span></button>
     </div>
-    <div class="menu-group-title">Animación de entrada</div>
-    <div class="ios-segmented cols-3" id="intro-seg">
-      ${INTRO_STYLES.map(([k, t]) => `<button type="button" class="ios-seg-option ${introStyleOf(appSettings.intro) === k ? 'active' : ''}" data-intro="${k}" onclick="setIntroStyle('${k}')"><span class="opt-main">${t}</span></button>`).join('')}
-    </div>
     <div class="menu-group-title">Durante el partido</div>
     <div class="menu-list">
       ${sw('voice', 'i-volume', 'Narrador de voz', 'toggleVoiceNarrator()')}
@@ -131,6 +127,8 @@ function openSettingsSheet() {
     </div>
     <div class="menu-group-title">Acerca de</div>
     <div class="menu-list">
+      <button type="button" class="menu-row" onclick="openTestCodeSheet()">
+        <svg class="icon"><use href="#i-sliders"/></svg><span>Código de pruebas</span><span class="menu-row-hint">${aiTestCode() ? 'Activo' : '›'}</span></button>
       <button type="button" class="menu-row" onclick="openAboutSheet()">
         <svg class="icon"><use href="#i-info"/></svg><span>Acerca de, privacidad y contacto</span><span class="menu-row-hint">›</span></button>
       <button type="button" class="menu-row" onclick="openNewsSheet()">
@@ -315,13 +313,14 @@ function openAboutSheet() {
 }
 
 // Novedades: se muestran una vez tras actualizar (no a quien abre la app por primera vez)
-const APP_VERSION = 17;
+const APP_VERSION = 18;
 const APP_NEWS = [
-  ['Póster con la foto del grupo', 'En el póster del partido, "Con la foto del grupo" pone el resultado encima de vuestra foto. Puedes mover el encuadre.'],
-  ['Marcador gigante', 'Gira el móvil durante el partido y el marcador ocupa toda la pantalla, para leerlo desde la pista.'],
-  ['Directo en la tele', 'El enlace del directo, abierto en una tele u ordenador, se ve como una retransmisión, con avisos de bola de break, de set y de partido.'],
-  ['Más vida en el partido', 'Al anotar un golpe ganador se dibuja su trayectoria, el cierre del partido se presenta como en la tele con la carta del mejor y, con los sonidos activados, suena la pala.'],
-  ['Animación de entrada', 'Al abrir la app, la P del logo se dibuja mientras la pelota entra botando y se queda como el punto. En Ajustes puedes cambiarla por otro estilo o quitarla.']
+  ['Anotar sencillo o avanzado', 'Por defecto, modo sencillo: desliza hacia arriba para un winner y hacia abajo para un error. En el avanzado eliges el golpe y tocas en la pista desde dónde golpeó, vista desde donde tú estás (detrás de una pareja o desde el lateral). El mapa de calor marca cada golpe en su sitio.'],
+  ['Nuevo partido renovado', 'Los jugadores aparecen en su sitio de la pista con su foto, cada pareja con su nivel, botones para equilibrar o sortear parejas y el botón de empezar siempre a mano.'],
+  ['Compartir mejor', 'Imagen del resultado, imagen con todas las estadísticas o resumen en texto.'],
+  ['Fotos de perfil con IA', 'En el póster con la foto del grupo, la IA encuentra las caras y las guarda como foto de cada jugador.'],
+  ['Americanos más fáciles', 'Elige jugadores en una lista con buscador, el número de pistas y la duración total: la app calcula las rondas que caben.'],
+  ['Cara a cara con buscador', 'Cada jugador se elige buscándolo, sin listas interminables.']
 ];
 
 function openNewsSheet() {

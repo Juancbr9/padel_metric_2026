@@ -89,6 +89,7 @@ function recordAction(type, shotName, zoneOverride = null) {
   const sIdx = state.currentSet;
   const zone = zoneOverride || getModalZone(shotName, p);
   const meta = { by: selectedSlot, n: p.name, t: type, sh: shotName, z: zone.z, l: zone.l };
+  if (zone.cx != null) { meta.cx = zone.cx; meta.cy = zone.cy; }
 
   // Winners por golpe (y por familia, para las estadísticas de siempre); errores por golpe aparte
   const shot = SHOT_BY_ID[shotName];
@@ -123,7 +124,6 @@ function recordAction(type, shotName, zoneOverride = null) {
 
   closeModal();
   afterPointScored();
-  if (type === 'W' && typeof showShotTrail === 'function') showShotTrail(shotName, selectedSlot);
 }
 
 function addNeutralPoint(teamIdx) {
@@ -179,6 +179,7 @@ function scorePointForTeam(winningTeam, shortTag, meta = {}) {
     sh: meta.sh || null,
     z: meta.z || null,
     l: meta.l || null,
+    ...(meta.cx != null ? { cx: meta.cx, cy: meta.cy } : {}),
     w: winningTeam,
     sv: state.serverIdx,
     sn: state.serveNumber,

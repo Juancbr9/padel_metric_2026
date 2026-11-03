@@ -18,7 +18,8 @@ function heatCellStyle(cell, maxVal, type) {
 }
 
 // Pista completa vista desde arriba: Pareja 1 arriba, Pareja 2 abajo (igual que en la pantalla del partido)
-function renderFullCourtHeatSVG(cells, type) {
+// Con el modo avanzado cada golpe lleva su sitio exacto (cx, cy): se dibuja además como un punto
+function renderFullCourtHeatSVG(cells, type, dots = []) {
   const vals = Object.values(cells).map(c => (type === 'W' ? c.W : type === 'E' ? c.E : c.W + c.E));
   const maxVal = Math.max(1, ...vals);
   const X0 = 10, Y0 = 10, CW = 280, NET = 220, BAND = 70;
@@ -58,6 +59,7 @@ function renderFullCourtHeatSVG(cells, type) {
       <line x1="2" y1="${NET}" x2="298" y2="${NET}" stroke="#F5F7FA" stroke-width="3"/>
       <text x="150" y="${NET - 4}" class="heat-net">RED</text>
       ${labels}
+      ${dots.filter(d => type === 'all' || (type === 'W') === d.W).map(d => `<circle class="heat-dot ${d.W ? 'w' : 'e'}" cx="${(X0 + d.cx * CW).toFixed(1)}" cy="${(Y0 + d.cy * 420).toFixed(1)}" r="4.5"/>`).join('')}
       <text x="286" y="${NET - 5}" class="heat-pair" fill="#00F0FF" text-anchor="end">▲ PAREJA 1</text>
       <text x="286" y="${NET + 13}" class="heat-pair" fill="#FF2E54" text-anchor="end">▼ PAREJA 2</text>
     </svg>`;
@@ -94,10 +96,10 @@ function renderHeatmapPanel(target) {
   const hasZones = (target.points || []).some(pt => pt.z);
   if (!hasZones) {
     return `<div class="empty-note">Este partido no tiene golpes con zona registrada.<br>
-      Usa el modo <strong>Toque</strong>: al elegir el golpe se guarda su zona (red, transición o fondo) y aquí verás el mapa de calor.</div>`;
+      Usa el modo <strong>Avanzado</strong>: eliges el golpe y marcas en la pista desde dónde golpeó, y aquí verás el mapa de calor.</div>`;
   }
   if (heatFilterPlayer !== 'all' && !target.players.some(p => p.name === heatFilterPlayer)) heatFilterPlayer = 'all';
-  const { cells, byPlayer } = computeZoneCounts(target, { setFilter: currentSetFilter, player: heatFilterPlayer });
+  const { cells, byPlayer, dots } = computeZoneCounts(target, { setFilter: currentSetFilter, player: heatFilterPlayer });
 
   const chip = (kind, val, label, active) =>
     `<button type="button" class="sort-chip ${active ? 'active' : ''}" onclick="setHeatFilter('${kind}', ${typeof val === 'string' ? `'${val.replace(/'/g, "\\'")}'` : val})">${label}</button>`;
@@ -117,8 +119,8 @@ function renderHeatmapPanel(target) {
   return `
     <div class="sort-strip mt-10">${playerChips}</div>
     <div class="sort-strip">${typeChips}</div>
-    ${renderFullCourtHeatSVG(cells, heatFilterType)}
-    <div class="heat-legend"><span><i class="sw-good"></i>Winners</span><span><i class="sw-bad"></i>Errores</span><span>Más intenso = más golpes</span></div>
+    ${renderFullCourtHeatSVG(cells, heatFilterType, dots)}
+    <div class="heat-legend"><span><i class="sw-good"></i>Winners</span><span><i class="sw-bad"></i>Errores</span><span>${dots.length ? 'Cada punto: un golpe en su sitio' : 'Más intenso = más golpes'}</span></div>
     <table>
       <thead><tr><th>Jugador</th><th>Red</th><th>Trans.</th><th>Fondo</th><th>W en red</th></tr></thead>
       <tbody>${rows}</tbody>

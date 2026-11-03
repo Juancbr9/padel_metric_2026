@@ -50,9 +50,9 @@ export default async ({ newPage, url, assert }) => {
   await p.evaluate(() => loadDemoData());
   await p.waitForFunction(() => matchHistory.length > 20);
   await p.evaluate(() => switchMainTab('home'));
-  assert(await p.isVisible('.home-quick-row:has-text("Repetir el último partido")'), 'Inicio ofrece repetir el último');
+  assert.equal(await p.locator('.home-quick-row').count(), 0, 'El inicio ya no tiene "Repetir" ni "Partido rápido"');
   const last = await p.evaluate(() => matchHistory[0].players.map(x => x.name));
-  await p.click('.home-quick-row:has-text("Repetir el último partido")');
+  await p.evaluate(() => repeatMatch(0));
   assert.deepEqual(await p.evaluate(() => state.players.map(x => x.name)), last, 'Repite los mismos jugadores');
   await p.evaluate(() => finishMatchManually());
   await p.waitForSelector('#match-end', { state: 'visible' });
@@ -83,7 +83,7 @@ export default async ({ newPage, url, assert }) => {
 
   // Modo claro: la pista de Nuevo partido ya no es oscura
   await p.evaluate(() => setThemePref('light'));
-  const bg = await p.evaluate(() => getComputedStyle(document.querySelector('.lineup-court-arena .court-bg-svg rect')).fill);
+  const bg = await p.evaluate(() => getComputedStyle(document.querySelector('.np-field')).backgroundColor);
   assert.equal(bg, 'rgb(227, 235, 245)', 'Pista clara en modo claro');
   await p.evaluate(() => setThemePref('dark'));
 

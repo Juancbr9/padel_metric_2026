@@ -402,3 +402,36 @@ function saveEditedProfile() {
   renderGlobalRanking();
   showToast(`Ficha de "${fullKey}" guardada`);
 }
+
+// ---------- Buscador de jugadores en una hoja (cara a cara y otros sitios) ----------
+// openPlayerSearch({ title, exclude, onPick }): lista con buscador, ordenada por partidos jugados; al tocar uno se
+// llama a onPick(nombre) y se cierra.
+let playerSearchPick = null;
+function openPlayerSearch({ title = 'Elegir jugador', exclude = [], onPick } = {}) {
+  playerSearchPick = onPick || null;
+  const { statsMap } = computeAllPlayersStats();
+  const list = dbPlayers.filter(n => !exclude.includes(n))
+    .sort((a, b) => ((statsMap[b] && statsMap[b].PJ) || 0) - ((statsMap[a] && statsMap[a].PJ) || 0) || a.localeCompare(b, 'es'));
+  openEventModal(`
+    <div class="mo-title">${escapeHtml(title)}</div>
+    <input type="search" id="ps-search" placeholder="Buscar jugador o club" oninput="filterPlayerSearch(this.value)">
+    <div class="me-list" id="ps-list">${list.map(n => {
+      const st = statsMap[n];
+      const club = ensureProfile(n).club || '';
+      return `<button type="button" class="me-row" data-q="${escapeHtml(`${n} ${club}`.toLowerCase())}" onclick="pickFromPlayerSearch(${jsArg(n)})">
+        ${renderAvatarHTML(n, '')}<span class="me-row-txt"><strong>${escapeHtml(n)}</strong><small>${st && st.PJ ? `${st.PJ} partidos · ELO ${st.elo}` : 'Sin partidos todavía'}${club ? ` · ${escapeHtml(club)}` : ''}</small></span></button>`;
+    }).join('') || '<div class="empty-note">No hay jugadores.</div>'}</div>`);
+  setTimeout(() => document.getElementById('ps-search')?.focus(), 80);
+}
+
+function filterPlayerSearch(q) {
+  const v = q.trim().toLowerCase();
+  document.querySelectorAll('#ps-list .me-row').forEach(r => r.classList.toggle('hidden', !!v && !r.dataset.q.includes(v)));
+}
+
+function pickFromPlayerSearch(name) {
+  const fn = playerSearchPick;
+  playerSearchPick = null;
+  closeEventModal();
+  if (fn) fn(name);
+}

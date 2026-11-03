@@ -98,6 +98,7 @@ function startMatch(link = null) {
     deuceRule: setupConfig.deuceRule,
     thirdSetRule: setupConfig.thirdSetRule,
     inputMode: setupConfig.inputMode,
+    view: setupConfig.view || 'p2',
     players,
     sets: [[0, 0], [0, 0], [0, 0]],
     currentSet: 0,
@@ -354,9 +355,10 @@ function updateUI() {
   setLiveText('qp-a', livePairName(0));
   setLiveText('qp-b', livePairName(1));
   document.getElementById('btn-live-broadcast')?.classList.toggle('on', !!(state.live && state.live.on));
-  setLiveText('live-input-mode-hint', state.inputMode === 'swipe'
-    ? 'Modo rápido · desliza ↑ winner · ↓ error no forzado · toca para más opciones'
-    : 'Desliza ↑ winner · ↓ error no forzado y elige el golpe · toca para más opciones');
+  setLiveText('live-input-mode-hint', state.inputMode === 'tap'
+    ? 'Avanzado · desliza ↑ winner · ↓ error, elige el golpe y marca dónde'
+    : 'Desliza ↑ winner · ↓ error no forzado · toca para más opciones');
+  applyCourtView();
 
   // Tarjetas de los jugadores
   const circumference = 2 * Math.PI * 11;
@@ -495,12 +497,12 @@ function openMatchEnd() {
     <div class="me-winners ${w ? 'b' : 'a'}">${escapeHtml(livePairName(w))}</div>
     <div class="me-losers">${escapeHtml(full(w))} ganan a ${escapeHtml(full(l))}</div>
     <div class="me-sets">${sets.map(({ s, i }) => `<div class="me-set"><small>${i === 2 && state.thirdSetRule === 'supertb' ? 'Súper TB' : `Set ${i + 1}`}</small>${s[0]}-${s[1]}</div>`).join('')}</div>
-    ${!mvp.isGeneric && dbPlayers.includes(mvp.name) ? `<div class="me-mvp"><span>Mejor del partido</span>${playerCardHTML(computePlayerCard(mvp.name), { mini: true })}</div>` : ''}
-    <div class="me-stats">
-      <div class="me-stat"><strong>${(state.points || []).length || '-'}</strong><span>Puntos</span></div>
-      <div class="me-stat"><strong>${state.players.reduce((a, p) => a + (p.W || 0), 0)}</strong><span>Winners</span></div>
-      <div class="me-stat"><strong>${escapeHtml(liveSurname(mvp))}</strong><span>Mejor · ${calcPlayerRating(mvp).toFixed(1)}</span></div>
+    <div class="me-mvp">
+      ${renderAvatarHTML(mvp.name, `avatar-md ${state.players.indexOf(mvp) < 2 ? 'avatar-p1' : 'avatar-p2'}`, '', mvp.isGeneric, liveSurname(mvp).slice(0, 2).toUpperCase())}
+      <div class="me-mvp-txt"><small>Mejor del partido</small><strong>${escapeHtml(liveSurname(mvp))}</strong></div>
+      <div class="me-mvp-val"><strong>${calcPlayerRating(mvp).toFixed(1).replace('.', ',')}</strong><small>${mvp.W || 0} winners</small></div>
     </div>
+    <div class="me-line">${(state.points || []).length ? `${state.points.length} puntos · ` : ''}${state.players.reduce((a, p) => a + (p.W || 0), 0)} winners · ${state.players.reduce((a, p) => a + (p.ENF || 0), 0)} errores no forzados</div>
     ${chart ? `<div class="me-chart"><div class="me-chart-title"><span>Probabilidad de victoria</span><span>${escapeHtml(livePairName(0))}</span></div>${chart}</div>` : ''}
     <div class="me-actions">
       <button class="btn-volt" onclick="closeMatchEnd(); toggleStatsView();">Ver estadísticas</button>
@@ -530,7 +532,8 @@ function openMatchOptions() {
   openEventModal(`
     <div class="mo-title">Opciones del partido</div>
     ${row('Tercer set', 'Se puede cambiar mientras no haya empezado', seg([['normal', 'Set normal'], ['supertb', 'Súper tie-break']], state.thirdSetRule, 'setMatchThirdSet'))}
-    ${row('Al deslizar', 'Elegir el golpe con su dibujo o anotar al momento', seg([['tap', 'Elegir golpe'], ['swipe', 'Rápido']], state.inputMode, 'setMatchInputMode'))}
+    ${row('Cómo anotar', 'Sencillo: winner o error. Avanzado: golpe y sitio de la pista', seg(INPUT_MODES, state.inputMode, 'setMatchInputMode'))}
+    ${state.inputMode === 'tap' ? row('Ves el partido', 'Para marcar bien desde dónde golpean', seg(COURT_VIEWS.map(([v, t]) => [v, t.replace('Detrás de la pareja ', 'Tras P').replace('Desde el lateral', 'Lateral')]), currentView(), 'setMatchView')) : ''}
     ${row('Cronómetro', state.timerPaused ? 'En pausa' : 'En marcha', `<button type="button" class="btn-icon" onclick="toggleTimerPause(); openMatchOptions();">${state.timerPaused ? 'Reanudar' : 'Pausar'}</button>`)}
     ${row('Narrador de voz', 'Canta el marcador tras cada punto', `<button type="button" class="btn-icon" onclick="toggleVoiceNarrator(); openMatchOptions();">${voiceEnabled ? 'Desactivar' : 'Activar'}</button>`)}
     ${row('Mando', 'Anotar con un mando Bluetooth o los botones de volumen', `<button type="button" class="btn-icon" onclick="toggleAppSetting('remote'); openMatchOptions();">${appSettings.remote ? 'Desactivar' : 'Activar'}</button>`)}
@@ -558,7 +561,8 @@ function setMatchInputMode(mode) {
 }
 
 // Tarjetas de jugador: deslizar hacia arriba = winner, hacia abajo = error no forzado, tocar = todas las opciones.
-// En el modo "Elegir golpe" el gesto abre el panel con los dibujos de cada golpe; en el modo "Rápido" se anota al momento.
+// Modo sencillo: el gesto anota al momento y tocar abre tres botones. Modo avanzado: el gesto abre el panel de golpes
+// y después se marca en la pista desde dónde golpeó (js/match/pista.js).
 const SWIPE_MIN = 34;
 
 function initPlayerCardInteractions() {
@@ -629,13 +633,14 @@ function openShotSheet(slotIdx, type) {
   vibrate(12);
   selectedSlot = slotIdx;
   shotSheetType = type;
+  courtPick = null;
   const p = state.players[slotIdx];
   document.getElementById('modal-player-title').innerText = p.name;
   document.getElementById('modal-player-side').innerText = `${p.side}${state.serverIdx === slotIdx ? ' · al saque' : ''}`;
   modalZone = { z: null, l: sideToLane(p.side) };
-  document.getElementById('zone-box').classList.add('hidden');
-  renderZonePicker();
-  renderShotSheet();
+  const sheet = document.querySelector('#action-modal .shot-sheet');
+  sheet.classList.toggle('is-simple', state.inputMode !== 'tap');
+  if (state.inputMode !== 'tap') renderSimpleSheet(); else renderShotSheet();
   document.getElementById('action-modal').classList.remove('hidden');
 }
 
@@ -657,20 +662,16 @@ function renderShotSheet() {
     const list = shots.filter(s => s.zone === z);
     if (!list.length) return '';
     return `<div class="shot-zone-title z-${z}"><i></i>${SHOT_ZONE_NAMES[z]}</div>` + list.map(s => `
-      <button type="button" class="shot-tile ${tileCls} z-${z}" onclick="recordAction('${type}', ${jsArg(s.id)})">
+      <button type="button" class="shot-tile ${tileCls} z-${z}" onclick="pickShotLocation('${type}', ${jsArg(s.id)})">
         <span class="shot-art"><svg class="shot-vec"><use href="#${s.icon}"/></svg></span>
         <span class="shot-tile-title">${s.label}</span>
         <span class="shot-tile-hint">${s.hint}</span>
       </button>`).join('');
   }).join('');
   const grid = document.getElementById('shot-grid');
+  grid.classList.remove('is-pick');
   grid.dataset.type = type;
   replayAnim(grid, 'swap');
-}
-
-function toggleZonePicker() {
-  document.getElementById('zone-box').classList.toggle('hidden');
-  renderZonePicker();
 }
 
 function closeModal() {
@@ -680,18 +681,10 @@ function closeModal() {
 // ==========================================================
 // ZONA DEL GOLPE (RED / TRANSICIÓN / FONDO × LADO DRIVE / REVÉS)
 // ==========================================================
-const ZONE_LABELS = { R: 'Red · Volea', T: 'Transición', F: 'Fondo' };
 let modalZone = { z: null, l: 'D' };
 
 function sideToLane(side) {
   return side === 'Drive' ? 'D' : 'V';
-}
-
-function selectModalZone(z, l) {
-  vibrate(8);
-  // Tocar de nuevo la misma casilla vuelve al modo automático
-  modalZone = (modalZone.z === z && modalZone.l === l) ? { z: null, l } : { z, l };
-  renderZonePicker();
 }
 
 function getModalZone(shotName, player) {
@@ -699,28 +692,6 @@ function getModalZone(shotName, player) {
     z: modalZone.z || SHOT_DEFAULT_ZONE[shotName] || null,
     l: modalZone.l || sideToLane(player.side)
   };
-}
-
-function renderZonePicker() {
-  const box = document.getElementById('zone-picker');
-  if (!box) return;
-  // Vista desde el jugador mirando a la red: lado revés a la izquierda, drive a la derecha
-  const cells = ['R', 'T', 'F'].map(z => ['V', 'D'].map(l => {
-    const active = modalZone.z === z && modalZone.l === l;
-    const laneHint = modalZone.z === null && modalZone.l === l;
-    return `<button type="button" class="zone-cell ${active ? 'active' : ''} ${laneHint ? 'lane-hint' : ''}" onclick="selectModalZone('${z}','${l}')">
-      <span>${ZONE_LABELS[z]}</span><small>${l === 'D' ? 'Drive' : 'Revés'}</small>
-    </button>`;
-  }).join('')).join('');
-  box.innerHTML = `<div class="zone-net">RED</div><div class="zone-grid">${cells}</div>`;
-  const hint = document.getElementById('zone-picker-hint');
-  if (hint) {
-    hint.innerText = modalZone.z
-      ? `Marcado: ${ZONE_LABELS[modalZone.z]} · lado ${modalZone.l === 'D' ? 'Drive' : 'Revés'}`
-      : 'Automático: la zona se deduce del golpe (toca una casilla para precisar)';
-  }
-  const tg = document.getElementById('zone-toggle');
-  if (tg) tg.innerHTML = `Zona: ${modalZone.z ? `${ZONE_LABELS[modalZone.z]} · ${modalZone.l === 'D' ? 'drive' : 'revés'}` : 'automática según el golpe'}<span>${document.getElementById('zone-box').classList.contains('hidden') ? 'Cambiar' : 'Ocultar'}</span>`;
 }
 
 // Salir del partido: pausar para seguir luego, terminar y guardar, o terminar sin guardar nada
@@ -867,20 +838,4 @@ function closeMatchGuide() {
   matchGuideStep = -1;
   document.getElementById('match-guide')?.classList.add('hidden');
   try { localStorage.setItem('pm_guia_partido_v1', '1'); } catch (e) {}
-}
-
-// ---------- Trayectoria del golpe ----------
-// Tras un winner con golpe del catálogo, su dibujo (pala, trayectoria y bote) se traza un instante sobre la pista,
-// en el campo de quien lo ha dado, y se desvanece. No tapa nada ni bloquea los toques.
-function showShotTrail(shotName, idx) {
-  const shot = (typeof SHOT_BY_ID !== 'undefined' && SHOT_BY_ID[shotName]) || SHOT_CATALOG.find(s => s.group === shotName);
-  const arena = document.querySelector('#view-match .court-arena');
-  if (!shot || !arena || arena.offsetParent === null) return;
-  if (window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-  arena.querySelector('.shot-trail')?.remove();
-  const el = document.createElement('div');
-  el.className = `shot-trail ${idx != null && idx >= 2 ? 'low' : 'high'} z-${shot.zone}`;
-  el.innerHTML = `<svg viewBox="0 0 72 40" aria-hidden="true"><use href="#${shot.icon}"/></svg><span>${escapeHtml(shot.label)}</span>`;
-  arena.appendChild(el);
-  setTimeout(() => el.remove(), 1500);
 }

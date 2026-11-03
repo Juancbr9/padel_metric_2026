@@ -44,22 +44,39 @@ function formatEventDate(ts) {
   return new Date(ts).toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' });
 }
 
-// Selector de jugadores por chips (base de datos + alta rápida)
+// Selector de jugadores: lista con buscador (los elegidos arriba), un toque marca o desmarca, y alta rápida.
+// El texto buscado se conserva entre repintados (chooserQuery) para poder marcar varios seguidos.
+let chooserQuery = '';
 function renderPlayerChooserHTML(selected, { onToggle, onAdd, showGender = false, exclude = [] }) {
   const elos = eloMap();
-  const all = [...new Set([...dbPlayers, ...selected])].filter(n => !exclude.includes(n)).sort((a, b) => eloOfName(b, elos) - eloOfName(a, elos));
-  const chips = all.map(name => {
+  const all = [...new Set([...dbPlayers, ...selected])].filter(n => !exclude.includes(n))
+    .sort((a, b) => (selected.includes(b) - selected.includes(a)) || eloOfName(b, elos) - eloOfName(a, elos));
+  const q = chooserQuery.trim().toLowerCase();
+  const rows = all.map(name => {
     const on = selected.includes(name);
-    const g = showGender ? (ensureProfile(name).gender === 'F' ? ' · F' : ' · M') : '';
-    return `<button type="button" class="player-chip ${on ? 'on' : ''}" onclick="${onToggle}(${jsArg(name)})">${escapeHtml(name)}<small>${eloOfName(name, elos)}${g}</small></button>`;
+    const prof = ensureProfile(name);
+    const g = showGender ? (prof.gender === 'F' ? 'Mujer · ' : 'Hombre · ') : '';
+    const hay = `${name} ${prof.club || ''}`.toLowerCase();
+    return `<button type="button" class="chooser-row ${on ? 'on' : ''} ${q && !hay.includes(q) ? 'hidden' : ''}" data-q="${escapeHtml(hay)}" onclick="${onToggle}(${jsArg(name)})">
+      ${renderAvatarHTML(name, 'avatar-sm')}
+      <span class="chooser-txt"><strong>${escapeHtml(name)}</strong><small>${g}ELO ${eloOfName(name, elos)}${prof.club ? ` · ${escapeHtml(prof.club)}` : ''}</small></span>
+      <span class="chooser-check" aria-hidden="true"></span>
+    </button>`;
   }).join('');
   return `
-    <div class="player-chips">${chips || '<span class="empty-note pad-4">No hay jugadores todavía: añádelos abajo.</span>'}</div>
+    <input type="search" class="chooser-search" placeholder="Buscar jugador" value="${escapeHtml(chooserQuery)}" oninput="filterChooser(this)">
+    <div class="chooser-list">${rows || '<span class="empty-note pad-4">No hay jugadores todavía: añádelos abajo.</span>'}</div>
     <div class="input-row mt-8">
       <input type="text" id="quick-player-name" placeholder="Añadir jugador nuevo (nombre y apellido)" onkeydown="if(event.key==='Enter'){${onAdd}();}">
       ${showGender ? `<select class="mw-90" id="quick-player-gender"><option value="M">Hombre</option><option value="F">Mujer</option></select>` : ''}
-      <button type="button" class="btn-icon" onclick="${onAdd}()"><svg class="icon"><use href="#i-plus"/></svg></button>
+      <button type="button" class="btn-icon" onclick="${onAdd}()" aria-label="Añadir jugador"><svg class="icon"><use href="#i-plus"/></svg></button>
     </div>`;
+}
+
+function filterChooser(input) {
+  chooserQuery = input.value;
+  const q = chooserQuery.trim().toLowerCase();
+  input.parentElement.querySelectorAll('.chooser-row').forEach(r => r.classList.toggle('hidden', !!q && !r.dataset.q.includes(q)));
 }
 
 function readQuickPlayer() {

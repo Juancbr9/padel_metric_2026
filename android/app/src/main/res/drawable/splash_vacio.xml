@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Icono vacío para la pantalla de arranque de Android 12+: solo se ve el fondo negro y el logo aparece ya con la
+     animación de entrada de la web (así no se ve primero montado y luego otra vez animado) -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="240dp" android:height="240dp" android:viewportWidth="24" android:viewportHeight="24">
+  <path android:fillColor="#00000000" android:pathData="M0,0h1v1h-1z"/>
+</vector>

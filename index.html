@@ -25,9 +25,25 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&family=Barlow+Condensed:ital,wght@0,600;0,700;0,800;0,900;1,800;1,900&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/styles.css">
-</head>
+  <script>
+    // Animación de entrada: una vez por sesión, sin "reducir movimiento" y no en los enlaces de directo, partido o perfil
+    try {
+      if (!(window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches) && !/#(directo|partido|jugador)=/.test(location.hash) && !sessionStorage.getItem('pm_intro_vista')) {
+        document.documentElement.classList.add('intro-on');
+        sessionStorage.setItem('pm_intro_vista', '1');
+      }
+    } catch (e) {}
+  </script>
 </head>
 <body>
+<!-- Animación de entrada (js/intro.js): está en el marcado para que sea lo primero que se pinta y no se vea
+     antes el logo montado. Solo se muestra si el script del <head> pone la clase "intro-on" en <html>. -->
+<div id="intro-splash" class="intro-splash" aria-hidden="true">
+  <div class="intro-stage">
+    <svg class="intro-logo" viewBox="96 60 340 380"><g><circle class="ip" cx="280" cy="198" r="122" pathLength="1"/><rect class="ip" x="138" y="96" width="70" height="330" rx="35" pathLength="1"/><circle class="ih r4" cx="256" cy="135.6" r="10.5"/><circle class="ih r3" cx="292" cy="135.6" r="10.5"/><circle class="ih r4" cx="328" cy="135.6" r="10.5"/><circle class="ih r3" cx="238" cy="166.8" r="10.5"/><circle class="ih r2" cx="274" cy="166.8" r="10.5"/><circle class="ih r2" cx="310" cy="166.8" r="10.5"/><circle class="ih r3" cx="346" cy="166.8" r="10.5"/><circle class="ih r4" cx="220" cy="198" r="10.5"/><circle class="ih r2" cx="256" cy="198" r="10.5"/><circle class="ih r0" cx="292" cy="198" r="10.5"/><circle class="ih r2" cx="328" cy="198" r="10.5"/><circle class="ih r4" cx="364" cy="198" r="10.5"/><circle class="ih r3" cx="238" cy="229.2" r="10.5"/><circle class="ih r2" cx="274" cy="229.2" r="10.5"/><circle class="ih r2" cx="310" cy="229.2" r="10.5"/><circle class="ih r3" cx="346" cy="229.2" r="10.5"/><circle class="ih r4" cx="256" cy="260.4" r="10.5"/><circle class="ih r3" cx="292" cy="260.4" r="10.5"/><circle class="ih r4" cx="328" cy="260.4" r="10.5"/></g><circle class="idot" cx="372" cy="388" r="38"/></svg>
+    <div class="intro-word">PADEL METRIC</div>
+  </div>
+</div>
 <svg class="svg-sprite" aria-hidden="true">
   <symbol id="i-ball" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M5.6 5.6C9 9 9 15 5.6 18.4"/><path d="M18.4 5.6C15 9 15 15 18.4 18.4"/></symbol>
   <symbol id="i-undo" viewBox="0 0 24 24"><path d="M3 7v6h6"/><path d="M21 17a9 9 0 0 0-9-9 9 9 0 0 0-6 2.3L3 13"/></symbol>
@@ -164,7 +180,7 @@
     </div>
     <div class="menu-footer">
       <svg class="menu-footer-logo"><use href="#logo-mark"/></svg>
-      <span id="app-version-label">Padel Metric · v17</span>
+      <span id="app-version-label">Padel Metric · v18</span>
     </div>
   </nav>
 </div>
@@ -194,55 +210,50 @@
     </div>
 
     <div class="setup-head"><h2>Jugadores</h2><span class="setup-head-links"><button type="button" class="home-link" onclick="openGroupsSheet()">Grupos</button><button type="button" class="home-link" onclick="clearSetupCourt()">Vaciar la pista</button></span></div>
-    <div class="lineup-court-arena">
-      <svg class="court-bg-svg" viewBox="0 0 400 420" preserveAspectRatio="none">
-        <defs>
-        </defs>
-        <rect width="400" height="420" fill="#0D2550"/>
-        <rect x="14" y="14" width="372" height="392" fill="none" stroke="rgba(255,255,255,0.24)" stroke-width="2"/>
-        <line x1="14" y1="84" x2="386" y2="84" stroke="rgba(255,255,255,0.28)" stroke-width="1.8"/>
-        <line x1="14" y1="336" x2="386" y2="336" stroke="rgba(255,255,255,0.28)" stroke-width="1.8"/>
-        <line x1="200" y1="84" x2="200" y2="336" stroke="rgba(255,255,255,0.28)" stroke-width="1.8"/>
-      </svg>
-
-      <div class="u-raise">
-        <div class="players-pair-grid">
-          <div id="setup-slot-0" class="lineup-slot-card" onclick="openPlayerPicker(0)"></div>
-          <div id="setup-slot-1" class="lineup-slot-card" onclick="openPlayerPicker(1)"></div>
+    <!-- Pista vista desde arriba: la pareja 1 arriba y la 2 abajo, cada jugador en su lado (drive o revés) -->
+    <div class="np-court">
+      <div class="np-pair-label a" id="np-pair-a"></div>
+      <div class="np-field">
+        <svg class="np-lines" viewBox="0 0 100 130" preserveAspectRatio="none" aria-hidden="true">
+          <rect class="np-wall" x="1" y="1" width="98" height="128" rx="3"/>
+          <line x1="1" y1="29" x2="99" y2="29"/><line x1="1" y1="101" x2="99" y2="101"/><line x1="50" y1="29" x2="50" y2="101"/>
+        </svg>
+        <div class="np-half">
+          <div id="setup-slot-0" class="np-slot" onclick="openPlayerPicker(0)"></div>
+          <div id="setup-slot-1" class="np-slot" onclick="openPlayerPicker(1)"></div>
         </div>
-
-        <div class="premier-net-container lineup-net">
-          <div class="premier-net-post left"></div>
-          <div class="premier-net-sign"><span class="premier-net-accent"></span><span class="premier-net-text">PADEL METRIC</span><span class="premier-net-accent"></span></div>
-          <div class="premier-net-post right"></div>
-        </div>
-
-        <div class="players-pair-grid">
-          <div id="setup-slot-2" class="lineup-slot-card" onclick="openPlayerPicker(2)"></div>
-          <div id="setup-slot-3" class="lineup-slot-card" onclick="openPlayerPicker(3)"></div>
+        <div class="np-net"><span>RED</span></div>
+        <div class="np-half">
+          <div id="setup-slot-2" class="np-slot" onclick="openPlayerPicker(2)"></div>
+          <div id="setup-slot-3" class="np-slot" onclick="openPlayerPicker(3)"></div>
         </div>
       </div>
+      <div class="np-pair-label b" id="np-pair-b"></div>
     </div>
 
-    <div class="prematch-bar">
-      <div class="prob-wrap">
-        <div class="prob-labels">
-          <span id="prob-p1-txt" class="pair-a-txt">P1 50%</span>
-          <span class="u-muted">Previsión</span>
-          <span id="prob-p2-txt" class="pair-b-txt">P2 50%</span>
-        </div>
-        <div class="prob-track">
-          <div id="prob-bar-1" class="tv-bar-p1" style="width:50%"></div>
-          <div id="prob-bar-2" class="tv-bar-p2" style="width:50%"></div>
-        </div>
+    <div class="np-forecast">
+      <div class="prob-labels">
+        <span id="prob-p1-txt" class="pair-a-txt">P1 50%</span>
+        <span class="u-muted">Previsión por ELO</span>
+        <span id="prob-p2-txt" class="pair-b-txt">P2 50%</span>
       </div>
-      <button type="button" class="btn-icon btn-accent-text" onclick="balancePairsAutomatically()">Equilibrar</button>
+      <div class="prob-track">
+        <div id="prob-bar-1" class="tv-bar-p1"></div>
+        <div id="prob-bar-2" class="tv-bar-p2"></div>
+      </div>
+      <div class="np-forecast-actions">
+        <button type="button" class="btn-icon" onclick="balancePairsAutomatically()">Equilibrar parejas</button>
+        <button type="button" class="btn-icon" onclick="shuffleSetupPairs()">Sortear parejas</button>
+      </div>
     </div>
 
     <div class="setup-head"><h2>Reglas</h2></div>
     <div id="setup-rules" class="setup-rules"></div>
 
-    <button class="btn-volt" onclick="startNewMatch()">Empezar partido</button>
+    <div class="np-start">
+      <div id="np-summary" class="np-summary"></div>
+      <button class="btn-volt btn-block" onclick="startNewMatch()">Empezar partido</button>
+    </div>
   </div>
 
   <!-- PANTALLA 2: RANKING (IDENTIDAD DORADA: PODIO + CLASIFICACIÓN) -->
@@ -292,9 +303,11 @@
     <div id="rk-panel-h2h" class="hidden">
       <div class="bento-card">
         <div class="h2h-pick">
-          <select id="h2h-p1" onchange="renderH2H()"></select>
+          <input type="hidden" id="h2h-p1">
+          <button type="button" class="h2h-slot a" id="h2h-b1" onclick="pickH2H(1)"></button>
           <span>contra</span>
-          <select id="h2h-p2" onchange="renderH2H()"></select>
+          <input type="hidden" id="h2h-p2">
+          <button type="button" class="h2h-slot b" id="h2h-b2" onclick="pickH2H(2)"></button>
         </div>
         <div id="h2h-content"></div>
       </div>
@@ -383,6 +396,14 @@
         <line x1="16" y1="100" x2="384" y2="100" stroke="rgba(255,255,255,0.3)" stroke-width="2"/>
         <line x1="16" y1="400" x2="384" y2="400" stroke="rgba(255,255,255,0.3)" stroke-width="2"/>
         <line x1="200" y1="100" x2="200" y2="400" stroke="rgba(255,255,255,0.3)" stroke-width="2"/>
+      </svg>
+      <!-- La misma pista vista desde el lateral (perspectiva "Desde el lateral" del modo avanzado) -->
+      <svg class="court-bg-svg court-bg-side" viewBox="0 0 500 400" preserveAspectRatio="none">
+        <rect width="500" height="400" fill="#0D2550"/>
+        <rect x="16" y="16" width="468" height="368" fill="none" stroke="rgba(255,255,255,0.26)" stroke-width="2.5"/>
+        <line x1="100" y1="16" x2="100" y2="384" stroke="rgba(255,255,255,0.3)" stroke-width="2"/>
+        <line x1="400" y1="16" x2="400" y2="384" stroke="rgba(255,255,255,0.3)" stroke-width="2"/>
+        <line x1="100" y1="200" x2="400" y2="200" stroke="rgba(255,255,255,0.3)" stroke-width="2"/>
       </svg>
 
       <div class="court-overlay">
@@ -540,23 +561,10 @@
     <div class="settings-group mb-0">
       <div class="settings-group-header">
         <span class="settings-group-title">Forma de anotar</span>
-        <span class="settings-group-hint">Tocar a un jugador abre siempre todas las opciones</span>
+        <span class="settings-group-hint">Se puede cambiar durante el partido en Opciones</span>
       </div>
       <div class="control-mode-grid">
-        <div class="control-mode-card active" id="inp-tap" onclick="selectInputMode('tap')">
-          <div class="control-card-top">
-            <div class="control-icon-box">
-              <svg class="icon"><use href="#i-tap"/></svg>
-            </div>
-            <div class="control-radio-dot"></div>
-          </div>
-          <div>
-            <div class="control-card-title">Elegir golpe</div>
-            <div class="control-card-desc">Desliza ↑ para winner o ↓ para error no forzado y elige el golpe con su dibujo</div>
-          </div>
-        </div>
-
-        <div class="control-mode-card" id="inp-swipe" onclick="selectInputMode('swipe')">
+        <div class="control-mode-card active" id="inp-swipe" onclick="selectInputMode('swipe')">
           <div class="control-card-top">
             <div class="control-icon-box">
               <svg class="icon"><use href="#i-swipe"/></svg>
@@ -564,8 +572,21 @@
             <div class="control-radio-dot"></div>
           </div>
           <div>
-            <div class="control-card-title">Rápido</div>
-            <div class="control-card-desc">Desliza ↑ winner o ↓ error no forzado y se anota al momento, sin elegir golpe</div>
+            <div class="control-card-title">Sencillo</div>
+            <div class="control-card-desc">Desliza ↑ winner o ↓ error no forzado y se anota al momento</div>
+          </div>
+        </div>
+
+        <div class="control-mode-card" id="inp-tap" onclick="selectInputMode('tap')">
+          <div class="control-card-top">
+            <div class="control-icon-box">
+              <svg class="icon"><use href="#i-tap"/></svg>
+            </div>
+            <div class="control-radio-dot"></div>
+          </div>
+          <div>
+            <div class="control-card-title">Avanzado</div>
+            <div class="control-card-desc">Elige el golpe con su dibujo y marca en la pista desde dónde golpeó: mapa de calor exacto</div>
           </div>
         </div>
       </div>
@@ -582,11 +603,6 @@
     </div>
     <div id="shot-type-seg" class="shot-type-seg"></div>
     <div id="shot-grid" class="shot-grid"></div>
-    <button type="button" id="zone-toggle" class="zone-toggle" onclick="toggleZonePicker()"></button>
-    <div id="zone-box" class="hidden">
-      <div id="zone-picker" class="zone-picker"></div>
-      <div id="zone-picker-hint" class="zone-picker-hint"></div>
-    </div>
   </div>
 </div>
 
@@ -717,6 +733,7 @@
         <span>Encuadre</span><input type="range" min="0" max="100" value="50" oninput="setPosterPhotoY(this.value)" aria-label="Mover la foto arriba o abajo">
         <button type="button" class="btn-text" onclick="clearPosterPhoto()">Quitar foto</button>
       </div>
+      <button type="button" id="poster-faces-btn" class="btn-icon hidden" onclick="detectFacesFromPosterPhoto()">Sacar las fotos de perfil de esta foto</button>
     </div>
     <div class="u-row-8">
       <button class="btn-volt flex-1 btn-volt-sm" onclick="sharePosterWhatsApp()">Compartir imagen</button>
@@ -737,6 +754,7 @@
 <script src="js/match/scoring.js"></script>
 <script src="js/match/voice.js"></script>
 <script src="js/match/live.js"></script>
+<script src="js/match/pista.js"></script>
 <script src="js/analysis.js"></script>
 <script src="js/heatmap.js"></script>
 <script src="js/stats.js"></script>
@@ -758,6 +776,7 @@
 <script src="js/quick.js"></script>
 <script src="js/mando.js"></script>
 <script src="js/resumen.js"></script>
+<script src="js/caras.js"></script>
 <script src="js/home.js"></script>
 <script src="js/app.js"></script>
 </body>

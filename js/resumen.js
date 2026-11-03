@@ -116,6 +116,37 @@ const AI_SUMMARY_URL = `${DEFAULT_SUPABASE_URL}/functions/v1/resumen-partido`;
 const AI_FREE_PER_MONTH = 3;
 let aiSummaryTarget = null, aiSummaryBusy = false;
 
+// Código de pruebas del dueño (Ajustes → Código de pruebas): la IA no tiene límite con él
+function aiTestCode() {
+  try { return (localStorage.getItem('pm_codigo_pruebas_v1') || '').trim(); } catch (e) { return ''; }
+}
+
+function aiHeaders() {
+  const h = { 'Content-Type': 'application/json', apikey: DEFAULT_SUPABASE_KEY };
+  const code = aiTestCode();
+  if (code) h['x-pm-codigo'] = code;
+  return h;
+}
+
+function openTestCodeSheet() {
+  const cur = aiTestCode();
+  openEventModal(`
+    <div class="mo-title">Código de pruebas</div>
+    <p class="bc-intro">Con el código del dueño de la app, la crónica con IA y las fotos de perfil con IA no tienen límite en este móvil.</p>
+    <input type="text" id="test-code" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="PM-XXXX-XXXX" value="${escapeHtml(cur)}">
+    <div class="u-grid-2 mt-14">
+      <button type="button" class="btn-volt" onclick="saveTestCode()">Guardar</button>
+      <button type="button" class="btn-icon" onclick="saveTestCode(true)">${cur ? 'Quitar' : 'Cancelar'}</button>
+    </div>`);
+}
+
+function saveTestCode(clear = false) {
+  const v = clear ? '' : (document.getElementById('test-code')?.value || '').trim().toUpperCase();
+  try { if (v) localStorage.setItem('pm_codigo_pruebas_v1', v); else localStorage.removeItem('pm_codigo_pruebas_v1'); } catch (e) {}
+  closeEventModal();
+  showToast(v ? 'Código de pruebas guardado' : 'Código de pruebas quitado');
+}
+
 function aiDeviceId() {
   let id = null;
   try { id = localStorage.getItem('pm_dispositivo_v1'); } catch (e) {}
@@ -171,6 +202,14 @@ function aiSummaryMatch() {
   return t.kind === 'live' ? state : matchHistory.find(m => m && String(m.id) === String(t.id)) || null;
 }
 
+// Desde un partido cualquiera (el que está en juego o uno del historial)
+function openMatchSummaryFor(m) {
+  if (!m) return;
+  if (m === state) { openMatchSummary('live'); return; }
+  const i = matchHistory.findIndex(x => x && x.id === m.id);
+  if (i >= 0) openMatchSummary('history', i);
+}
+
 function openMatchSummary(kind, idOrIdx) {
   const m = kind === 'live' ? state : (typeof idOrIdx === 'number' ? matchHistory[idOrIdx] : matchHistory.find(x => String(x.id) === String(idOrIdx)));
   if (!m || !m.players) return;
@@ -195,8 +234,8 @@ function renderMatchSummary(error = '') {
     ${ai ? `<div class="ai-text"><h3>${escapeHtml(title)}</h3>${body}</div>` : `
       <div class="ai-cta">
         <p>La crónica del partido escrita a partir de sus estadísticas, lista para compartir con tu grupo.</p>
-        <button type="button" class="btn-volt btn-block" id="ai-go" onclick="generateAiSummary()" ${aiSummaryBusy ? 'disabled' : ''}>${aiSummaryBusy ? 'Escribiendo la crónica…' : 'Escribir la crónica'}</button>
-        <small>${AI_FREE_PER_MONTH} crónicas gratis al mes. Más, con la versión Pro.</small>
+        ${aiSummaryBusy ? pmLoaderHTML('Escribiendo la crónica…') : `<button type="button" class="btn-volt btn-block" id="ai-go" onclick="generateAiSummary()">Escribir la crónica</button>`}
+        <small>${aiTestCode() ? 'Código de pruebas activo: sin límite' : `${AI_FREE_PER_MONTH} crónicas gratis al mes. Más, con la versión Pro.`}</small>
         ${error ? `<p class="ai-error">${escapeHtml(error)}</p>` : ''}
       </div>`}
     <div class="menu-group-title">Estadísticas</div>
@@ -217,7 +256,7 @@ async function generateAiSummary() {
   try {
     const r = await fetch(AI_SUMMARY_URL, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', apikey: DEFAULT_SUPABASE_KEY },
+      headers: aiHeaders(),
       body: JSON.stringify({ device: aiDeviceId(), match: matchToAI(m) })
     });
     const d = await r.json().catch(() => ({}));

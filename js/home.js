@@ -90,7 +90,7 @@ function renderHome() {
       <button type="button" class="btn-volt" onclick="resumeSavedActiveMatch()">Continuar</button>
     </div>
     <button type="button" class="btn-icon btn-block home-new" onclick="switchMainTab('setup')">Nuevo partido</button>`
-    : `<button type="button" class="btn-volt home-cta" onclick="switchMainTab('setup')">Nuevo partido</button>${homeQuickStartHTML()}`;
+    : `<button type="button" class="btn-volt home-cta" onclick="switchMainTab('setup')">Nuevo partido</button>`;
 
   box.innerHTML = `
     ${primary}

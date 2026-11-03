@@ -119,7 +119,6 @@ function openHistoryActions(idx) {
       ${row('i-chart', 'Ver estadísticas', `openHistoryMatchStats(${idx})`)}
       ${row('i-star', 'Resumen del partido', `openMatchSummary('history', ${idx})`)}
       ${row('i-share', 'Compartir: enlace, QR o póster', `openShareMatchSheet(matchHistory[${idx}])`)}
-      ${row('i-play', 'Jugar otro con los mismos jugadores', `repeatMatch(${idx})`)}
       ${row('i-trash', 'Eliminar partido', `deleteHistoryMatch(${idx})`, 'menu-row-danger')}
     </div>`);
 }
@@ -260,13 +259,16 @@ function importBackupJSON(event) {
 
 async function loadDemoData() {
   if (hasAnyData() && !confirm('Se sustituirán los datos actuales por los datos de ejemplo. ¿Continuar?')) return;
+  openEventModal(pmLoaderHTML('Cargando los datos de ejemplo…'));
   try {
     const res = await fetch('assets/demo/padel-metric-demo.json', { cache: 'no-store' });
     const data = await res.json();
     shiftDemoDates(data);
+    closeEventModal();
     applyBackupData(data);
     showToast('Datos de ejemplo cargados');
   } catch (e) {
+    closeEventModal();
     showToast('No se pudieron cargar los datos de ejemplo');
   }
 }

@@ -1,16 +1,19 @@
 // ==========================================================
-// PADEL METRIC · RESUMEN DEL PARTIDO CON IA (Supabase Edge Function "resumen-partido")
-// La app envía { device, match } con match = matchToAI(partido) (js/resumen.js). Esta función:
-//   1. Comprueba los datos y reserva un uso (pm_ia_reservar: límite al mes por dispositivo y tope diario total).
-//   2. Pide a Claude la crónica del partido. La clave ANTHROPIC_API_KEY es un secreto de Supabase: nunca llega a la app.
-//   3. Devuelve { texto, modelo, restantes } o { error }. Si la IA falla, devuelve la reserva.
+// PADEL METRIC · IA (Supabase Edge Function "resumen-partido")
+// Dos tareas, ambas con Claude Haiku 5.5 (el modelo más económico, elegido por el dueño del proyecto):
+//   - Crónica del partido: la app envía { device, match } con match = matchToAI(partido) (js/resumen.js).
+//   - Caras de una foto: { device, tipo: 'caras', imagen } (JPEG en base64) → { caras: [{ x, y, w, h }] } en
+//     proporciones de la imagen, de izquierda a derecha (js/caras.js las recorta como fotos de perfil).
+// Antes de llamar a la IA reserva un uso (pm_ia_reservar: límite al mes por dispositivo y tope diario total; tablas en
+// supabase/ia.sql). Con el código de pruebas del dueño (cabecera x-pm-codigo, aquí solo su resumen SHA-256) no hay
+// límite ni hacen falta las tablas. La clave ANTHROPIC_API_KEY es un secreto de Supabase: nunca llega a la app.
 // Secretos: ANTHROPIC_API_KEY (obligatorio), PM_IA_LIMITE_MES (3 por defecto), PM_IA_TOPE_DIA (100 por defecto).
 // Se despliega sin verificar JWT (la app usa una clave publicable); la protección son los límites de arriba.
 // ==========================================================
 import Anthropic from "npm:@anthropic-ai/sdk@1.3.0";
 
-// Claude Haiku 5.5: el más económico (unos 0,25 céntimos por resumen), elegido por el dueño del proyecto
 const MODELO = "claude-haiku-5-5";
+const CODIGO_PRUEBAS_SHA256 = "b6ba0f15eeb2e82dad99321609f7ad79817577151838e079aded8c9e753f2839";
 
 const SISTEMA = `Eres el redactor de las crónicas de partido de una app de pádel. Escribes como las crónicas oficiales del circuito profesional (Premier Padel): estilo informativo de agencia, frases cortas, primero el resultado y después las claves del partido apoyadas en estadísticas.
 
@@ -28,14 +31,37 @@ Línea 1: un titular de 12 palabras como máximo, con las dos parejas por sus no
 Después, una línea en blanco y 2 párrafos cortos, de 90 a 140 palabras en total.
 Por último, una línea en blanco, la línea "Para el próximo partido:" y debajo una frase por pareja con un consejo concreto basado en sus datos, empezando con los nombres de la pareja y dos puntos.`;
 
+const CARAS_PROMPT = `Localiza las caras de las personas de esta foto de un partido de pádel. Para cada cara, de izquierda a derecha, da su recuadro en proporciones de la imagen (de 0 a 1): x e y de la esquina superior izquierda, w de ancho y h de alto. El recuadro debe abarcar la cabeza entera (del pelo a la barbilla). Como mucho 8 caras; ignora las que salgan muy pequeñas, de espaldas o cortadas.`;
+const CARAS_SCHEMA = {
+  type: "object",
+  properties: {
+    caras: {
+      type: "array",
+      items: {
+        type: "object",
+        properties: { x: { type: "number" }, y: { type: "number" }, w: { type: "number" }, h: { type: "number" } },
+        required: ["x", "y", "w", "h"],
+        additionalProperties: false,
+      },
+    },
+  },
+  required: ["caras"],
+  additionalProperties: false,
+};
+
 const CORS = {
   "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, apikey, content-type, x-client-info",
+  "Access-Control-Allow-Headers": "authorization, apikey, content-type, x-client-info, x-pm-codigo",
   "Access-Control-Allow-Methods": "POST, OPTIONS",
 };
 
 function respuesta(cuerpo: unknown, status = 200) {
   return new Response(JSON.stringify(cuerpo), { status, headers: { ...CORS, "Content-Type": "application/json" } });
+}
+
+async function sha256(texto: string) {
+  const buf = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(texto));
+  return Array.from(new Uint8Array(buf)).map((b) => b.toString(16).padStart(2, "0")).join("");
 }
 
 async function rpc(nombre: string, args: Record<string, unknown>) {
@@ -55,38 +81,66 @@ Deno.serve(async (req: Request) => {
   if (req.method !== "POST") return respuesta({ error: "Método no permitido" }, 405);
   if (!Deno.env.get("ANTHROPIC_API_KEY")) return respuesta({ error: "Falta la clave de la IA en Supabase (ANTHROPIC_API_KEY)" }, 503);
 
-  let body: { device?: string; match?: unknown };
+  let body: { device?: string; match?: unknown; tipo?: string; imagen?: string };
   try { body = await req.json(); } catch { return respuesta({ error: "Datos no válidos" }, 400); }
   const device = String(body.device || "");
-  const datos = JSON.stringify(body.match ?? null);
+  const caras = body.tipo === "caras";
   if (!/^[a-z0-9]{16,64}$/.test(device)) return respuesta({ error: "Dispositivo no válido" }, 400);
-  if (!body.match || typeof body.match !== "object" || datos.length > 16000) return respuesta({ error: "Partido no válido" }, 400);
+  const datos = JSON.stringify(body.match ?? null);
+  if (caras) {
+    if (typeof body.imagen !== "string" || body.imagen.length < 100 || body.imagen.length > 2_000_000) return respuesta({ error: "Foto no válida" }, 400);
+  } else if (!body.match || typeof body.match !== "object" || datos.length > 16000) {
+    return respuesta({ error: "Partido no válido" }, 400);
+  }
 
+  // Código de pruebas del dueño: sin límite
+  const codigo = req.headers.get("x-pm-codigo") || "";
+  const esDueno = !!codigo && (await sha256(codigo.trim().toUpperCase())) === CODIGO_PRUEBAS_SHA256;
   const limite = Number(Deno.env.get("PM_IA_LIMITE_MES") || 3);
   const tope = Number(Deno.env.get("PM_IA_TOPE_DIA") || 100);
-  let restantes: number;
-  try {
-    restantes = await rpc("pm_ia_reservar", { p_device: device, p_limite_mes: limite, p_tope_dia: tope });
-  } catch {
-    return respuesta({ error: "Las crónicas todavía no están activadas en el servidor." }, 503);
+  let restantes = 99;
+  if (!esDueno) {
+    try {
+      restantes = await rpc("pm_ia_reservar", { p_device: device, p_limite_mes: limite, p_tope_dia: tope });
+    } catch {
+      return respuesta({ error: "La IA todavía no está activada en el servidor." }, 503);
+    }
+    if (restantes === -1) return respuesta({ error: `Ya has usado los ${limite} usos de la IA de este mes`, restantes: 0 }, 429);
+    if (restantes === -2) return respuesta({ error: "Hoy se ha usado mucho la IA. Prueba mañana." }, 429);
+    if (restantes < 0) return respuesta({ error: "Dispositivo no válido" }, 400);
   }
-  if (restantes === -1) return respuesta({ error: `Ya has usado los ${limite} resúmenes de este mes`, restantes: 0 }, 429);
-  if (restantes === -2) return respuesta({ error: "Hoy se han pedido muchos resúmenes. Prueba mañana." }, 429);
-  if (restantes < 0) return respuesta({ error: "Dispositivo no válido" }, 400);
 
   const client = new Anthropic();
-  const mensajes = [{ role: "user" as const, content: `Datos del partido en JSON:\n${datos}` }];
   try {
-    // Esfuerzo bajo: para un texto corto basta y piensa menos (más rápido y más barato)
-    const r = await client.messages.create({ model: MODELO, max_tokens: 12000, system: SISTEMA, messages: mensajes, output_config: { effort: "low" } });
+    if (caras) {
+      // deno-lint-ignore no-explicit-any
+      const params: any = {
+        model: MODELO, max_tokens: 4000, output_config: { effort: "low", format: { type: "json_schema", schema: CARAS_SCHEMA } },
+        messages: [{ role: "user", content: [
+          { type: "image", source: { type: "base64", media_type: "image/jpeg", data: body.imagen } },
+          { type: "text", text: CARAS_PROMPT },
+        ] }],
+      };
+      const r = await client.messages.create(params);
+      if (r.stop_reason === "refusal" || r.stop_reason === "max_tokens") throw new Error(String(r.stop_reason));
+      // deno-lint-ignore no-explicit-any
+      const txt = (r.content as any[]).filter((b) => b.type === "text").map((b) => b.text).join("");
+      const out = JSON.parse(txt);
+      // deno-lint-ignore no-explicit-any
+      const lista = (Array.isArray(out.caras) ? out.caras : []).filter((c: any) => [c.x, c.y, c.w, c.h].every((v) => typeof v === "number" && v >= 0 && v <= 1.01) && c.w > 0.01 && c.h > 0.01).slice(0, 8);
+      return respuesta({ caras: lista, restantes });
+    }
+    // deno-lint-ignore no-explicit-any
+    const params: any = { model: MODELO, max_tokens: 12000, system: SISTEMA, messages: [{ role: "user", content: `Datos del partido en JSON:\n${datos}` }], output_config: { effort: "low" } };
+    const r = await client.messages.create(params);
     if (r.stop_reason === "refusal" || r.stop_reason === "max_tokens") throw new Error(String(r.stop_reason));
     // deno-lint-ignore no-explicit-any
     const texto = (r.content as any[]).filter((b) => b.type === "text").map((b) => b.text).join("").trim();
     if (!texto) throw new Error("vacío");
     return respuesta({ texto, modelo: r.model, restantes, uso: { entrada: r.usage.input_tokens, salida: r.usage.output_tokens } });
   } catch (e) {
-    await rpc("pm_ia_devolver", { p_device: device }).catch(() => {});
+    if (!esDueno) await rpc("pm_ia_devolver", { p_device: device }).catch(() => {});
     console.error("resumen-partido", e instanceof Anthropic.APIError ? `${e.status} ${e.message}` : String(e));
-    return respuesta({ error: "No se ha podido generar el resumen. Inténtalo de nuevo en un momento." }, 502);
+    return respuesta({ error: caras ? "No se han podido encontrar las caras. Prueba con otra foto." : "No se ha podido generar el resumen. Inténtalo de nuevo en un momento." }, 502);
   }
 });

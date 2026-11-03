@@ -68,23 +68,6 @@ function applyEloRatings(statsMap) {
   Object.values(statsMap).forEach(st => { st.elo = Math.round(st.elo); });
 }
 
-// Racha actual de cada jugador (victorias o derrotas seguidas en sus últimos partidos)
-function currentStreaks() {
-  const out = {};
-  matchHistory.forEach(m => {
-    if (!m || !m.players || (m.winnerPair !== 0 && m.winnerPair !== 1)) return;
-    m.players.forEach((p, idx) => {
-      if (p.isGeneric) return;
-      const won = m.winnerPair === (idx < 2 ? 0 : 1);
-      const st = out[p.name];
-      if (!st) out[p.name] = { won, n: 1, open: true };
-      else if (st.open && st.won === won) st.n++;
-      else st.open = false;
-    });
-  });
-  return out;
-}
-
 // Cifra de la derecha según el orden elegido: [valor, etiqueta, cambio en el último partido]
 function rankingMainValue(item) {
   const per = (a) => (item.PJ ? a / item.PJ : 0);
@@ -162,10 +145,8 @@ function renderGlobalRanking() {
   } else {
     // Fila limpia: posición, foto, nombre, últimos 5 resultados, balance y racha; a la derecha la cifra por la que
     // se ordena (ELO con su último cambio, por defecto). El club y la nota media van en la ficha del jugador.
-    const streaks = currentStreaks();
     wrap.innerHTML = `<div class="rk-card-list">${list.map((item, i) => {
       const lost = item.PJ - item.V;
-      const st = streaks[item.name];
       const [val, lbl, delta] = rankingMainValue(item);
       return `
         <div class="rk-player-row ${item.name === myPlayerName ? 'is-me' : ''}" onclick="openPlayerProfile(${jsArg(item.name)})">
@@ -174,7 +155,7 @@ function renderGlobalRanking() {
             ${renderAvatarHTML(item.name, '')}
             <div class="rk-info">
               <div class="rk-name">${escapeHtml(item.name)}${item.name === myPlayerName ? '<span class="me-tag">Tú</span>' : ''}</div>
-              <div class="rk-sub">${item.PJ ? `${formDotsHTML(item.form)}<span class="rk-rec">${item.V}-${lost}</span>${st && st.n >= 2 ? `<span class="rk-streak ${st.won ? 'w' : 'l'}">${st.won ? `Racha de ${st.n}` : `${st.n} sin ganar`}</span>` : ''}` : 'Sin partidos'}</div>
+              <div class="rk-sub">${item.PJ ? `${formDotsHTML(item.form)}<span class="rk-rec">${item.V}-${lost}</span>` : 'Sin partidos'}</div>
             </div>
           </div>
           <div class="rk-main">
@@ -465,19 +446,32 @@ function setRankingTab(tab) {
 }
 
 // ---------- Cara a cara ----------
+// Cara a cara: cada jugador se elige con el buscador (openPlayerSearch); los valores van en dos campos ocultos
 function renderH2HSelectors() {
   const s1 = document.getElementById('h2h-p1');
   const s2 = document.getElementById('h2h-p2');
   if (!s1 || !s2) return;
-  const prev = [s1.value, s2.value];
-  const opts = dbPlayers.map(p => `<option value="${escapeHtml(p)}">${escapeHtml(p)}</option>`).join('');
-  s1.innerHTML = opts;
-  s2.innerHTML = opts;
-  if (dbPlayers.includes(prev[0])) s1.value = prev[0];
-  else if (myPlayerName && dbPlayers.includes(myPlayerName)) s1.value = myPlayerName;
-  if (dbPlayers.includes(prev[1]) && prev[1] !== s1.value) s2.value = prev[1];
-  else s2.value = dbPlayers.find(p => p !== s1.value) || '';
+  if (!dbPlayers.includes(s1.value)) s1.value = (myPlayerName && dbPlayers.includes(myPlayerName)) ? myPlayerName : (dbPlayers[0] || '');
+  if (!dbPlayers.includes(s2.value) || s2.value === s1.value) s2.value = dbPlayers.find(p => p !== s1.value) || '';
+  renderH2HSlots();
   renderH2H();
+}
+
+function renderH2HSlots() {
+  [1, 2].forEach(k => {
+    const name = document.getElementById(`h2h-p${k}`)?.value || '';
+    const b = document.getElementById(`h2h-b${k}`);
+    if (b) b.innerHTML = name ? `${renderAvatarHTML(name, 'avatar-sm')}<span>${escapeHtml(name)}</span><small>Cambiar</small>` : '<span>Elegir jugador</span>';
+  });
+}
+
+function pickH2H(k) {
+  const other = document.getElementById(`h2h-p${k === 1 ? 2 : 1}`)?.value;
+  openPlayerSearch({
+    title: k === 1 ? 'Primer jugador' : 'Segundo jugador',
+    exclude: other ? [other] : [],
+    onPick: name => { document.getElementById(`h2h-p${k}`).value = name; renderH2HSlots(); renderH2H(); }
+  });
 }
 
 function renderH2H() {

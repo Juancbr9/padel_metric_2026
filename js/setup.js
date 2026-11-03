@@ -31,6 +31,17 @@ function updatePreMatchProbability() {
   }
 }
 
+// Sortea las parejas entre los cuatro de la pista (los que no tienen ficha también se mueven)
+function shuffleSetupPairs() {
+  vibrate([10, 30]);
+  const p = [...setupConfig.slots];
+  for (let i = p.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [p[i], p[j]] = [p[j], p[i]]; }
+  // Los huecos sin nombre conservan su número de posición
+  setupConfig.slots = p.map((s, i) => (s.startsWith('GEN_') ? `GEN_${i}` : s));
+  renderSetupCourt();
+  showToast('Parejas sorteadas');
+}
+
 function balancePairsAutomatically() {
   const assigned = setupConfig.slots.filter(s => !s.startsWith('GEN_'));
   if (assigned.length < 4) {
@@ -67,6 +78,7 @@ function balancePairsAutomatically() {
 }
 
 function renderSetupCourt() {
+  const named = setupConfig.slots.filter(s => !String(s).startsWith('GEN_'));
   for (let i = 0; i < 4; i++) {
     const val = setupConfig.slots[i];
     if (!val.startsWith('GEN_') && !dbPlayers.includes(val)) {
@@ -77,35 +89,31 @@ function renderSetupCourt() {
     const isSrv = (setupConfig.initialServer === i);
     const card = document.getElementById(`setup-slot-${i}`);
     if (!card) continue;
-
-    const prof = !isGeneric ? ensureProfile(currentVal) : null;
-    // Nombre grande (como en el marcador) y debajo el apellido y el club
+    // Foto (o iniciales), el nombre grande y el apellido debajo, como en el marcador
     const parts = isGeneric ? [] : String(currentVal).trim().split(/\s+/);
-    const surname = shortPlayerName(currentVal, setupConfig.slots.filter(s => !String(s).startsWith('GEN_')));
-    const subLine = !isGeneric ? [parts.length > 1 ? parts.slice(1).join(' ') : '', prof && prof.club].filter(Boolean).join(' · ') : 'Toca para elegir';
-    const clubLine = subLine ? `<div class="lineup-club-sub">${escapeHtml(subLine)}</div>` : '';
-    const avClass = i < 2 ? 'avatar-p1' : 'avatar-p2';
-    const avatarNode = renderAvatarHTML(currentVal, avClass, '', isGeneric, `J${i+1}`);
-
-    card.className = `lineup-slot-card ${!isGeneric ? 'assigned' : ''} ${isSrv ? 'initial-srv' : ''}`;
+    const first = isGeneric ? `Jugador ${i + 1}` : shortPlayerName(currentVal, named);
+    const sub = isGeneric ? 'Toca para elegir' : (parts.slice(1).join(' ') || ensureProfile(currentVal).club || '');
+    card.className = `np-slot ${i < 2 ? 'a' : 'b'} ${isGeneric ? 'empty' : 'assigned'} ${isSrv ? 'initial-srv' : ''}`;
     card.innerHTML = `
-      <div class="lineup-slot-top">
-        <span class="lineup-pos-tag ${i < 2 ? 'pair-a-txt' : 'pair-b-txt'}">Pareja ${i<2?1:2} · ${FIXED_COURT_SIDES[i].toLowerCase()}</span>
-        <button type="button" class="srv-toggle-btn ${isSrv ? 'active' : ''}" onclick="event.stopPropagation(); selectInitialServer(${i});" title="Marcar como sacador inicial">
-          <svg class="icon icon-xs"><use href="#i-ball"/></svg>
-          ${isSrv ? 'Saca' : ''}
-        </button>
-      </div>
-      <div class="lineup-player-row">
-        ${avatarNode}
-        <div class="u-min0 flex-1">
-          <div class="lineup-player-label ${isGeneric ? 'placeholder' : ''}">
-            ${isGeneric ? `Jugador ${i+1}` : escapeHtml(surname)}
-          </div>
-          ${clubLine}
-        </div>
-      </div>
-    `;
+      <span class="np-side">${FIXED_COURT_SIDES[i]}</span>
+      <button type="button" class="np-serve ${isSrv ? 'active' : ''}" onclick="event.stopPropagation(); selectInitialServer(${i});" aria-label="Saca primero" title="Saca primero"><svg class="icon"><use href="#i-ball"/></svg>${isSrv ? '<span>Saca</span>' : ''}</button>
+      <span class="np-av">${isGeneric ? `<span class="np-av-empty"><svg class="icon"><use href="#i-plus"/></svg></span>` : renderAvatarHTML(currentVal, i < 2 ? 'avatar-p1' : 'avatar-p2')}</span>
+      <strong class="np-name">${escapeHtml(first)}</strong>
+      <small class="np-sub">${escapeHtml(sub)}</small>`;
+  }
+  // Rótulo de cada pareja con su nivel medio
+  const { statsMap } = computeAllPlayersStats();
+  [0, 1].forEach(k => {
+    const el = document.getElementById(`np-pair-${k ? 'b' : 'a'}`);
+    if (!el) return;
+    const names = setupConfig.slots.slice(k * 2, k * 2 + 2).filter(s => !s.startsWith('GEN_'));
+    const elos = names.map(n => (statsMap[n] ? statsMap[n].elo : ELO_START));
+    el.innerHTML = `<i></i><strong>Pareja ${k + 1}</strong><span>${names.length ? `ELO medio ${Math.round(elos.reduce((a, b) => a + b, 0) / elos.length)}` : 'Sin jugadores con ficha'}</span>`;
+  });
+  const sum = document.getElementById('np-summary');
+  if (sum) {
+    const pn = k => setupConfig.slots.slice(k * 2, k * 2 + 2).map((s, j) => (s.startsWith('GEN_') ? `J${k * 2 + j + 1}` : shortPlayerName(s, named))).join(' / ');
+    sum.textContent = named.length ? `${pn(0)} contra ${pn(1)}` : 'Sin jugadores: se puede jugar igual, con J1 a J4';
   }
 
   renderSetupRules();
@@ -121,11 +129,16 @@ function renderSetupRules() {
     `<button type="button" class="ios-seg-option ${v === current ? 'active' : ''}" onclick="${fn}('${v}')"><span class="opt-main">${main}</span></button>`).join('')}</div>`;
   box.innerHTML = `
     <div class="setup-rule"><div class="setup-rule-label">Al llegar a 40-40</div>
-      ${seg([['adv', 'Ventaja'], ['star', 'Star point'], ['golden', 'Punto de oro']], setupConfig.deuceRule, 'selectDeuceRule')}</div>
+      ${seg([['adv', 'Ventaja'], ['star', 'Star point'], ['golden', 'Punto de oro']], setupConfig.deuceRule, 'selectDeuceRule')}
+      <div class="setup-rule-hint">${{ adv: 'Hay que ganar dos puntos seguidos.', star: 'Dos ventajas como mucho; a la tercera igualada, un punto decide.', golden: 'Un solo punto decide el juego; la pareja que resta elige el lado.' }[setupConfig.deuceRule] || ''}</div></div>
     <div class="setup-rule"><div class="setup-rule-label">Si se llega a 1-1 en sets</div>
-      ${seg([['normal', 'Tercer set'], ['supertb', 'Súper tie-break']], setupConfig.thirdSetRule, 'selectThirdRule')}</div>
-    <div class="setup-rule"><div class="setup-rule-label">Al deslizar sobre un jugador</div>
-      ${seg([['tap', 'Elegir el golpe'], ['swipe', 'Anotar al momento']], setupConfig.inputMode, 'selectInputMode')}</div>`;
+      ${seg([['normal', 'Tercer set'], ['supertb', 'Súper tie-break']], setupConfig.thirdSetRule, 'selectThirdRule')}
+      <div class="setup-rule-hint">${setupConfig.thirdSetRule === 'supertb' ? 'Un desempate a 10 puntos con diferencia de dos.' : 'Se juega un tercer set completo.'}</div></div>
+    <div class="setup-rule"><div class="setup-rule-label">Cómo anotar</div>
+      ${seg(INPUT_MODES, setupConfig.inputMode, 'selectInputMode')}
+      <div class="setup-rule-hint">${setupConfig.inputMode === 'tap' ? 'Eliges el golpe y marcas en la pista desde dónde golpeó: el mapa de calor es exacto.' : 'Desliza hacia arriba para un winner y hacia abajo para un error. Lo más rápido.'}</div></div>
+    ${setupConfig.inputMode === 'tap' ? `<div class="setup-rule"><div class="setup-rule-label">Ves el partido desde</div>
+      ${seg(COURT_VIEWS.map(([v, t]) => [v, t.replace('Detrás de la pareja ', 'Detrás de P').replace('Desde el lateral', 'El lateral')]), setupConfig.view || 'p2', 'selectSetupView')}</div>` : ''}`;
 }
 
 function selectInitialServer(slotIdx) {
@@ -168,4 +181,5 @@ function selectInputMode(mode) {
     document.getElementById(`inp-${m}`)?.classList.toggle('active', m === mode);
   });
   renderSetupCourt();
+  renderSetupRules();
 }

@@ -365,6 +365,7 @@ function renderTournamentListHTML() {
 // ---------- Alta de torneo ----------
 function startTournamentDraft() {
   eventDraft = { kind: 'tournament', name: '', format: 'ko', seeding: 'elo', deuceRule: 'golden', thirdSetRule: 'supertb', pairs: [], pool: [] };
+  chooserQuery = '';
   tView = { mode: 'create', tid: null, tab: null };
   renderTournamentsView();
 }

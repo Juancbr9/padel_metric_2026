@@ -41,7 +41,8 @@ export default async ({ newPage, url, assert }) => {
   const firstRow = await p.textContent('.rk-player-row');
   assert(!/Club|Pádel Indoor|Pádel Center/.test(firstRow), 'La fila del ranking no muestra el club');
   assert(await p.isVisible('.rk-player-row .rk-main strong'), 'Cifra principal a la derecha');
-  assert(await p.locator('.rk-streak').count() > 0, 'Se ve la racha de los jugadores');
+  assert.equal(await p.locator('.rk-streak').count(), 0, 'Sin textos de racha: solo los puntos de colores');
+  assert(await p.locator('.rk-player-row .form-dots').count() > 0, 'Los últimos resultados en puntos de colores');
   await p.evaluate(() => { posterTargetState = matchHistory[0]; openPosterModal(); });
   await p.waitForFunction(() => (document.getElementById('poster-preview').src || '').startsWith('data:image/png'));
   await p.evaluate(() => closePosterModal());

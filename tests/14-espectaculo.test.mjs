@@ -5,24 +5,26 @@ export default async ({ newPage, url, assert }) => {
   const p = await newPage();
   await p.goto(url);
   // Entrada del logo: aparece, no bloquea y se va sola
-  assert(await p.locator('#intro-splash.intro-D').count() === 1, 'Sale la animación de entrada (trazo y bote)');
-  await p.waitForTimeout(2900);
+  assert(await p.evaluate(() => document.documentElement.classList.contains('intro-on')), 'La entrada forma parte del primer pintado');
+  assert(await p.isVisible('#intro-splash .intro-logo'), 'Sale la animación de entrada (trazo y bote)');
+  await p.waitForTimeout(3000);
   assert.equal(await p.locator('#intro-splash').count(), 0, 'Y se quita sola');
-  await p.evaluate(() => setIntroStyle('off'));
-  assert.equal(await p.evaluate(() => appSettings.intro), 'off', 'Se puede desactivar en Ajustes');
+  await p.reload();
+  assert.equal(await p.locator('#intro-splash').count(), 0, 'Solo una vez por sesión');
+  assert((await p.evaluate(() => pmLoaderHTML('x'))).includes('pm-loader-ball'), 'Cargador con la pelota botando');
 
   await p.evaluate(() => loadDemoData());
   await p.waitForFunction(() => matchHistory.length > 20);
 
-  // Trayectoria del golpe al anotar un winner
+  // Sin trayectoria del golpe (se quitó)
   await p.evaluate(() => repeatMatch(0));
   await p.evaluate(() => { selectedSlot = 0; recordAction('W', 'Volea'); });
-  assert(await p.isVisible('.court-arena .shot-trail'), 'Se dibuja la trayectoria del golpe');
+  assert.equal(await p.locator('.court-arena .shot-trail').count(), 0, 'Sin animación del golpe');
 
   // Cierre del partido de retransmisión con la carta del mejor
   await p.evaluate(() => { for (let k = 0; k < 300 && !state.matchOver; k++) addNeutralPoint(0); });
   await p.waitForSelector('#match-end.cine', { state: 'visible' });
-  assert(await p.locator('#match-end .me-mvp .pcard').count() === 1, 'Carta del mejor del partido en el cierre');
+  assert(await p.isVisible('#match-end .me-mvp'), 'El mejor del partido en el cierre, sin recuadros vacíos');
 
   // Póster con la foto del grupo
   await p.evaluate(() => { closeMatchEnd(); posterTargetState = state; openPosterModal(); });
