@@ -278,8 +278,8 @@ function inviteLink() {
 }
 
 async function createClubFromForm() {
-  const url = document.getElementById('sync-url').value.trim();
-  const key = document.getElementById('sync-key').value.trim();
+  const url = DEFAULT_SUPABASE_URL;
+  const key = DEFAULT_SUPABASE_KEY;
   const name = document.getElementById('sync-name').value.trim() || 'Mi club';
   if (!/^https:\/\/.+/.test(url) || key.length < 20) { showToast('Revisa la URL del proyecto y la clave anon'); return; }
   const cfg = { url, key, code: randomClubCode(), name, version: 0 };
@@ -383,19 +383,14 @@ function openSyncPanel() {
   }
   openEventModal(`
     <div class="reset-title">Club compartido</div>
-    <p class="reset-text">Comparte el ranking, los partidos, los torneos y los americanos entre varios móviles. Una persona crea el club y los demás se unen con un enlace.</p>
+    <p class="reset-text">Comparte el ranking y los partidos con tu grupo. Uno crea el club y los demás se unen con el enlace.</p>
     <div class="form-label">¿Te han enviado una invitación?</div>
     <input type="text" id="sync-invite" placeholder="Pega aquí el enlace de invitación">
     <button class="btn-volt mt-8" onclick="joinClubFromForm()">Unirme al club</button>
     <div class="form-label mt-20">O crea un club nuevo</div>
     <input type="text" id="sync-name" placeholder="Nombre del club (ej. Pádel de los jueves)">
     <button class="btn-icon btn-block" onclick="createClubFromForm()">Crear club con los datos de este móvil</button>
-    <details class="sync-help mt-10">
-      <summary>Usar otro proyecto de Supabase (opcional)</summary>
-      <p class="my-8 u-muted">Por defecto se usa la base de datos de Padel Metric. Si prefieres la tuya, ejecuta <strong>supabase/setup.sql</strong> en su SQL Editor y pon aquí su URL y su clave publishable.</p>
-      <input type="text" id="sync-url" value="${escapeHtml(DEFAULT_SUPABASE_URL)}" placeholder="Project URL (https://xxxx.supabase.co)">
-      <input class="mt-8" type="text" id="sync-key" value="${escapeHtml(DEFAULT_SUPABASE_KEY)}" placeholder="Clave publishable (sb_publishable_...)">
-    </details>`);
+`);
 }
 
 async function checkRemoteVersion() {

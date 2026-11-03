@@ -169,7 +169,7 @@
     <div class="menu-group-title">Más</div>
     <div class="drawer-group">
       <button type="button" class="drawer-item"  data-section="share" onclick="closeAppMenu(); openInstallSheet()">
-        <span class="drawer-ico"><svg class="icon"><use href="#i-qr"/></svg></span><span class="drawer-txt"><strong>Instalar y compartir la app</strong></span>
+        <span class="drawer-ico"><svg class="icon"><use href="#i-qr"/></svg></span><span class="drawer-txt"><strong id="menu-install-label">Instalar y compartir la app</strong></span>
       </button>
       <button type="button" class="drawer-item" data-section="share" onclick="closeAppMenu(); openSyncPanel()">
         <span class="drawer-ico"><svg class="icon"><use href="#i-users"/></svg></span><span class="drawer-txt"><strong>Club compartido</strong><small id="sync-hint">Desactivado</small></span>
@@ -180,7 +180,7 @@
     </div>
     <div class="menu-footer">
       <svg class="menu-footer-logo"><use href="#logo-mark"/></svg>
-      <span id="app-version-label">Padel Metric · v19</span>
+      <span id="app-version-label" onclick="versionTap()">Padel Metric · v20</span>
     </div>
   </nav>
 </div>
@@ -206,7 +206,6 @@
 
     <div class="section-hero">
       <h1 class="section-hero-title">Nuevo partido</h1>
-      <div class="section-hero-kicker">Toca cada posición para elegir al jugador y la pelota de quien saca primero.</div>
     </div>
 
     <div class="setup-head"><h2>Jugadores</h2><span class="setup-head-links"><button type="button" class="home-link" onclick="openGroupsSheet()">Grupos</button><button type="button" class="home-link" onclick="clearSetupCourt()">Vaciar la pista</button></span></div>
@@ -270,7 +269,7 @@
       <button type="button" data-tab="h2h" onclick="setRankingTab('h2h')">Cara a cara</button>
     </div>
     <div id="rk-panel-players">
-      <div class="hist-search"><svg class="icon"><use href="#i-target"/></svg><input type="search" id="search-player-input" placeholder="Buscar jugador, club o nota" oninput="renderGlobalRanking()"></div>
+      <div class="hist-search"><svg class="icon"><use href="#i-target"/></svg><input type="search" id="search-player-input" placeholder="Buscar jugador" oninput="renderGlobalRanking()"></div>
       <div class="rk-filter-row">
         <div class="rk-gender">
           <button type="button" class="sort-chip active" id="sexflt-all" onclick="setRankingGenderFilter('all')">Todos</button>
@@ -318,7 +317,6 @@
   <div id="view-history" class="hidden">
     <div class="section-hero hero-history">
       <h1 class="section-hero-title">Historial</h1>
-      <div id="history-summary" class="hero-stats"></div>
     </div>
     <div class="hist-tools">
       <div class="hist-search"><svg class="icon"><use href="#i-target"/></svg><input type="search" id="history-search" placeholder="Buscar jugador o pareja" oninput="renderHistoryList()"></div>
@@ -424,7 +422,6 @@
           <button class="btn-swap-center" onclick="swapSides(1)" title="Intercambiar lados de la pareja 2" aria-label="Intercambiar lados de la pareja 2"><svg class="icon"><use href="#i-swap"/></svg></button>
           <div class="hud-player-card" id="pcard-3"></div>
         </div>
-        <div id="live-input-mode-hint" class="gesture-hint">Toca a un jugador para anotar su golpe</div>
       </div>
     </div>
 

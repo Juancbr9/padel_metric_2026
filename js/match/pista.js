@@ -77,11 +77,8 @@ function courtPositionsHTML() {
     return `<div class="mo-court-p q-${y < 0.5 ? 't' : 'b'}${x < 0.5 ? 'l' : 'r'}"><span><i class="${pair ? 'sw-b' : 'sw-a'}"></i><b>${escapeHtml(liveSurname(p))}</b></span><small>${drive ? 'Drive' : 'Revés'}</small></div>`;
   }).join('');
   const names = pair => `${liveSurname(state.players[pair * 2])} y ${liveSurname(state.players[pair * 2 + 1])}`;
-  const help = appSettings.autoEnds === false
-    ? 'El cambio de lado automático está apagado en Ajustes.'
-    : 'Las parejas cambian de lado solas en los juegos impares.';
   return `<div class="mo-block">
-    <div class="mo-block-head"><strong>Posición en la pista</strong><small>${help} Si no coincide con la pista, corrígelo aquí.</small></div>
+    <div class="mo-block-head"><strong>Posición en la pista</strong><small>Corrígela si no coincide con lo que ves</small></div>
     <div class="mo-court${view.startsWith('side') ? ' is-side' : ''}" aria-label="Así está ahora la pista">${cells}</div>
     <div class="mo-pos-actions">
       <button type="button" class="btn-icon mo-wide" onclick="changeEndsManual(); openMatchOptions();">Cambiar de lado las parejas</button>

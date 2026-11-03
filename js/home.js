@@ -30,9 +30,6 @@ function renderHome() {
   const last = matchHistory[0];
   const { statsMap } = computeAllPlayersStats();
   const top = Object.values(statsMap).filter(s => s.PJ > 0).sort((a, b) => b.elo - a.elo).slice(0, 3);
-  const weekAgo = Date.now() - 7 * 864e5;
-  const thisWeek = matchHistory.filter(m => (m.id || 0) >= weekAgo).length;
-  const hours = matchHistory.reduce((a, m) => a + (m.elapsedSec || 0), 0) / 3600;
   const isEmpty = !matchHistory.length && !tournaments.length && !americanos.length && !dbPlayers.length;
 
   const live = [
@@ -71,15 +68,6 @@ function renderHome() {
         </button>`).join('')}
     </div>` : '';
 
-  // Actividad: una línea discreta al final, sin recuadros
-  const timeTxt = hours >= 1 ? `${hours.toFixed(hours >= 100 ? 0 : 1).replace('.', ',')} h en pista` : `${Math.round(hours * 60)} min en pista`;
-  const activity = [
-    `${matchHistory.length} partido${matchHistory.length === 1 ? '' : 's'}`,
-    thisWeek ? `${thisWeek} esta semana` : '',
-    matchHistory.length ? timeTxt : '',
-    `${dbPlayers.length} jugador${dbPlayers.length === 1 ? '' : 'es'}`
-  ].filter(Boolean).join(' · ');
-
   const primary = paused ? `
     <div class="home-resume">
       <div class="home-resume-text">
@@ -108,6 +96,6 @@ function renderHome() {
           <li><span>Para jugar con más gente, crea un <strong>americano</strong> o un <strong>torneo</strong> desde el menú.</span></li>
         </ol>
         <button class="btn-icon btn-block mt-14" onclick="loadDemoData()">Ver la app con datos de ejemplo</button>
-      </div>` : `<div class="home-foot">${activity}</div>`}`;
+      </div>` : ''}`;
   initCardTilt(box);
 }

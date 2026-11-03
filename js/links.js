@@ -149,7 +149,6 @@ async function openShareMatchSheet(m) {
       ${row('Resumen en texto', 'Las estadísticas y la crónica, para pegar en un mensaje', 'closeEventModal(); closeMatchEnd(); openMatchSummaryFor(posterTargetState)')}
     </div>
     <div class="menu-group-title">Enlace del partido</div>
-    <p class="bc-intro">Se abre en cualquier móvil sin instalar nada; quien use Padel Metric puede guardarlo en su historial.</p>
     <div class="bc-qr" id="share-qr">${pmLoaderHTML('Preparando el enlace…')}</div>
     <div class="u-grid-2">
       <button class="btn-volt" id="share-send" onclick="sendMatchLink()" disabled>Enviar enlace</button>

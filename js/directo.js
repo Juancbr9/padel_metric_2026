@@ -76,7 +76,7 @@ function openBroadcastPanel() {
   const link = liveLink(state.live.code);
   openEventModal(`
     <div class="mo-title">Directo para espectadores</div>
-    <p class="bc-intro">Quien abra este enlace o escanee el código verá el marcador en directo, en el móvil o en una tele. No necesita instalar nada.</p>
+    <p class="bc-intro">Quien abra el enlace o escanee el código sigue el marcador al momento.</p>
     <div class="bc-qr">${QR.svg(link, 2)}</div>
     <div class="bc-link">${escapeHtml(link)}</div>
     <div id="bc-status" class="bc-status"></div>
@@ -355,7 +355,7 @@ function openEventBroadcast(kind, id) {
   const link = liveLink(ev.live.code);
   openEventModal(`
     <div class="mo-title">Clasificación en directo</div>
-    <p class="bc-intro">Quien abra este enlace o escanee el código verá la clasificación y la ronda en juego en su móvil o en una tele. Se actualiza sola cada vez que anotas un resultado y no hace falta instalar nada.</p>
+    <p class="bc-intro">Quien abra el enlace o escanee el código sigue la clasificación al momento.</p>
     <div class="bc-qr">${QR.svg(link, 2)}</div>
     <div class="bc-link">${escapeHtml(link)}</div>
     <div id="ev-bc-status" class="bc-status"></div>

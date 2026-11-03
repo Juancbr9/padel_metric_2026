@@ -1,16 +1,3 @@
-function renderHistorySummary() {
-  const box = document.getElementById('history-summary');
-  if (!box) return;
-  const secs = matchHistory.reduce((a, m) => a + (m.elapsedSec || 0), 0);
-  const pts = matchHistory.reduce((a, m) => a + ((m.points && m.points.length) || 0), 0);
-  const hours = secs >= 3600 ? `${(secs / 3600).toFixed(1).replace('.', ',')} h` : `${Math.round(secs / 60)} min`;
-  box.innerHTML = [
-    [matchHistory.length, 'Partidos'],
-    [hours, 'En pista'],
-    [pts, 'Puntos registrados']
-  ].map(([v, l]) => `<div class="hero-stat"><div class="hero-stat-val" ${typeof v === 'number' ? `data-count="${v}"` : ''}>${v}</div><div class="hero-stat-lbl">${l}</div></div>`).join('');
-}
-
 // ---------- Lista del historial: tarjetas por mes, búsqueda y filtros ----------
 let historyFilter = 'all';
 const HISTORY_FILTERS = [['all', 'Todos'], ['me', 'Mis partidos'], ['tournament', 'Torneo'], ['M', 'Masculino'], ['F', 'Femenino'], ['X', 'Mixto']];
@@ -55,7 +42,6 @@ function historySpark(m) {
 }
 
 function renderHistoryList() {
-  renderHistorySummary();
   const el = document.getElementById('history-list');
   if (!el) return;
   const filters = HISTORY_FILTERS.filter(([k]) => k !== 'me' || (myPlayerName && dbPlayers.includes(myPlayerName)));
@@ -64,7 +50,6 @@ function renderHistoryList() {
   if (fbox) fbox.innerHTML = filters.map(([k, l]) => `<button type="button" class="sort-chip ${historyFilter === k ? 'active' : ''}" onclick="setHistoryFilter('${k}')">${l}</button>`).join('');
   // Sin partidos: ni resumen ni buscador, solo qué es el historial y cómo empezar
   const none = matchHistory.length === 0;
-  document.getElementById('history-summary')?.classList.toggle('hidden', none);
   document.querySelector('#view-history .hist-tools')?.classList.toggle('hidden', none);
   if (none) {
     el.innerHTML = emptyStateHTML('Aún no hay partidos',
@@ -154,16 +139,6 @@ function restoreHistoryMatch(m, idx) {
   if (currentTab === 'home') renderHome();
   renderGlobalRanking();
   showToast('Partido recuperado');
-}
-
-function clearAllHistory() {
-  if (!matchHistory.length) return;
-  if (!confirm(`¿Vaciar el historial completo (${matchHistory.length} partidos)? El ranking ELO se recalculará.`)) return;
-  matchHistory = [];
-  saveDB();
-  renderHistoryList();
-  renderGlobalRanking();
-  showToast('Historial vaciado');
 }
 
 // En el móvil abre el menú de compartir (Drive, WhatsApp, correo, Archivos…) cuando el navegador lo permite;

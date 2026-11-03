@@ -356,9 +356,6 @@ function updateUI() {
   setLiveText('qp-a', livePairName(0));
   setLiveText('qp-b', livePairName(1));
   document.getElementById('btn-live-broadcast')?.classList.toggle('on', !!(state.live && state.live.on));
-  setLiveText('live-input-mode-hint', state.inputMode === 'tap'
-    ? 'Avanzado · desliza ↑ winner · ↓ error, elige el golpe y marca dónde'
-    : 'Desliza ↑ winner · ↓ error no forzado · toca para más opciones');
   applyCourtView();
 
   // Tarjetas de los jugadores
@@ -409,7 +406,7 @@ function renderGameTicker() {
   const strip = document.getElementById('game-log-strip');
   if (!strip || !state) return;
   if (!state.gamePointLog || state.gamePointLog.length === 0) {
-    strip.innerHTML = `<span>${state.matchOver ? 'Partido terminado' : 'Juego en curso · esperando el primer punto'}</span>`;
+    strip.innerHTML = `<span>${state.matchOver ? 'Partido terminado' : ''}</span>`;
     return;
   }
   strip.innerHTML = state.gamePointLog.map(item => {
@@ -527,19 +524,15 @@ function closeMatchEnd(silent) {
 function openMatchOptions() {
   if (!state) return;
   vibrate(10);
-  const row = (label, sub, control) => `<div class="mo-row"><div><strong>${label}</strong><small>${sub}</small></div>${control}</div>`;
+  const row = (label, sub, control) => `<div class="mo-row"><div><strong>${label}</strong>${sub ? `<small>${sub}</small>` : ''}</div>${control}</div>`;
   const seg = (opts, current, fn) => `<div class="mo-seg">${opts.map(([v, t]) => `<button type="button" class="${v === current ? 'active' : ''}" onclick="${fn}(${jsArg(v)})">${t}</button>`).join('')}</div>`;
   openEventModal(`
     <div class="mo-title">Opciones del partido</div>
-    ${row('Tercer set', 'Se puede cambiar mientras no haya empezado', seg([['normal', 'Set normal'], ['supertb', 'Súper tie-break']], state.thirdSetRule, 'setMatchThirdSet'))}
-    ${row('Cómo anotar', 'Sencillo: winner o error. Avanzado: golpe y sitio de la pista', seg(INPUT_MODES, state.inputMode, 'setMatchInputMode'))}
-    ${state.inputMode === 'tap' ? row('Ves el partido', 'Para marcar bien desde dónde golpean', seg(COURT_VIEWS.map(([v, t]) => [v, t.replace('Detrás de la pareja ', 'Tras P').replace('Desde el lateral', 'Lateral')]), currentView(), 'setMatchView')) : ''}
+    ${row('Tercer set', '', seg([['normal', 'Set normal'], ['supertb', 'Súper tie-break']], state.thirdSetRule, 'setMatchThirdSet'))}
+    ${row('Cómo anotar', '', seg(INPUT_MODES, state.inputMode, 'setMatchInputMode'))}
+    ${state.inputMode === 'tap' ? row('Ves el partido', '', seg(COURT_VIEWS.map(([v, t]) => [v, t.replace('Detrás de la pareja ', 'Tras P').replace('Desde el lateral', 'Lateral')]), currentView(), 'setMatchView')) : ''}
     ${courtPositionsHTML()}
-    ${row('Cronómetro', state.timerPaused ? 'En pausa' : 'En marcha', `<button type="button" class="btn-icon" onclick="toggleTimerPause(); openMatchOptions();">${state.timerPaused ? 'Reanudar' : 'Pausar'}</button>`)}
-    ${row('Narrador de voz', 'Canta el marcador tras cada punto', `<button type="button" class="btn-icon" onclick="toggleVoiceNarrator(); openMatchOptions();">${voiceEnabled ? 'Desactivar' : 'Activar'}</button>`)}
-    ${row('Mando', 'Anotar con un mando Bluetooth o los botones de volumen', `<button type="button" class="btn-icon" onclick="toggleAppSetting('remote'); openMatchOptions();">${appSettings.remote ? 'Desactivar' : 'Activar'}</button>`)}
-    ${row('Saque', 'Corrige quién saca si no coincide con la pista', `<button type="button" class="btn-icon" onclick="cycleServerManual(); openMatchOptions();">Siguiente</button>`)}
-    ${row('Guía', 'Cómo se anota, se deshace y se sale', `<button type="button" class="btn-icon" onclick="closeEventModal(); openMatchGuide();">Ver</button>`)}
+    ${row('Saque', `Saca ${escapeHtml(liveSurname(state.players[state.serverIdx]))}`, `<button type="button" class="btn-icon" onclick="cycleServerManual(); openMatchOptions();">Cambiar</button>`)}
     <div class="mo-actions">
       <button type="button" class="btn-icon" onclick="closeEventModal(); openShareMatchSheet(state)">Compartir</button>
       <button type="button" class="btn-icon mo-finish" onclick="closeEventModal(); finishMatchManually()">Finalizar partido</button>
@@ -666,7 +659,6 @@ function renderShotSheet() {
       <button type="button" class="shot-tile ${tileCls} z-${z}" onclick="pickShotLocation('${type}', ${jsArg(s.id)})">
         <span class="shot-art"><svg class="shot-vec"><use href="#${s.icon}"/></svg></span>
         <span class="shot-tile-title">${s.label}</span>
-        <span class="shot-tile-hint">${s.hint}</span>
       </button>`).join('');
   }).join('');
   const grid = document.getElementById('shot-grid');

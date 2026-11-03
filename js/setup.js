@@ -108,12 +108,12 @@ function renderSetupCourt() {
     if (!el) return;
     const names = setupConfig.slots.slice(k * 2, k * 2 + 2).filter(s => !s.startsWith('GEN_'));
     const elos = names.map(n => (statsMap[n] ? statsMap[n].elo : ELO_START));
-    el.innerHTML = `<i></i><strong>Pareja ${k + 1}</strong><span>${names.length ? `ELO medio ${Math.round(elos.reduce((a, b) => a + b, 0) / elos.length)}` : 'Sin jugadores con ficha'}</span>`;
+    el.innerHTML = `<i></i><strong>Pareja ${k + 1}</strong><span>${names.length ? `ELO medio ${Math.round(elos.reduce((a, b) => a + b, 0) / elos.length)}` : ''}</span>`;
   });
   const sum = document.getElementById('np-summary');
   if (sum) {
     const pn = k => setupConfig.slots.slice(k * 2, k * 2 + 2).map((s, j) => (s.startsWith('GEN_') ? `J${k * 2 + j + 1}` : shortPlayerName(s, named))).join(' / ');
-    sum.textContent = named.length ? `${pn(0)} contra ${pn(1)}` : 'Sin jugadores: se puede jugar igual, con J1 a J4';
+    sum.textContent = named.length ? `${pn(0)} contra ${pn(1)}` : '';
   }
 
   renderSetupRules();
@@ -133,7 +133,7 @@ function renderSetupRules() {
       <div class="setup-rule-hint">${{ adv: 'Hay que ganar dos puntos seguidos.', star: 'Dos ventajas como mucho; a la tercera igualada, un punto decide.', golden: 'Un solo punto decide el juego; la pareja que resta elige el lado.' }[setupConfig.deuceRule] || ''}</div></div>
     <div class="setup-rule"><div class="setup-rule-label">Si se llega a 1-1 en sets</div>
       ${seg([['normal', 'Tercer set'], ['supertb', 'Súper tie-break']], setupConfig.thirdSetRule, 'selectThirdRule')}
-      <div class="setup-rule-hint">${setupConfig.thirdSetRule === 'supertb' ? 'Un desempate a 10 puntos con diferencia de dos.' : 'Se juega un tercer set completo.'}</div></div>
+      ${setupConfig.thirdSetRule === 'supertb' ? '<div class="setup-rule-hint">Un desempate a 10 puntos con diferencia de dos.</div>' : ''}</div>
     <div class="setup-rule"><div class="setup-rule-label">Cómo anotar</div>
       ${seg(INPUT_MODES, setupConfig.inputMode, 'selectInputMode')}
       <div class="setup-rule-hint">${setupConfig.inputMode === 'tap' ? 'Eliges el golpe y marcas en la pista desde dónde golpeó: el mapa de calor es exacto.' : 'Desliza hacia arriba para un winner y hacia abajo para un error. Lo más rápido.'}</div></div>

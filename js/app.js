@@ -115,7 +115,6 @@ function openSettingsSheet() {
       ${sw('sound', 'i-music', 'Sonidos en juegos, sets y partido', "toggleAppSetting('sound')")}
       ${sw('autoEnds', 'i-swap', 'Cambio de lado automático en la pista', "toggleAppSetting('autoEnds')")}
       ${sw('remote', 'i-target', 'Anotar con mando o botones de volumen', "toggleAppSetting('remote')")}
-      <button type="button" class="menu-row" onclick="openRemoteHelp()"><svg class="icon"><use href="#i-info"/></svg><span>Cómo anotar con un mando</span><span class="menu-row-hint">›</span></button>
     </div>
     <div class="menu-list mt-8">
       <button type="button" class="menu-row" onclick="closeEventModal(); openRulesModal()">
@@ -128,8 +127,8 @@ function openSettingsSheet() {
     </div>
     <div class="menu-group-title">Acerca de</div>
     <div class="menu-list">
-      <button type="button" class="menu-row" onclick="openTestCodeSheet()">
-        <svg class="icon"><use href="#i-sliders"/></svg><span>Código de pruebas</span><span class="menu-row-hint">${aiTestCode() ? 'Activo' : '›'}</span></button>
+      ${aiTestCode() ? `<button type="button" class="menu-row" onclick="openTestCodeSheet()">
+        <svg class="icon"><use href="#i-sliders"/></svg><span>Código de pruebas</span><span class="menu-row-hint">Activo</span></button>` : ''}
       <button type="button" class="menu-row" onclick="openAboutSheet()">
         <svg class="icon"><use href="#i-info"/></svg><span>Acerca de, privacidad y contacto</span><span class="menu-row-hint">›</span></button>
       <button type="button" class="menu-row" onclick="openNewsSheet()">
@@ -144,17 +143,14 @@ function openDataSheet() {
     <svg class="icon"><use href="#${icon}"/></svg><span>${label}</span><span class="menu-row-hint">${hint}</span></button>`;
   openEventModal(`
     <div class="mo-title">Datos y copias de seguridad</div>
-    <p class="bc-intro">Todo se guarda en este dispositivo. Exporta una copia de vez en cuando o activa el club compartido para tenerlo también en la nube.</p>
+    <p class="bc-intro">Todo se guarda en este móvil. Guarda una copia de vez en cuando.</p>
     <div class="menu-list">
       ${row('i-download', 'Guardar copia de seguridad', appSettings.lastBackupAt ? `última: ${new Date(appSettings.lastBackupAt).toLocaleDateString('es-ES', { day: 'numeric', month: 'short' })}` : '.json', 'exportBackupJSON()')}
       ${row('i-upload', 'Restaurar copia de seguridad', '.json', "closeEventModal(); document.getElementById('import-file').click()")}
       ${row('i-file', 'Exportar partidos a Excel', '.csv', 'exportHistoryCSV()')}
     </div>
-    <div class="menu-group-title">Pruebas</div>
-    <div class="menu-list">
-      ${row('i-users', 'Cargar datos de ejemplo', '30 jugadores', 'closeEventModal(); loadDemoData()')}
-      ${row('i-trash', 'Vaciar el historial de partidos', '›', 'closeEventModal(); clearAllHistory()', 'menu-row-danger')}
-      ${row('i-trash', 'Restaurar de fábrica', '›', 'closeEventModal(); openFactoryReset()', 'menu-row-danger')}
+    <div class="menu-list mt-8">
+      ${row('i-trash', 'Borrar todos los datos', '›', 'closeEventModal(); openFactoryReset()', 'menu-row-danger')}
     </div>`);
 }
 
@@ -175,7 +171,7 @@ function toggleAppSetting(key) {
   renderMenuSwitches();
   vibrate(12);
   if (key === 'sound' && appSettings.sound) fxSound('game');
-  if (key === 'remote') { syncNativeRemote(); if (appSettings.remote) showToast('Durante el partido, el mando y los botones de volumen anotan puntos'); }
+  if (key === 'remote') { syncNativeRemote(); if (appSettings.remote) openRemoteHelp(); }
 }
 
 // Exporta todos los partidos a un CSV que abre Excel o Google Sheets
@@ -315,8 +311,9 @@ function openAboutSheet() {
 }
 
 // Novedades: se muestran una vez tras actualizar (no a quien abre la app por primera vez)
-const APP_VERSION = 19;
+const APP_VERSION = 20;
 const APP_NEWS = [
+  ['Más sencilla', 'Menos textos y menos opciones repetidas: cada pantalla muestra solo lo que se usa. Las opciones del partido se quedan en lo imprescindible y el resto está en Ajustes.'],
   ['Cambio de lado en la pista', 'En los juegos impares las parejas cambian de lado y la pista del partido se gira sola, como en la realidad. Si no coincide con lo que ves, en Opciones del partido puedes cambiar de lado las parejas o intercambiar drive y revés. Se puede apagar en Ajustes.'],
   ['Cierre del partido más claro', 'Al terminar quedan las estadísticas, el resumen, compartir y salir.'],
   ['Anotar sencillo o avanzado', 'Por defecto, modo sencillo: desliza hacia arriba para un winner y hacia abajo para un error. En el avanzado eliges el golpe y tocas en la pista desde dónde golpeó, vista desde donde tú estás (detrás de una pareja o desde el lateral). El mapa de calor marca cada golpe en su sitio.'],
@@ -349,8 +346,19 @@ function maybeShowNews() {
   setTimeout(openNewsSheet, 700);
 }
 
+// El código de pruebas del dueño no se muestra a los clientes: se abre tocando 5 veces la versión del menú
+let versionTaps = 0, versionTapTimer = null;
+function versionTap() {
+  versionTaps++;
+  clearTimeout(versionTapTimer);
+  versionTapTimer = setTimeout(() => { versionTaps = 0; }, 1500);
+  if (versionTaps >= 5) { versionTaps = 0; closeAppMenu(); openTestCodeSheet(); }
+}
+
 // Ofrece el APK en los navegadores de Android (fuera de la app)
 function setupAppDownload() {
+  // Con la app ya instalada, el menú solo ofrece compartirla
+  if (isInstalledApp()) { const l = document.getElementById('menu-install-label'); if (l) l.textContent = 'Compartir la app'; }
   if (window.PadelNative) {
     const el = document.getElementById('app-version-label');
     try { if (el) el.innerText = `Padel Metric · app ${PadelNative.versionApp()} · ${PadelNative.version()}`; } catch (e) {}

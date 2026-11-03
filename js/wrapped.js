@@ -449,30 +449,15 @@ function maybeShowWelcome() {
     return;
   }
   const done = () => { try { localStorage.setItem('pm_bienvenida_v1', '1'); } catch (e) {} };
-  const feat = (title, text) => `<div class="wl-feat"><strong>${title}</strong><span>${text}</span></div>`;
   openStories([
     { cls: 'w-intro', html: `
       <svg class="w-logo"><use href="#logo-mark"/></svg>
       <div class="w-huge">Padel Metric</div>
-      <div class="w-sub">Marcador y estadísticas para tus partidos de pádel. Todo se guarda en este móvil y no hace falta crear una cuenta.</div>
+      <div class="w-sub">Marcador y estadísticas de tus partidos de pádel. Sin crear cuenta.</div>
       <div class="w-foot">Toca la pantalla para seguir</div>` },
-    { cls: 'w-matches', html: `
-      <div class="w-name">Durante el partido</div>
-      <div>
-        ${feat('Marcador completo', 'Saque, bolas de break y de set, punto de oro, tie-break y súper tie-break.')}
-        ${feat('Probabilidad de victoria', 'Se recalcula después de cada punto.')}
-        ${feat('Directo', 'Un enlace o un QR para seguir el marcador desde otro móvil o en una tele.')}
-      </div>` },
-    { cls: 'w-shot', html: `
-      <div class="w-name">Después</div>
-      <div>
-        ${feat('Mapa de calor', 'Dónde ganas y dónde pierdes los puntos: red, transición y fondo.')}
-        ${feat('Ranking ELO', 'De jugadores y de parejas, con el cara a cara.')}
-        ${feat('Americanos y torneos', 'Cruces, descansos y clasificación automáticos, también en directo.')}
-      </div>` },
     { cls: 'w-final', html: `
       <div class="w-name">¿Cómo quieres empezar?</div>
-      <div class="w-sub">Puedes ver la app con datos de ejemplo (30 jugadores inventados con sus partidos, torneos y americanos) y borrarlos después en Ajustes.</div>
+      <div class="w-sub">Puedes probarla con datos de ejemplo y borrarlos después en Ajustes.</div>
       <div class="w-actions">
         <button class="btn-volt" onclick="event.stopPropagation(); closeWrapped(); switchMainTab('setup');">Empezar un partido</button>
         <button class="btn-icon" onclick="event.stopPropagation(); closeWrapped(); loadDemoData();">Ver con datos de ejemplo</button>
