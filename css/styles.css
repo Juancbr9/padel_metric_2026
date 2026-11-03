@@ -427,6 +427,21 @@ td:first-child, th:first-child { text-align: left; font-family: var(--font-sans)
 .about-head small { font-size: 0.85rem; color: var(--text-secondary); }
 .about-list { margin: 4px 0 6px; padding-left: 18px; display: grid; gap: 6px; font-size: 0.92rem; line-height: 1.45; color: var(--text-secondary); }
 a.menu-row { display: flex; align-items: center; text-decoration: none; color: var(--text-primary); }
+/* Resumen del partido: crónica y estadísticas al estilo del circuito profesional */
+.me-actions .me-wide { grid-column: 1 / -1; }
+.ai-head { display: grid; grid-template-columns: 1fr 1fr; gap: 4px 12px; margin: 2px 0 12px; }
+.ai-pair { display: flex; align-items: center; gap: 7px; font-weight: 700; font-size: 0.95rem; min-width: 0; }
+.ai-pair i { width: 9px; height: 9px; border-radius: 2px; flex-shrink: 0; }
+.ai-pair.a i { background: var(--cyan); } .ai-pair.b i { background: var(--coral); }
+.ai-pair.b { justify-content: flex-end; }
+.ai-score { grid-column: 1 / -1; font-size: 0.85rem; color: var(--text-secondary); font-variant-numeric: tabular-nums; }
+.ai-text h3 { font-family: var(--font-display); font-weight: 700; font-size: 1.45rem; line-height: 1.05; margin: 4px 0 8px; }
+.ai-text p { font-size: 0.95rem; line-height: 1.55; color: var(--text-primary); margin: 0 0 10px; }
+.ai-cta { border-top: 1px solid var(--border-subtle); border-bottom: 1px solid var(--border-subtle); padding: 12px 0; display: grid; gap: 8px; }
+.ai-cta p { margin: 0; font-size: 0.92rem; color: var(--text-secondary); line-height: 1.45; }
+.ai-cta small { font-size: 0.8rem; color: var(--text-secondary); text-align: center; }
+.ai-cta .ai-error { color: var(--danger); }
+.ai-stats { margin-top: 4px; }
 /* Mando: qué botón hace qué */
 .remote-keys { border-top: 1px solid var(--border-subtle); margin-top: 6px; }
 .remote-keys div { display: flex; justify-content: space-between; gap: 12px; padding: 10px 0; border-bottom: 1px solid var(--border-subtle); font-size: 0.95rem; font-weight: 600; }

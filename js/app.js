@@ -149,7 +149,7 @@ function openDataSheet() {
     </div>
     <div class="menu-group-title">Pruebas</div>
     <div class="menu-list">
-      ${row('i-users', 'Cargar datos de ejemplo', 'top 15', 'closeEventModal(); loadDemoData()')}
+      ${row('i-users', 'Cargar datos de ejemplo', '30 jugadores', 'closeEventModal(); loadDemoData()')}
       ${row('i-trash', 'Vaciar el historial de partidos', '›', 'closeEventModal(); clearAllHistory()', 'menu-row-danger')}
       ${row('i-trash', 'Restaurar de fábrica', '›', 'closeEventModal(); openFactoryReset()', 'menu-row-danger')}
     </div>`);
@@ -293,7 +293,7 @@ function openAboutSheet() {
     <div class="menu-group-title">Tus datos</div>
     <ul class="about-list">
       <li>Todo se guarda en este dispositivo. No hace falta cuenta ni se piden datos personales.</li>
-      <li>Solo sale del móvil lo que tú decides compartir: el directo de un partido, el club compartido, los enlaces de partido o de perfil y las inscripciones con QR.</li>
+      <li>Solo sale del móvil lo que tú decides compartir: el directo de un partido, el club compartido, los enlaces de partido o de perfil, las inscripciones con QR y los datos del partido cuando pides su crónica con IA.</li>
       <li>No hay publicidad ni seguimiento de lo que haces en la app.</li>
     </ul>
     <div class="menu-group-title">Contacto</div>
@@ -311,13 +311,11 @@ function openAboutSheet() {
 }
 
 // Novedades: se muestran una vez tras actualizar (no a quien abre la app por primera vez)
-const APP_VERSION = 14;
+const APP_VERSION = 15;
 const APP_NEWS = [
-  ['Empezar en un toque', 'En el inicio: "Repetir el último partido" con los mismos jugadores y reglas, y "Partido rápido" para llevar solo el marcador. Al terminar, "Revancha". En Nuevo partido, guarda tus grupos de cuatro.'],
-  ['Deshacer a mano y terminar sin guardar', 'Deshacer está abajo a la izquierda en el partido. En Salir puedes pausar, terminar y guardar o terminar sin guardar nada.'],
-  ['Anotar con un mando', 'Con un mando Bluetooth de los de hacer fotos o, en la app de Android, con los botones de volumen. Actívalo en Ajustes.'],
-  ['Botón atrás', 'Ahora vuelve a la pantalla anterior. En el partido, abre las opciones para salir.'],
-  ['Acerca de y privacidad', 'En Ajustes: qué datos se guardan, la política de privacidad y un contacto para sugerencias o fallos.']
+  ['Resumen del partido', 'Al terminar un partido, o desde el historial, verás sus estadísticas como en el circuito profesional (saque, resto, bolas de break, winners y errores) y podrás pedir la crónica del partido escrita con IA: 3 al mes, lista para compartir.'],
+  ['Cada jugador, por su nombre', 'El marcador, la pista y las cartas muestran el nombre de pila, como se hace en el pádel amateur. Si dos se llaman igual, se añade la inicial del apellido.'],
+  ['Datos de ejemplo nuevos', '30 jugadores inventados con partidos, torneos y americanos más realistas.']
 ];
 
 function openNewsSheet() {

@@ -72,4 +72,4 @@ Si cambia la interfaz de forma visible, conviene rehacer las capturas. Para revi
 
 ## Datos de ejemplo
 
-`assets/demo/padel-metric-demo.json`: 30 jugadores (top 15 masculino y femenino del circuito profesional), partidos simulados punto a punto, torneos y americanos. No es un activo de marca, pero aparece en todas las capturas de demostración.
+`assets/demo/padel-metric-demo.json`: 30 jugadores con nombres inventados, partidos simulados punto a punto, torneos y americanos. No es un activo de marca, pero aparece en todas las capturas de demostración.

@@ -329,8 +329,9 @@ function shareWrappedImage(name, key) {
   closeWrapped();
   const pct = (a, b) => (b ? Math.round((a / b) * 100) : 0);
   const parts = w.name.trim().split(/\s+/);
-  const first = parts.length > 1 ? parts[0] : '';
-  const surname = parts.length > 1 ? parts.slice(1).join(' ') : parts[0];
+  // Nombre de pila grande y el apellido encima
+  const first = parts.length > 1 ? parts.slice(1).join(' ') : '';
+  const surname = parts[0];
   const diff = w.eloEnd - w.eloStart;
   const lines = [
     ['Victorias', `${w.V} de ${w.PJ} (${pct(w.V, w.PJ)} %)`],
@@ -471,7 +472,7 @@ function maybeShowWelcome() {
       </div>` },
     { cls: 'w-final', html: `
       <div class="w-name">¿Cómo quieres empezar?</div>
-      <div class="w-sub">Puedes ver la app con datos de ejemplo (jugadores del circuito profesional) y borrarlos después en Ajustes.</div>
+      <div class="w-sub">Puedes ver la app con datos de ejemplo (30 jugadores inventados con sus partidos, torneos y americanos) y borrarlos después en Ajustes.</div>
       <div class="w-actions">
         <button class="btn-volt" onclick="event.stopPropagation(); closeWrapped(); switchMainTab('setup');">Empezar un partido</button>
         <button class="btn-icon" onclick="event.stopPropagation(); closeWrapped(); loadDemoData();">Ver con datos de ejemplo</button>

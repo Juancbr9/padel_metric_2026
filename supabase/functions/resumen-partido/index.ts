@@ -1,6 +1,6 @@
 // ==========================================================
 // PADEL METRIC · RESUMEN DEL PARTIDO CON IA (Supabase Edge Function "resumen-partido")
-// La app envía { device, match, modelo? } con match = matchToAI(partido) (js/resumen.js). Esta función:
+// La app envía { device, match } con match = matchToAI(partido) (js/resumen.js). Esta función:
 //   1. Comprueba los datos y reserva un uso (pm_ia_reservar: límite al mes por dispositivo y tope diario total).
 //   2. Pide a Claude la crónica del partido. La clave ANTHROPIC_API_KEY es un secreto de Supabase: nunca llega a la app.
 //   3. Devuelve { texto, modelo, restantes } o { error }. Si la IA falla, devuelve la reserva.
@@ -9,27 +9,24 @@
 // ==========================================================
 import Anthropic from "npm:@anthropic-ai/sdk@1.3.0";
 
-const MODELOS: Record<string, string> = {
-  opus: "claude-opus-5-5",
-  haiku: "claude-haiku-5-5",
-};
-const MODELO_POR_DEFECTO = Deno.env.get("PM_IA_MODELO") || "opus";
+// Claude Haiku 5.5: el más económico (unos 0,25 céntimos por resumen), elegido por el dueño del proyecto
+const MODELO = "claude-haiku-5-5";
 
-const SISTEMA = `Eres un periodista deportivo especializado en pádel. Escribes la crónica de un partido amateur a partir de sus estadísticas, para que los jugadores la lean y la compartan.
+const SISTEMA = `Eres el redactor de las crónicas de partido de una app de pádel. Escribes como las crónicas oficiales del circuito profesional (Premier Padel): estilo informativo de agencia, frases cortas, primero el resultado y después las claves del partido apoyadas en estadísticas.
 
 Reglas:
-- Español de España, tono profesional y cercano. Sin emojis, sin apodos y sin exageraciones ("histórico", "épico", "brutal").
+- Español de España, tono profesional. Sin emojis, sin apodos y sin exageraciones ("histórico", "épico", "brutal").
+- Es pádel amateur: llama a cada jugador solo por su nombre de pila, tal como viene en "nombre_corto". Nunca uses apellidos.
 - Usa solo los datos que recibes. No inventes jugadas, golpes, marcadores ni ambiente. Si falta un dato, no lo menciones.
-- Apóyate en cifras concretas (porcentajes al saque y al resto, bolas de break, winners, errores no forzados, rachas), pero sin convertir el texto en una lista de números: elige las que explican el partido.
-- Los marcadores de los sets vienen como pareja 1 - pareja 2. Cuando cites el resultado, escríbelo desde el punto de vista de la pareja ganadora.
-- "Lado" es la posición en la pista (drive o revés). "Valoración" es una nota de 1 a 10 calculada por la app.
+- Las claves deben salir de las estadísticas que se usan en el circuito profesional: puntos ganados con el primer y el segundo saque, puntos ganados al resto, bolas de break convertidas y salvadas, puntos de oro, winners, errores no forzados y rachas de puntos. Elige las dos o tres que explican el resultado; no las enumeres todas.
+- "errores_no_forzados_por_golpe" son solo errores no forzados; no los mezcles con los forzados.
+- Los marcadores de los sets vienen como pareja 1 - pareja 2. Escribe el resultado desde el punto de vista de la pareja ganadora (por ejemplo, 3-6, 6-3 y 6-2 si remontó).
 - Si hubo remontada (dato "peor_momento_de_la_ganadora"), cuéntala con el marcador de ese momento.
-- Nombra a los jugadores por su nombre y apellido la primera vez y después solo por el apellido.
 
 Formato (texto plano, sin markdown, sin asteriscos ni almohadillas):
-Línea 1: un titular de 12 palabras como máximo.
-Después, una línea en blanco y 2 o 3 párrafos cortos, de 120 a 180 palabras en total: cómo fue el partido, qué lo decidió y quién destacó y por qué.
-Por último, una línea en blanco, la línea "Para el próximo partido:" y debajo una frase por pareja con un consejo concreto basado en sus datos, empezando cada una con los apellidos de la pareja y dos puntos.`;
+Línea 1: un titular de 12 palabras como máximo, con las dos parejas por sus nombres.
+Después, una línea en blanco y 2 párrafos cortos, de 90 a 140 palabras en total.
+Por último, una línea en blanco, la línea "Para el próximo partido:" y debajo una frase por pareja con un consejo concreto basado en sus datos, empezando con los nombres de la pareja y dos puntos.`;
 
 const CORS = {
   "Access-Control-Allow-Origin": "*",
@@ -58,18 +55,21 @@ Deno.serve(async (req: Request) => {
   if (req.method !== "POST") return respuesta({ error: "Método no permitido" }, 405);
   if (!Deno.env.get("ANTHROPIC_API_KEY")) return respuesta({ error: "Falta la clave de la IA en Supabase (ANTHROPIC_API_KEY)" }, 503);
 
-  let body: { device?: string; match?: unknown; modelo?: string };
+  let body: { device?: string; match?: unknown };
   try { body = await req.json(); } catch { return respuesta({ error: "Datos no válidos" }, 400); }
   const device = String(body.device || "");
   const datos = JSON.stringify(body.match ?? null);
   if (!/^[a-z0-9]{16,64}$/.test(device)) return respuesta({ error: "Dispositivo no válido" }, 400);
   if (!body.match || typeof body.match !== "object" || datos.length > 16000) return respuesta({ error: "Partido no válido" }, 400);
-  const clave = body.modelo && MODELOS[body.modelo] ? body.modelo : MODELO_POR_DEFECTO;
-  const modelo = MODELOS[clave] || MODELOS.opus;
 
   const limite = Number(Deno.env.get("PM_IA_LIMITE_MES") || 3);
   const tope = Number(Deno.env.get("PM_IA_TOPE_DIA") || 100);
-  const restantes = await rpc("pm_ia_reservar", { p_device: device, p_limite_mes: limite, p_tope_dia: tope });
+  let restantes: number;
+  try {
+    restantes = await rpc("pm_ia_reservar", { p_device: device, p_limite_mes: limite, p_tope_dia: tope });
+  } catch {
+    return respuesta({ error: "Las crónicas todavía no están activadas en el servidor." }, 503);
+  }
   if (restantes === -1) return respuesta({ error: `Ya has usado los ${limite} resúmenes de este mes`, restantes: 0 }, 429);
   if (restantes === -2) return respuesta({ error: "Hoy se han pedido muchos resúmenes. Prueba mañana." }, 429);
   if (restantes < 0) return respuesta({ error: "Dispositivo no válido" }, 400);
@@ -77,12 +77,8 @@ Deno.serve(async (req: Request) => {
   const client = new Anthropic();
   const mensajes = [{ role: "user" as const, content: `Datos del partido en JSON:\n${datos}` }];
   try {
-    // Opus 5.5 lleva el respaldo del servidor por si declina (fallbacks: "default"); Haiku 5.5 no lo admite
-    // deno-lint-ignore no-explicit-any
-    const params: any = { model: modelo, max_tokens: 12000, system: SISTEMA, messages: mensajes, output_config: { effort: "medium" } };
-    const r = modelo === MODELOS.opus
-      ? await client.beta.messages.create({ ...params, betas: ["server-side-fallback-2026-07-01"], fallbacks: "default" })
-      : await client.messages.create(params);
+    // Esfuerzo bajo: para un texto corto basta y piensa menos (más rápido y más barato)
+    const r = await client.messages.create({ model: MODELO, max_tokens: 12000, system: SISTEMA, messages: mensajes, output_config: { effort: "low" } });
     if (r.stop_reason === "refusal" || r.stop_reason === "max_tokens") throw new Error(String(r.stop_reason));
     // deno-lint-ignore no-explicit-any
     const texto = (r.content as any[]).filter((b) => b.type === "text").map((b) => b.text).join("").trim();

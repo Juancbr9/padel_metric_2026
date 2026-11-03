@@ -60,7 +60,7 @@ Sistema de diseño en [`DESIGN.md`](DESIGN.md): fondo negro, un único acento li
 
 ## Datos de ejemplo
 
-`assets/demo/padel-metric-demo.json` trae 30 jugadores (top 15 masculino y top 15 femenino del circuito profesional), 73 partidos simulados punto a punto (masculinos, femeninos y mixtos), 3 torneos y 6 americanos (Americano, por parejas, Mexicano, Mexicano mixto y Pozo). Se carga desde el menú con **Cargar datos de ejemplo**, o importando el archivo con **Restaurar copia de seguridad**. Los resultados y estadísticas son simulados.
+`assets/demo/padel-metric-demo.json` trae 30 jugadores con nombres inventados (15 hombres y 15 mujeres de clubes ficticios), 73 partidos simulados punto a punto (masculinos, femeninos y mixtos), 3 torneos y 6 americanos (Americano, por parejas, Mexicano, Mexicano mixto y Pozo). Se carga desde el menú con **Cargar datos de ejemplo**, o importando el archivo con **Restaurar copia de seguridad**. Los resultados y estadísticas son simulados.
 
 Al cargarlos, las fechas se mueven para que el último partido sea reciente. Se regeneran con `node tools/generar-datos-demo.mjs` (con el servidor local en marcha).
 

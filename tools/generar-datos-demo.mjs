@@ -3,7 +3,7 @@
 //   python3 -m http.server 8765 &
 //   node tools/generar-datos-demo.mjs
 // Necesita Playwright con Chromium. La semilla es fija, así que el resultado es reproducible.
-import { chromium } from 'playwright';
+import { chromium } from '/opt/node22/lib/node_modules/playwright/index.mjs';
 import fs from 'fs';
 const b = await chromium.launch();
 const p = await b.newPage({ viewport: { width: 400, height: 860 } });
@@ -30,24 +30,24 @@ const payload = await p.evaluate(() => {
   openMatchEnd = () => {};
   const pick = arr => arr[Math.floor(rnd() * arr.length)];
 
+  // Nombres inventados (no son jugadores reales) y clubes ficticios
+  const CLUBS = ['Club Pádel Norte', 'Pádel Indoor Sur', 'Club de Tenis y Pádel La Vega', 'Pádel Center Levante', 'Club Deportivo Los Pinos'];
   const MEN = [
-    ['Arturo Coello', 'España', 'Zurdo'], ['Agustín Tapia', 'Argentina'], ['Alejandro Galán', 'España'], ['Federico Chingotto', 'Argentina'],
-    ['Juan Lebrón', 'España'], ['Franco Stupaczuk', 'Argentina'], ['Martín Di Nenno', 'Argentina'], ['Paquito Navarro', 'España'],
-    ['Mike Yanguas', 'España'], ['Alejandro Ruiz', 'España'], ['Juan Tello', 'Argentina'], ['Javi Garrido', 'España'],
-    ['Coki Nieto', 'España'], ['Jon Sanz', 'España'], ['Leo Augsburger', 'Argentina']
+    ['Carlos Martín', 'Zurdo'], ['Javier López'], ['Daniel Ruiz'], ['Pablo Moreno'], ['Sergio Navarro'],
+    ['Álvaro Romero'], ['Diego Torres'], ['Marcos Gil', 'Zurdo'], ['Raúl Serrano'], ['Iván Castro'],
+    ['Adrián Molina'], ['Hugo Ortega'], ['Rubén Delgado'], ['Víctor Rubio'], ['Jorge Herrera']
   ];
   const WOMEN = [
-    ['Ariana Sánchez', 'España'], ['Paula Josemaría', 'España'], ['Gemma Triay', 'España'], ['Delfina Brea', 'Argentina'],
-    ['Claudia Fernández', 'España'], ['Bea González', 'España'], ['Marta Ortega', 'España'], ['Aranzazu Osoro', 'España'],
-    ['Sofía Araújo', 'Portugal'], ['Andrea Ustero', 'España'], ['Alejandra Salazar', 'España'], ['Virginia Riera', 'Argentina'],
-    ['Tamara Icardo', 'España'], ['Lucía Sainz', 'España'], ['Jessica Castelló', 'España']
+    ['Laura García'], ['Marta Sánchez'], ['Lucía Fernández', 'Zurdo'], ['Paula Jiménez'], ['Elena Díaz'],
+    ['Sara Muñoz'], ['Cristina Alonso'], ['Andrea Vázquez'], ['Nuria Blanco'], ['Carmen Iglesias'],
+    ['Alba Medina'], ['Silvia Cano'], ['Raquel Prieto'], ['Noelia Pascual'], ['Beatriz Vidal']
   ];
   const level = {};
-  const note = 'Perfil de ejemplo inspirado en el circuito profesional. Los partidos, estadísticas y ELO son simulados para probar la app.';
-  [[MEN, 'M'], [WOMEN, 'F']].forEach(([list, g]) => list.forEach(([name, country, hand], i) => {
+  const note = 'Jugador de ejemplo con nombre inventado. Los partidos, estadísticas y ELO son simulados para probar la app.';
+  [[MEN, 'M'], [WOMEN, 'F']].forEach(([list, g]) => list.forEach(([name, hand], i) => {
     dbPlayers.push(name);
     const parts = name.split(' ');
-    dbProfiles[name] = { firstName: parts[0], lastName: parts.slice(1).join(' '), gender: g, club: country, hand: hand || 'Diestro', prefSide: 'Ambas', notes: note, photo: null };
+    dbProfiles[name] = { firstName: parts[0], lastName: parts.slice(1).join(' '), gender: g, club: CLUBS[i % CLUBS.length], hand: hand || 'Diestro', prefSide: i % 3 === 0 ? 'Drive' : i % 3 === 1 ? 'Revés' : 'Ambas', notes: note, photo: null };
     level[name] = 100 - i * 2.2;
   }));
   const men = MEN.map(x => x[0]), women = WOMEN.map(x => x[0]);
@@ -67,8 +67,10 @@ const payload = await p.evaluate(() => {
   };
   const fmtDate = ts => new Date(ts).toLocaleDateString('es-ES', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' });
 
-  const WIN_SHOTS = [['Volea', 30], ['Remate', 18], ['Bandeja/Víbora', 22], ['Fondo/Bajada', 22]];
-  const ENF_SHOTS = [['Red', 45], ['Fondo', 55]];
+  // Golpes del catálogo con un reparto parecido al del circuito profesional: la mayoría de winners llegan en la red
+  const WIN_SHOTS = [['Volea', 27], ['Remate', 15], ['Bandeja', 10], ['Víbora', 11], ['Bajada de pared', 9], ['Golpe de fondo', 7], ['Globo', 8], ['Dejada', 6], ['Chiquita', 4], ['Resto', 3]];
+  const ENF_SHOTS = [['Volea', 17], ['Bandeja', 11], ['Víbora', 12], ['Golpe de fondo', 18], ['Globo', 13], ['Resto', 13], ['Remate', 6], ['Bajada de pared', 6], ['Chiquita', 4]];
+  const EF_SHOTS = [['Golpe de fondo', 30], ['Bajada de pared', 25], ['Volea', 20], ['Globo', 15], ['Resto', 10]];
   const weighted = list => { let r = rnd() * list.reduce((a, x) => a + x[1], 0); for (const [v, w] of list) { if ((r -= w) <= 0) return v; } return list[0][0]; };
   const otherZone = z => pick(['R', 'T', 'F'].filter(x => x !== z));
 
@@ -90,8 +92,8 @@ const payload = await p.evaluate(() => {
     while (!state.matchOver && guard++ < 600) {
       state.elapsedSec += 25 + Math.floor(rnd() * 30);
       if (rnd() < 0.09) { handleServeFault(); if (state.matchOver) break; if (state.serveNumber === 1) continue; }
-      // Quien saca tiene ventaja (~6 puntos porcentuales), como en el modelo de probabilidad de victoria
-      const winTeam = rnd() < pA + (state.serverIdx < 2 ? 0.06 : -0.06) ? 0 : 1;
+      // Quien saca gana alrededor del 60 % de los puntos, como en el circuito profesional
+      const winTeam = rnd() < pA + (state.serverIdx < 2 ? 0.09 : -0.09) ? 0 : 1;
       const r = rnd();
       if (r < 0.46) {
         const idx = winTeam * 2 + (rnd() < 0.5 ? 0 : 1);
@@ -106,7 +108,7 @@ const payload = await p.evaluate(() => {
         const idx = lose * 2 + (rnd() < 0.5 ? 0 : 1);
         selectedSlot = idx;
         const forced = r > 0.84;
-        const shot = forced ? 'Defensa' : weighted(ENF_SHOTS);
+        const shot = weighted(forced ? EF_SHOTS : ENF_SHOTS);
         let z = SHOT_DEFAULT_ZONE[shot];
         if (rnd() < 0.25) z = otherZone(z);
         recordAction(forced ? 'EF' : 'ENF', shot, { z, l: sideToLane(state.players[idx].side) });

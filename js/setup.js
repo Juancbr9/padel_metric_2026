@@ -79,10 +79,10 @@ function renderSetupCourt() {
     if (!card) continue;
 
     const prof = !isGeneric ? ensureProfile(currentVal) : null;
-    // Apellido grande (como en el marcador) y debajo el nombre y el club
+    // Nombre grande (como en el marcador) y debajo el apellido y el club
     const parts = isGeneric ? [] : String(currentVal).trim().split(/\s+/);
-    const surname = parts.length > 1 ? parts.slice(1).join(' ') : (parts[0] || '');
-    const subLine = !isGeneric ? [parts.length > 1 ? parts[0] : '', prof && prof.club].filter(Boolean).join(' · ') : 'Toca para elegir';
+    const surname = shortPlayerName(currentVal, setupConfig.slots.filter(s => !String(s).startsWith('GEN_')));
+    const subLine = !isGeneric ? [parts.length > 1 ? parts.slice(1).join(' ') : '', prof && prof.club].filter(Boolean).join(' · ') : 'Toca para elegir';
     const clubLine = subLine ? `<div class="lineup-club-sub">${escapeHtml(subLine)}</div>` : '';
     const avClass = i < 2 ? 'avatar-p1' : 'avatar-p2';
     const avatarNode = renderAvatarHTML(currentVal, avClass, '', isGeneric, `J${i+1}`);

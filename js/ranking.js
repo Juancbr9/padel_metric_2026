@@ -495,14 +495,14 @@ function renderH2H() {
   };
   const side = (name, st, wins, cls) => `<button type="button" class="h2h-side ${cls}" onclick="openPlayerProfile(${jsArg(name)})">
     ${renderAvatarHTML(name, `avatar-xl ${cls === 'a' ? 'avatar-p1' : 'avatar-p2'}`)}
-    <strong>${escapeHtml(liveSurname({ name }))}</strong><small>${st.PJ} PJ · ELO ${st.elo}</small>
+    <strong>${escapeHtml(shortPlayerName(name, [p1, p2]))}</strong><small>${st.PJ} PJ · ELO ${st.elo}</small>
     <span class="h2h-wins" data-count="${wins}">0</span></button>`;
   box.innerHTML = `
     <div class="h2h-head">${side(p1, A, winsA, 'a')}<div class="h2h-mid"><span>Enfrentados</span><b>${winsA + winsB}</b><small>${together ? `Juntos: ${togetherWon} de ${together}` : 'Nunca juntos'}</small></div>${side(p2, B, winsB, 'b')}</div>
     ${metrics.map(bar).join('')}
     ${direct.length ? `<div class="menu-group-title">Partidos entre ellos</div>${direct.slice(0, 8).map(({ m, idx, pa }) => `
       <button type="button" class="h2h-match" onclick="openHistoryMatchStats(${idx})">
-        <span class="h2h-res ${m.winnerPair === pa ? 'a' : 'b'}">${m.winnerPair === pa ? escapeHtml(liveSurname({ name: p1 })) : escapeHtml(liveSurname({ name: p2 }))}</span>
+        <span class="h2h-res ${m.winnerPair === pa ? 'a' : 'b'}">${m.winnerPair === pa ? escapeHtml(shortPlayerName(p1, [p1, p2])) : escapeHtml(shortPlayerName(p2, [p1, p2]))}</span>
         <span class="h2h-mdate">${escapeHtml(m.date || '')}</span>
         <span class="h2h-msets">${m.sets.filter(s => s[0] + s[1] > 0).map(s => `${s[pa]}-${s[1 - pa]}`).join(' ')}</span>
       </button>`).join('')}` : '<div class="empty-note">Todavía no se han enfrentado.</div>'}`;
@@ -533,7 +533,7 @@ function renderPairsRanking() {
     return `<div class="pr-row">
       <span class="pr-pos ${i < 3 ? `top${i + 1}` : ''}">${i + 1}</span>
       <span class="hm-avs">${p.names.map(n => renderAvatarHTML(n, '')).join('')}</span>
-      <span class="pr-info"><strong>${p.names.map(n => escapeHtml(liveSurname({ name: n }))).join(' / ')}</strong>
+      <span class="pr-info"><strong>${p.names.map(n => escapeHtml(shortPlayerName(n, p.names))).join(' / ')}</strong>
         <small>${p.V} de ${p.PJ} ganados · juegos ${diff > 0 ? '+' : ''}${diff}</small>
         <span class="pr-bar"><i style="width:${pct}%"></i></span></span>
       <span class="pr-pct">${pct}<small>%</small></span>

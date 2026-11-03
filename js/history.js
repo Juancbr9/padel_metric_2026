@@ -40,7 +40,7 @@ function historyPairRow(m, pair) {
   const sets = (m.sets || []).filter(s => s[0] + s[1] > 0);
   return `<div class="hm-row ${won ? 'won' : ''} ${pair ? 'b' : 'a'}">
     <span class="hm-avs">${renderAvatarHTML(a.name, pair ? 'avatar-p2' : 'avatar-p1', '', a.isGeneric, a.isGeneric ? 'J' : '')}${renderAvatarHTML(b.name, pair ? 'avatar-p2' : 'avatar-p1', '', b.isGeneric, b.isGeneric ? 'J' : '')}</span>
-    <span class="hm-names">${escapeHtml(liveSurname(a))} / ${escapeHtml(liveSurname(b))}</span>
+    <span class="hm-names">${escapeHtml(liveSurname(a, m))} / ${escapeHtml(liveSurname(b, m))}</span>
     ${won ? '<svg class="icon hm-trophy"><use href="#i-trophy"/></svg>' : ''}
     <span class="hm-sets">${sets.map(s => `<i class="${s[pair] > s[1 - pair] ? 'w' : ''}">${s[pair]}</i>`).join('')}</span>
   </div>`;
@@ -117,6 +117,7 @@ function openHistoryActions(idx) {
     <p class="bc-intro">${escapeHtml(m.date || '')} · ${(m.sets || []).filter(s => s[0] + s[1] > 0).map(s => `${s[0]}-${s[1]}`).join(' ')}</p>
     <div class="menu-list">
       ${row('i-chart', 'Ver estadísticas', `openHistoryMatchStats(${idx})`)}
+      ${row('i-star', 'Resumen del partido', `openMatchSummary('history', ${idx})`)}
       ${row('i-share', 'Compartir: enlace, QR o póster', `openShareMatchSheet(matchHistory[${idx}])`)}
       ${row('i-play', 'Jugar otro con los mismos jugadores', `repeatMatch(${idx})`)}
       ${row('i-trash', 'Eliminar partido', `deleteHistoryMatch(${idx})`, 'menu-row-danger')}

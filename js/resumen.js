@@ -9,7 +9,7 @@ const AI_TYPE_NAMES = { W: 'golpe ganador', ENF: 'error no forzado', EF: 'error 
 function matchToAI(m) {
   if (!m || !m.players) return null;
   const sets = (m.sets || []).filter(s => s[0] + s[1] > 0);
-  const pairName = k => `${m.players[k * 2].name} / ${m.players[k * 2 + 1].name}`;
+  const pairName = k => livePairName(k, m);
   const hasPoints = Array.isArray(m.points) && m.points.length > 0;
   const press = hasPoints ? computePressureStats(m) : null;
   const ratio = (a, b) => (b ? `${a} de ${b} (${Math.round((a / b) * 100)} %)` : 'sin datos');
@@ -24,6 +24,7 @@ function matchToAI(m) {
 
   const players = m.players.map((p, i) => ({
     nombre: p.isGeneric ? `Jugador ${i + 1}` : p.name,
+    nombre_corto: p.isGeneric ? `Jugador ${i + 1}` : shortPlayerName(p.name, m.players.map(x => x.name)),
     pareja: i < 2 ? 1 : 2,
     lado: p.side || (i % 2 ? 'Revés' : 'Drive'),
     winners: p.W || 0,
@@ -33,7 +34,7 @@ function matchToAI(m) {
     dobles_faltas: p.df || 0,
     valoracion: Math.round(calcPlayerRating({ W: 0, ENF: 0, EF: 0, aces: 0, ...p }) * 10) / 10,
     golpes_ganadores: m.points && m.points.length ? fromPoints(p.name, ['W']) : shotsOf(p.shots),
-    errores_por_golpe: m.points && m.points.length ? fromPoints(p.name, ['ENF', 'EF']) : shotsOf(p.errShots)
+    errores_no_forzados_por_golpe: m.points && m.points.length ? fromPoints(p.name, ['ENF']) : shotsOf(p.errShots)
   }));
 
   const pairs = [0, 1].map(k => {
@@ -103,21 +104,163 @@ function matchToAI(m) {
           };
         }
       }
-      const km = wpKeyMoment(m);
-      if (km && km.point) {
-        const pt = km.point;
-        out.momento_clave = {
-          set: (pt.s || 0) + 1,
-          juegos_antes_del_punto: Array.isArray(pt.g) ? `${pt.g[0]}-${pt.g[1]}` : undefined,
-          marcador_del_juego: Array.isArray(pt.pl) ? `${pt.pl[0]}-${pt.pl[1]}` : undefined,
-          gana_el_punto: pairName(pt.w),
-          jugador: pt.n || undefined,
-          como: [AI_TYPE_NAMES[pt.t] || '', pt.sh && pt.sh !== 'Winner' ? pt.sh : ''].filter(Boolean).join(' de ') || undefined,
-          tipo_de_punto: pt.bp ? 'bola de break' : pt.gp ? 'punto de oro' : pt.tb ? 'tie-break' : undefined,
-          cambio_de_probabilidad: `${km.swing > 0 ? '+' : ''}${Math.round(km.swing * 100)} puntos para la pareja 1`
-        };
-      }
     }
   }
   return JSON.parse(JSON.stringify(out));
+}
+
+// ---------- Hoja "Resumen del partido" ----------
+// Estadísticas al estilo de las del circuito profesional (se calculan en el móvil, gratis) y la crónica escrita por
+// la IA (3 al mes por dispositivo; más, con la versión de pago). La crónica se guarda en el partido (m.aiSummary).
+const AI_SUMMARY_URL = `${DEFAULT_SUPABASE_URL}/functions/v1/resumen-partido`;
+const AI_FREE_PER_MONTH = 3;
+let aiSummaryTarget = null, aiSummaryBusy = false;
+
+function aiDeviceId() {
+  let id = null;
+  try { id = localStorage.getItem('pm_dispositivo_v1'); } catch (e) {}
+  if (!id || !/^[a-z0-9]{16,64}$/.test(id)) {
+    id = Array.from(crypto.getRandomValues(new Uint8Array(16)), b => (b % 36).toString(36)).join('') + Date.now().toString(36);
+    try { localStorage.setItem('pm_dispositivo_v1', id); } catch (e) {}
+  }
+  return id;
+}
+
+// Filas de estadísticas: [etiqueta, valor pareja 1, valor pareja 2, número 1, número 2, menos es mejor]
+function proStatsRows(m) {
+  const sum = (k, pair) => m.players.slice(pair * 2, pair * 2 + 2).reduce((a, p) => a + (p[k] || 0), 0);
+  const sets = (m.sets || []).filter(s => s[0] + s[1] > 0);
+  const rows = [];
+  const pctTxt = (a, b) => (b ? `${Math.round((a / b) * 100)} %` : '–');
+  const pctNum = (a, b) => (b ? a / b : 0);
+  if (Array.isArray(m.points) && m.points.length) {
+    const { pair } = computePressureStats(m);
+    const [a, b] = pair;
+    rows.push(['Puntos ganados', a.total, b.total, a.total, b.total]);
+    rows.push(['Puntos ganados con el 1.er saque', pctTxt(a.firstWon, a.first), pctTxt(b.firstWon, b.first), pctNum(a.firstWon, a.first), pctNum(b.firstWon, b.first)]);
+    rows.push(['Puntos ganados con el 2.º saque', pctTxt(a.secondWon, a.second), pctTxt(b.secondWon, b.second), pctNum(a.secondWon, a.second), pctNum(b.secondWon, b.second)]);
+    rows.push(['Puntos ganados al resto', pctTxt(a.returnWon, a.returnPts), pctTxt(b.returnWon, b.returnPts), pctNum(a.returnWon, a.returnPts), pctNum(b.returnWon, b.returnPts)]);
+    rows.push(['Bolas de break convertidas', `${a.bpWon}/${a.bpChances}`, `${b.bpWon}/${b.bpChances}`, pctNum(a.bpWon, a.bpChances), pctNum(b.bpWon, b.bpChances)]);
+    if (a.goldPlayed) rows.push(['Puntos de oro ganados', `${a.goldWon}/${a.goldPlayed}`, `${b.goldWon}/${b.goldPlayed}`, a.goldWon, b.goldWon]);
+    rows.push(['Racha más larga de puntos', a.maxRun, b.maxRun, a.maxRun, b.maxRun]);
+  } else {
+    const g = [0, 1].map(k => sets.reduce((acc, s) => acc + s[k], 0));
+    rows.push(['Juegos ganados', g[0], g[1], g[0], g[1]]);
+  }
+  rows.push(['Winners', sum('W', 0), sum('W', 1), sum('W', 0), sum('W', 1)]);
+  rows.push(['Errores no forzados', sum('ENF', 0), sum('ENF', 1), sum('ENF', 0), sum('ENF', 1), true]);
+  if (sum('aces', 0) + sum('aces', 1)) rows.push(['Saques directos', sum('aces', 0), sum('aces', 1), sum('aces', 0), sum('aces', 1)]);
+  if (sum('df', 0) + sum('df', 1)) rows.push(['Dobles faltas', sum('df', 0), sum('df', 1), sum('df', 0), sum('df', 1), true]);
+  return rows;
+}
+
+function proStatsHTML(m) {
+  return proStatsRows(m).map(([label, va, vb, a, b, low]) => {
+    const tot = Math.abs(a) + Math.abs(b) || 1;
+    const better = a === b ? 0 : (low ? a < b : a > b) ? 1 : 2;
+    return `<div class="h2h-metric">
+      <div class="h2h-mhead"><strong class="${better === 1 ? 'lead' : ''}">${escapeHtml(String(va))}</strong><span>${label}</span><strong class="${better === 2 ? 'lead' : ''}">${escapeHtml(String(vb))}</strong></div>
+      <div class="h2h-track"><i class="a" style="flex-basis:${(Math.abs(a) / tot) * 100}%"></i><i class="b"></i></div>
+    </div>`;
+  }).join('');
+}
+
+function aiSummaryMatch() {
+  const t = aiSummaryTarget;
+  if (!t) return null;
+  return t.kind === 'live' ? state : matchHistory.find(m => m && String(m.id) === String(t.id)) || null;
+}
+
+function openMatchSummary(kind, idOrIdx) {
+  const m = kind === 'live' ? state : (typeof idOrIdx === 'number' ? matchHistory[idOrIdx] : matchHistory.find(x => String(x.id) === String(idOrIdx)));
+  if (!m || !m.players) return;
+  aiSummaryTarget = { kind, id: m.id };
+  renderMatchSummary();
+}
+
+function renderMatchSummary(error = '') {
+  const m = aiSummaryMatch();
+  if (!m) return;
+  const sets = (m.sets || []).filter(s => s[0] + s[1] > 0).map(s => `${s[0]}-${s[1]}`).join('  ');
+  const ai = m.aiSummary;
+  const [title, ...rest] = ai ? String(ai.texto).split('\n') : [];
+  const body = rest.join('\n').trim().split(/\n\s*\n/).map(par => `<p>${escapeHtml(par).replace(/\n/g, '<br>')}</p>`).join('');
+  openEventModal(`
+    <div class="mo-title">Resumen del partido</div>
+    <div class="ai-head">
+      <div class="ai-pair a"><i></i>${escapeHtml(livePairName(0, m))}</div>
+      <div class="ai-pair b"><i></i>${escapeHtml(livePairName(1, m))}</div>
+      <div class="ai-score">${escapeHtml(sets)}${m.date ? ` · ${escapeHtml(m.date)}` : ''}</div>
+    </div>
+    ${ai ? `<div class="ai-text"><h3>${escapeHtml(title)}</h3>${body}</div>` : `
+      <div class="ai-cta">
+        <p>La crónica del partido escrita a partir de sus estadísticas, lista para compartir con tu grupo.</p>
+        <button type="button" class="btn-volt btn-block" id="ai-go" onclick="generateAiSummary()" ${aiSummaryBusy ? 'disabled' : ''}>${aiSummaryBusy ? 'Escribiendo la crónica…' : 'Escribir la crónica'}</button>
+        <small>${AI_FREE_PER_MONTH} crónicas gratis al mes. Más, con la versión Pro.</small>
+        ${error ? `<p class="ai-error">${escapeHtml(error)}</p>` : ''}
+      </div>`}
+    <div class="menu-group-title">Estadísticas</div>
+    <div class="ai-stats">${proStatsHTML(m)}</div>
+    <div class="u-grid-2 mt-14">
+      <button type="button" class="btn-icon" onclick="copyMatchSummary()">Copiar</button>
+      <button type="button" class="btn-icon" onclick="shareMatchSummary()">Compartir</button>
+    </div>`);
+}
+
+async function generateAiSummary() {
+  const m = aiSummaryMatch();
+  if (!m || aiSummaryBusy) return;
+  if (!navigator.onLine) { renderMatchSummary('Sin conexión. La crónica se escribe en internet: prueba cuando tengas cobertura.'); return; }
+  aiSummaryBusy = true;
+  renderMatchSummary();
+  let error = '';
+  try {
+    const r = await fetch(AI_SUMMARY_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', apikey: DEFAULT_SUPABASE_KEY },
+      body: JSON.stringify({ device: aiDeviceId(), match: matchToAI(m) })
+    });
+    const d = await r.json().catch(() => ({}));
+    if (r.ok && d.texto) {
+      m.aiSummary = { texto: d.texto, at: Date.now() };
+      const h = matchHistory.find(x => x && x.id === m.id);
+      if (h && h !== m) h.aiSummary = m.aiSummary;
+      if (m === state) persistActiveMatchState();
+      saveDB();
+      const left = Number(d.restantes);
+      showToast(left >= 0 && left < AI_FREE_PER_MONTH ? `Crónica lista. Te quedan ${left} este mes` : 'Crónica lista');
+    } else if (r.status === 429 && d.restantes === 0) {
+      error = `Has usado las ${AI_FREE_PER_MONTH} crónicas gratis de este mes. Con la versión Pro tendrás crónicas ilimitadas.`;
+    } else {
+      error = d.error || 'No se ha podido escribir la crónica. Inténtalo de nuevo en un momento.';
+    }
+  } catch (e) {
+    error = 'No se ha podido conectar. Inténtalo de nuevo en un momento.';
+  }
+  aiSummaryBusy = false;
+  if (aiSummaryMatch()) renderMatchSummary(error);
+}
+
+function matchSummaryText(m) {
+  const lines = [];
+  if (m.aiSummary) lines.push(m.aiSummary.texto.trim(), '');
+  const sets = (m.sets || []).filter(s => s[0] + s[1] > 0).map(s => `${s[0]}-${s[1]}`).join(' ');
+  lines.push(`${livePairName(0, m)} ${sets} ${livePairName(1, m)}`, '');
+  proStatsRows(m).forEach(([label, a, b]) => lines.push(`${label}: ${a} - ${b}`));
+  lines.push('', `Hecho con Padel Metric · ${appPublicUrl()}`);
+  return lines.join('\n');
+}
+
+async function copyMatchSummary() {
+  const m = aiSummaryMatch();
+  if (!m) return;
+  try { await navigator.clipboard.writeText(matchSummaryText(m)); showToast('Resumen copiado'); } catch (e) { showToast('No se ha podido copiar'); }
+}
+
+async function shareMatchSummary() {
+  const m = aiSummaryMatch();
+  if (!m) return;
+  const text = matchSummaryText(m);
+  if (navigator.share) { try { await navigator.share({ text, title: 'Resumen del partido' }); return; } catch (e) { if (e && e.name === 'AbortError') return; } }
+  copyMatchSummary();
 }

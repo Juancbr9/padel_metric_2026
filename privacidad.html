@@ -44,6 +44,7 @@
       <li><strong>Directo de un partido o de un torneo:</strong> el marcador o la clasificación se envían a un servidor (Supabase) para que otras personas puedan verlos con el enlace. Se borran solos a los 3 días.</li>
       <li><strong>Inscripción con QR:</strong> el nombre con el que alguien se apunta a un americano se guarda en ese mismo servidor y se borra a los 3 días.</li>
       <li><strong>Club compartido:</strong> si lo activas, tus jugadores, partidos, torneos y americanos se guardan en ese servidor para compartirlos entre los móviles que tengan el código del club.</li>
+      <li><strong>Crónica del partido con IA:</strong> si la pides, los nombres de los jugadores y las estadísticas de ese partido se envían a Anthropic (el proveedor de la IA Claude) para escribir el texto. La crónica se guarda solo en tu móvil. Para contar las 3 crónicas gratuitas del mes se usa un identificador anónimo del dispositivo, que se borra a los 4 meses sin uso.</li>
       <li><strong>Enlaces de partido y de perfil:</strong> los datos van dentro del propio enlace; no se guardan en ningún servidor.</li>
     </ul>
     <p>En todos los casos solo puede verlo quien tenga el enlace o el código.</p>
@@ -56,7 +57,7 @@
     </ul>
 
     <h2>Servicios que intervienen</h2>
-    <p>La aplicación se publica en GitHub Pages (GitHub, Inc.), que puede registrar datos técnicos de las visitas como la dirección IP. Las tipografías se cargan desde Google Fonts. El directo, la inscripción y el club compartido usan Supabase.</p>
+    <p>La aplicación se publica en GitHub Pages (GitHub, Inc.), que puede registrar datos técnicos de las visitas como la dirección IP. Las tipografías se cargan desde Google Fonts. El directo, la inscripción, el club compartido y el límite de crónicas usan Supabase. Las crónicas con IA las escribe Claude, de Anthropic.</p>
 
     <h2>Permisos de la app de Android</h2>
     <p>Internet (para actualizarse y para el directo), vibración y mantener la pantalla encendida durante el partido. Los botones de volumen solo se usan para anotar si activas "Anotar con mando" y mientras hay un partido abierto.</p>

@@ -77,9 +77,10 @@ function computePlayerCard(name, statsMap = computeAllPlayersStats().statsMap) {
 // de datos). mini: versión pequeña para el inicio (solo identidad y media).
 function playerCardHTML(card, { big = false, mini = false, profile = null } = {}) {
   const prof = profile || ensureProfile(card.name);
+  // Nombre de pila grande y el apellido encima, en pequeño
   const parts = card.name.trim().split(/\s+/);
-  const first = parts.length > 1 ? parts[0] : '';
-  const surname = parts.length > 1 ? parts.slice(1).join(' ') : parts[0];
+  const first = parts.length > 1 ? parts.slice(1).join(' ') : '';
+  const surname = parts[0];
   const court = cardCourtOf(card.name, prof);
   const side = { Drive: 'Drive', 'Revés': 'Revés' }[prof.prefSide] || 'Drive y revés';
   const photo = prof.photo ? `<img src="${prof.photo}" alt="">` : `<span>${escapeHtml(getInitials(card.name))}</span>`;
@@ -234,8 +235,9 @@ async function sharePlayerCard(name) {
     try { await img.decode(); } catch (e) { img = null; }
   }
   const parts = name.trim().split(/\s+/);
-  const first = parts.length > 1 ? parts[0] : '';
-  const surname = parts.length > 1 ? parts.slice(1).join(' ') : parts[0];
+  // Nombre de pila grande y el apellido encima, como en la carta de la app
+  const first = parts.length > 1 ? parts.slice(1).join(' ') : '';
+  const surname = parts[0];
   const side = { Drive: 'Drive', 'Revés': 'Revés' }[prof.prefSide] || 'Drive y revés';
   openShareImage((ctx, W, H) => {
     ctx.fillStyle = SHARE_THEME.bg1;

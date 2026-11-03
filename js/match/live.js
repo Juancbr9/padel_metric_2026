@@ -187,18 +187,29 @@ function undoLast() {
 // PANTALLA DEL PARTIDO: MARCADOR DE RETRANSMISIÓN, PISTA Y CELEBRACIONES
 // ==========================================================
 
-// Apellidos para el marcador ("COELLO / TAPIA"); los jugadores sin ficha se muestran como J1, J2...
-function liveSurname(p) {
+// En el pádel amateur se llama a cada jugador por su nombre: el marcador y la pista muestran el nombre de pila
+// ("CARLOS / JAVIER"). Si en el mismo partido (o lista) hay dos con el mismo nombre, se añade la inicial del
+// apellido ("Carlos M."). Los jugadores sin ficha se muestran como J1, J2...
+function shortPlayerName(name, others = []) {
+  const parts = String(name || '').trim().split(/\s+/);
+  const first = parts[0] || '';
+  if (parts.length < 2) return first;
+  const clash = others.some(o => o && o !== name && String(o).trim().split(/\s+/)[0] === first);
+  return clash ? `${first} ${parts[1][0]}.` : first;
+}
+
+// Nombre corto de un jugador de partido (se mantiene el nombre antiguo de la función: ya no es el apellido)
+function liveSurname(p, st = state) {
   if (!p) return '';
   if (p.isGeneric) return String(p.name).replace(/^Jugador\s+/, 'J');
-  const parts = String(p.name).trim().split(/\s+/);
-  return parts.length > 1 ? parts.slice(1).join(' ') : parts[0];
+  const others = st && st.players ? st.players.map(x => x.name) : [];
+  return shortPlayerName(p.name, others);
 }
 
 function livePairName(pair, st = state) {
   const a = st.players[pair * 2], b = st.players[pair * 2 + 1];
   if (a.isGeneric && b.isGeneric) return `Pareja ${pair + 1}`;
-  return `${liveSurname(a)} / ${liveSurname(b)}`;
+  return `${liveSurname(a, st)} / ${liveSurname(b, st)}`;
 }
 
 // Vuelve a lanzar una animación CSS aunque ya se haya usado
@@ -373,7 +384,7 @@ function updateUI() {
         </div>
       </div>
       <div class="hud-player-mid">
-        ${renderAvatarHTML(p.name, idx < 2 ? 'avatar-p1' : 'avatar-p2', '', p.isGeneric, liveSurname(p).slice(0, 2).toUpperCase())}
+        ${renderAvatarHTML(p.name, idx < 2 ? 'avatar-p1' : 'avatar-p2', '', p.isGeneric, p.isGeneric ? liveSurname(p) : getInitials(p.name))}
         <div class="hud-player-name">${escapeHtml(liveSurname(p))}</div>
       </div>
       <div class="hud-micro-telemetry">
@@ -489,6 +500,7 @@ function openMatchEnd() {
     ${chart ? `<div class="me-chart"><div class="me-chart-title"><span>Probabilidad de victoria</span><span>${escapeHtml(livePairName(0))}</span></div>${chart}</div>` : ''}
     <div class="me-actions">
       <button class="btn-volt" onclick="closeMatchEnd(); toggleStatsView();">Ver estadísticas</button>
+      <button class="btn-icon me-wide" onclick="openMatchSummary('live')">Resumen del partido</button>
       <button class="btn-icon" onclick="openShareMatchSheet(state)">Compartir</button>
       <button class="btn-icon" onclick="rematch()">Revancha</button>
       <button class="btn-icon" onclick="closeMatchEnd(); exitMatchScreen();">Salir</button>
