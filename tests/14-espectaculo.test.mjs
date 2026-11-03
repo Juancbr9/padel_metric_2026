@@ -5,8 +5,8 @@ export default async ({ newPage, url, assert }) => {
   const p = await newPage();
   await p.goto(url);
   // Entrada del logo: aparece, no bloquea y se va sola
-  assert(await p.locator('#intro-splash').count() === 1, 'Sale la animación de entrada');
-  await p.waitForTimeout(2600);
+  assert(await p.locator('#intro-splash.intro-D').count() === 1, 'Sale la animación de entrada (trazo y bote)');
+  await p.waitForTimeout(2900);
   assert.equal(await p.locator('#intro-splash').count(), 0, 'Y se quita sola');
   await p.evaluate(() => setIntroStyle('off'));
   assert.equal(await p.evaluate(() => appSettings.intro), 'off', 'Se puede desactivar en Ajustes');

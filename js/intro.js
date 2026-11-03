@@ -1,11 +1,15 @@
 // ==========================================================
 // ANIMACIÓN DE ENTRADA DEL LOGO
 // Al abrir la app (una vez por sesión) la "P." se monta sola durante 1,6 s y se funde. Tres estilos que se eligen en
-// Ajustes (appSettings.intro): 'A' Saque (la pelota entra botando y se queda como el punto), 'B' Trazo (la P se
+// Ajustes (appSettings.intro): 'D' Trazo y bote (la P se dibuja, se rellena y se perfora mientras la pelota entra
+// botando y se queda como el punto), 'A' Saque (la pelota entra botando y se queda como el punto), 'B' Trazo (la P se
 // dibuja y se perfora), 'C' Perforado (la pala gira, se perfora en onda y entra el nombre) u 'off'. No sale con
 // "reducir movimiento", en la vista de espectador ni en los enlaces de partido o perfil. No bloquea los toques.
 // ==========================================================
-const INTRO_STYLES = [['A', 'Saque'], ['B', 'Trazo'], ['C', 'Perforado'], ['off', 'Ninguna']];
+// 'D' (por defecto) combina el trazo de la P con la pelota que entra botando; 'A' y 'B' se guardaron en versiones
+// anteriores y ahora se muestran como 'D'
+const INTRO_STYLES = [['D', 'Trazo y bote'], ['C', 'Perforado'], ['off', 'Ninguna']];
+const introStyleOf = st => (st === 'A' || st === 'B' || !st ? 'D' : st);
 const LOGO_HOLES = [[256, 135.6], [292, 135.6], [328, 135.6], [238, 166.8], [274, 166.8], [310, 166.8], [346, 166.8], [220, 198], [256, 198], [292, 198], [328, 198], [364, 198], [238, 229.2], [274, 229.2], [310, 229.2], [346, 229.2], [256, 260.4], [292, 260.4], [328, 260.4]];
 
 function introLogoSVG() {
@@ -14,7 +18,7 @@ function introLogoSVG() {
 }
 
 function playIntro(style, { force = false } = {}) {
-  const st = style || (typeof appSettings !== 'undefined' && appSettings.intro) || 'A';
+  const st = introStyleOf(style || (typeof appSettings !== 'undefined' && appSettings.intro));
   if (st === 'off') return;
   if (!force) {
     if (window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches) return;
@@ -27,14 +31,14 @@ function playIntro(style, { force = false } = {}) {
   el.className = `intro-splash intro-${st}`;
   el.innerHTML = `<div class="intro-stage">${introLogoSVG()}<div class="intro-word">PADEL METRIC</div></div>`;
   document.body.appendChild(el);
-  setTimeout(() => el.classList.add('out'), 1900);
-  setTimeout(() => el.remove(), 2400);
+  setTimeout(() => el.classList.add('out'), st === 'D' ? 2150 : 1900);
+  setTimeout(() => el.remove(), st === 'D' ? 2650 : 2400);
 }
 
 function setIntroStyle(st) {
   appSettings.intro = st;
   try { localStorage.setItem('pm_ajustes_v1', JSON.stringify(appSettings)); } catch (e) {}
-  document.querySelectorAll('#intro-seg [data-intro]').forEach(b => b.classList.toggle('active', b.dataset.intro === st));
+  document.querySelectorAll('#intro-seg [data-intro]').forEach(b => b.classList.toggle('active', b.dataset.intro === introStyleOf(st)));
   if (st !== 'off') playIntro(st, { force: true });
 }
 

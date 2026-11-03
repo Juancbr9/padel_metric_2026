@@ -161,7 +161,7 @@ Investigación de noviembre de 2026 sobre lo que delata una interfaz generada po
 - Cambio de sección: fundido de 0,2 s, sin entradas escalonadas. Las cifras se escriben con su valor, sin contadores.
 - Pulsar un botón: `scale(0.97)`.
 - Animaciones con información: rótulos de juego, break y set, giro del punto en el marcador, confeti solo al ganar el partido (color de la pareja y blanco).
-- Momentos con "espectáculo" permitidos, todos cortos, sin bucle y sin bloquear los toques: la **entrada del logo** al abrir (1,9 s, estilos A Saque, B Trazo y C Perforado en `js/intro.js`), la **trayectoria del golpe** sobre la pista tras un winner (1,5 s), el **cierre del partido** con entrada escalonada y la carta del mejor (hasta 2,2 s en total), el **aviso grande** de bola de break, set, partido o punto de oro en el modo tele y la **inclinación del mapa de calor** al aparecer.
+- Momentos con "espectáculo" permitidos, todos cortos, sin bucle y sin bloquear los toques: la **entrada del logo** al abrir (2,1 s; por defecto D "Trazo y bote", también C Perforado, en `js/intro.js`), la **trayectoria del golpe** sobre la pista tras un winner (1,5 s), el **cierre del partido** con entrada escalonada y la carta del mejor (hasta 2,2 s en total), el **aviso grande** de bola de break, set, partido o punto de oro en el modo tele y la **inclinación del mapa de calor** al aparecer.
 - Marcador gigante en horizontal y modo tele: mismos colores y tipografías; cifras muy grandes, sin franjas laterales (el color de la pareja va siempre en un cuadrado).
 - Sin animaciones en bucle salvo los indicadores de "en directo".
 - **`prefers-reduced-motion: reduce`** desactiva todas las animaciones.

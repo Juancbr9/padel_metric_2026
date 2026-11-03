@@ -1393,6 +1393,13 @@ body.spectator-mode > header, body.spectator-mode .container, body.spectator-mod
 .intro-B .intro-word { animation: inFade .45s ease-out 1.45s forwards; }
 @keyframes inDraw { to { stroke-dashoffset: 0; } }
 @keyframes inFill { to { fill: var(--volt); stroke-width: 0; } }
+/* D · Trazo y bote (por defecto): el contorno de la P se dibuja, se rellena y se perfora mientras la pelota entra
+   botando desde arriba a la derecha y se queda como el punto */
+.intro-D .ip { fill: transparent; stroke: var(--volt); stroke-width: 6; stroke-dasharray: 1; stroke-dashoffset: 1; animation: inDraw .9s ease-in-out forwards, inFill .35s ease-out .85s forwards; }
+.intro-D .ih { opacity: 0; animation: inFade .25s ease-out forwards; animation-delay: calc(1.05s + var(--d) * .3s); }
+.intro-D .idot { opacity: 0; animation: inBallD 1.05s cubic-bezier(.3,.6,.4,1) .55s forwards; }
+@keyframes inBallD { 0% { opacity: 0; transform: translate(260px,-420px); } 8% { opacity: 1; } 45% { transform: translate(120px,0); } 62% { transform: translate(60px,-120px); } 80% { transform: translate(20px,0); } 90% { transform: translate(8px,-24px); } 100% { opacity: 1; transform: none; } }
+.intro-D .intro-word { animation: inFade .45s ease-out 1.6s forwards; }
 /* C · Perforado */
 .intro-C .ipg { transform-origin: 240px 260px; transform: rotate(-14deg) scale(.6); opacity: 0; animation: inSwing .7s cubic-bezier(.2,1.2,.3,1) forwards; }
 .intro-C .ih { transform-box: fill-box; transform-origin: center; transform: scale(0); animation: inPop .28s ease-out forwards; animation-delay: calc(.55s + var(--d) * .35s); }

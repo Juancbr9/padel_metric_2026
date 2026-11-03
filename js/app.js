@@ -108,8 +108,8 @@ function openSettingsSheet() {
       <button type="button" class="ios-seg-option" data-theme="auto" onclick="setThemePref('auto')"><span class="opt-main">Automático</span><span class="opt-sub">Como el móvil</span></button>
     </div>
     <div class="menu-group-title">Animación de entrada</div>
-    <div class="ios-segmented cols-4" id="intro-seg">
-      ${INTRO_STYLES.map(([k, t]) => `<button type="button" class="ios-seg-option ${(appSettings.intro || 'A') === k ? 'active' : ''}" data-intro="${k}" onclick="setIntroStyle('${k}')"><span class="opt-main">${t}</span></button>`).join('')}
+    <div class="ios-segmented cols-3" id="intro-seg">
+      ${INTRO_STYLES.map(([k, t]) => `<button type="button" class="ios-seg-option ${introStyleOf(appSettings.intro) === k ? 'active' : ''}" data-intro="${k}" onclick="setIntroStyle('${k}')"><span class="opt-main">${t}</span></button>`).join('')}
     </div>
     <div class="menu-group-title">Durante el partido</div>
     <div class="menu-list">
@@ -321,7 +321,7 @@ const APP_NEWS = [
   ['Marcador gigante', 'Gira el móvil durante el partido y el marcador ocupa toda la pantalla, para leerlo desde la pista.'],
   ['Directo en la tele', 'El enlace del directo, abierto en una tele u ordenador, se ve como una retransmisión, con avisos de bola de break, de set y de partido.'],
   ['Más vida en el partido', 'Al anotar un golpe ganador se dibuja su trayectoria, el cierre del partido se presenta como en la tele con la carta del mejor y, con los sonidos activados, suena la pala.'],
-  ['Animación de entrada', 'La P del logo se monta al abrir la app. En Ajustes puedes elegir entre tres estilos o quitarla.']
+  ['Animación de entrada', 'Al abrir la app, la P del logo se dibuja mientras la pelota entra botando y se queda como el punto. En Ajustes puedes cambiarla por otro estilo o quitarla.']
 ];
 
 function openNewsSheet() {
