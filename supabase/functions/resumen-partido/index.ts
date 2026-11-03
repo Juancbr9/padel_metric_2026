@@ -79,11 +79,11 @@ Deno.serve(async (req: Request) => {
   try {
     // Opus 5.5 lleva el respaldo del servidor por si declina (fallbacks: "default"); Haiku 5.5 no lo admite
     // deno-lint-ignore no-explicit-any
-    const params: any = { model: modelo, max_tokens: 4000, system: SISTEMA, messages: mensajes, output_config: { effort: "medium" } };
+    const params: any = { model: modelo, max_tokens: 12000, system: SISTEMA, messages: mensajes, output_config: { effort: "medium" } };
     const r = modelo === MODELOS.opus
       ? await client.beta.messages.create({ ...params, betas: ["server-side-fallback-2026-07-01"], fallbacks: "default" })
       : await client.messages.create(params);
-    if (r.stop_reason === "refusal") throw new Error("refusal");
+    if (r.stop_reason === "refusal" || r.stop_reason === "max_tokens") throw new Error(String(r.stop_reason));
     // deno-lint-ignore no-explicit-any
     const texto = (r.content as any[]).filter((b) => b.type === "text").map((b) => b.text).join("").trim();
     if (!texto) throw new Error("vacío");
