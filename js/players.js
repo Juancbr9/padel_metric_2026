@@ -102,7 +102,12 @@ function renderPickerList() {
     return haystack.includes(q);
   });
 
-  filtered.forEach(name => {
+  // Sin búsqueda, los habituales (los de los últimos partidos) van arriba
+  const recent = q ? [] : recentPlayers(8).filter(n => filtered.includes(n));
+  const ordered = [...recent, ...filtered.filter(n => !recent.includes(n))];
+  ordered.forEach((name, i) => {
+    if (recent.length && i === 0) html += '<div class="picker-group-label">Habituales</div>';
+    if (recent.length && i === recent.length) html += '<div class="picker-group-label">Todos</div>';
     const prof = ensureProfile(name);
     const st = statsMap[name] || { PJ: 0, V: 0, ratingSum: 0 };
     const avgR = st.PJ > 0 ? (st.ratingSum / st.PJ).toFixed(1) : '6.5';

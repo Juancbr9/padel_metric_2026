@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Privacidad · Padel Metric</title>
+  <meta name="description" content="Qué datos usa Padel Metric y dónde se guardan.">
+  <meta name="theme-color" content="#030508">
+  <link rel="icon" href="icons/icon-192.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&family=Barlow+Condensed:ital,wght@0,700;1,900&display=swap" rel="stylesheet">
+  <style>
+    :root { --bg: #030508; --card: #0D1117; --border: rgba(255,255,255,0.08); --text: #F5F7FA; --muted: #8B95A5; }
+    * { box-sizing: border-box; }
+    body { margin: 0; background: var(--bg); color: var(--text); font-family: 'Barlow', system-ui, sans-serif; line-height: 1.6; }
+    .wrap { max-width: 720px; margin: 0 auto; padding: 0 20px 48px; }
+    header { display: flex; align-items: center; gap: 10px; padding: 18px 0 8px; }
+    header img { width: 34px; height: 34px; border-radius: 8px; }
+    header a { display: flex; align-items: center; gap: 10px; text-decoration: none; color: var(--text); font-family: 'Barlow Condensed', sans-serif; font-style: italic; font-weight: 900; font-size: 1.3rem; }
+    h1 { font-family: 'Barlow Condensed', sans-serif; font-weight: 700; font-size: 2.6rem; line-height: 1; margin: 24px 0 6px; text-transform: uppercase; }
+    .date { color: var(--muted); font-size: 0.92rem; margin: 0 0 24px; }
+    h2 { font-size: 1.15rem; margin: 28px 0 6px; }
+    p, li { color: #C9D1DC; font-size: 1rem; }
+    ul { padding-left: 20px; }
+    a { color: var(--text); }
+    footer { margin-top: 36px; padding-top: 18px; border-top: 1px solid var(--border); color: var(--muted); font-size: 0.9rem; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header><a href="presentacion.html"><img src="icons/icon-192.png" alt="">PADEL METRIC</a></header>
+    <h1>Política de privacidad</h1>
+    <p class="date">Última actualización: 3 de noviembre de 2026</p>
+
+    <p>Padel Metric es una aplicación gratuita para llevar el marcador y las estadísticas de partidos de pádel. Esta página explica qué datos usa y dónde se guardan, en lenguaje sencillo.</p>
+
+    <h2>Lo que se guarda en tu dispositivo</h2>
+    <p>Los jugadores que creas (nombre, foto si la pones, club, mano, lado y pala), los partidos, los torneos, los americanos y tus ajustes se guardan solo en el almacenamiento de tu móvil o de tu navegador. No hace falta crear una cuenta y no se piden ni el correo, ni el teléfono, ni la ubicación.</p>
+    <p>Si borras los datos del navegador o desinstalas la app, esa información se borra. Puedes exportar una copia de seguridad en Ajustes → Datos.</p>
+
+    <h2>Lo que sale del dispositivo, solo si tú lo usas</h2>
+    <ul>
+      <li><strong>Directo de un partido o de un torneo:</strong> el marcador o la clasificación se envían a un servidor (Supabase) para que otras personas puedan verlos con el enlace. Se borran solos a los 3 días.</li>
+      <li><strong>Inscripción con QR:</strong> el nombre con el que alguien se apunta a un americano se guarda en ese mismo servidor y se borra a los 3 días.</li>
+      <li><strong>Club compartido:</strong> si lo activas, tus jugadores, partidos, torneos y americanos se guardan en ese servidor para compartirlos entre los móviles que tengan el código del club.</li>
+      <li><strong>Enlaces de partido y de perfil:</strong> los datos van dentro del propio enlace; no se guardan en ningún servidor.</li>
+    </ul>
+    <p>En todos los casos solo puede verlo quien tenga el enlace o el código.</p>
+
+    <h2>Lo que no se hace</h2>
+    <ul>
+      <li>No hay publicidad.</li>
+      <li>No se usan herramientas de analítica ni de seguimiento.</li>
+      <li>No se venden ni se ceden datos a nadie.</li>
+    </ul>
+
+    <h2>Servicios que intervienen</h2>
+    <p>La aplicación se publica en GitHub Pages (GitHub, Inc.), que puede registrar datos técnicos de las visitas como la dirección IP. Las tipografías se cargan desde Google Fonts. El directo, la inscripción y el club compartido usan Supabase.</p>
+
+    <h2>Permisos de la app de Android</h2>
+    <p>Internet (para actualizarse y para el directo), vibración y mantener la pantalla encendida durante el partido. Los botones de volumen solo se usan para anotar si activas "Anotar con mando" y mientras hay un partido abierto.</p>
+
+    <h2>Menores</h2>
+    <p>La app no pide datos personales. Si apuntas a menores en un partido o un torneo, hazlo con el permiso de sus padres o tutores.</p>
+
+    <h2>Contacto</h2>
+    <p>Para cualquier duda o para pedir que se borren datos de un directo, una inscripción o un club compartido, escribe a <a href="mailto:juancbr9@gmail.com?subject=Padel%20Metric%3A%20privacidad">juancbr9@gmail.com</a>.</p>
+
+    <footer><a href="presentacion.html">Padel Metric</a> · <a href="./">Abrir la app</a></footer>
+  </div>
+</body>
+</html>

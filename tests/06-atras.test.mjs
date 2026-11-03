@@ -19,6 +19,20 @@ export default async ({ newPage, url, assert }) => {
   await p.goBack();
   await p.waitForTimeout(300);
   assert.equal(await p.evaluate(() => currentTab), 'home', 'Atrás vuelve al inicio');
+  // Varias secciones → atrás vuelve a la anterior, y luego al inicio
+  for (const id of ['#menu-ranking', '#menu-history']) { await p.click('#main-nav'); await p.click(id); await p.waitForTimeout(150); }
+  await p.mouse.click(5, 300); await p.goBack(); await p.waitForTimeout(300);
+  assert.equal(await p.evaluate(() => currentTab), 'ranking', 'Atrás vuelve a la sección anterior');
+  await p.mouse.click(5, 300); await p.goBack(); await p.waitForTimeout(300);
+  assert.equal(await p.evaluate(() => currentTab), 'home', 'Y después al inicio');
+  // Durante el partido, atrás abre "Salir del partido"
+  await p.evaluate(() => quickMatch());
+  await p.click('.serve-text'); await p.goBack();
+  await p.waitForFunction(() => document.body.textContent.includes('Salir del partido'), null, { timeout: 3000 }).catch(() => {});
+  assert((await p.textContent('body')).includes('Salir del partido'), 'En el partido, atrás abre Salir del partido');
+  await p.click('button:has-text("Pausar y seguir más tarde")');
+  await p.waitForTimeout(200);
+  assert.equal(await p.evaluate(() => currentTab), 'home', 'Pausar vuelve al inicio');
   // En el inicio sin nada abierto → atrás sale
   await p.mouse.click(5, 300);
   await p.goBack();

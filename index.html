@@ -8,6 +8,15 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="Padel Metric">
+  <meta name="description" content="Marcador de pádel punto a punto con estadísticas, ranking ELO, torneos, americanos y directo. Gratis, sin anuncios y sin crear cuenta.">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="Padel Metric">
+  <meta property="og:title" content="Padel Metric · Marcador y estadísticas de pádel">
+  <meta property="og:description" content="Anota tus partidos punto a punto y descubre dónde ganas y dónde pierdes los puntos. Gratis y sin cuenta.">
+  <meta property="og:image" content="https://juancbr9.github.io/padel_metric_2026/assets/og.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta name="twitter:card" content="summary_large_image">
   <link id="pwa-apple-icon" rel="apple-touch-icon" href="icons/apple-touch-icon.png">
   <link id="pwa-manifest" rel="manifest" href="manifest.json">
   <link rel="icon" type="image/png" href="icons/icon-192.png">
@@ -102,7 +111,6 @@
     </button>
   </div>
   <div class="header-actions">
-    <button id="btn-undo" class="btn-icon hidden" onclick="undoLast()" title="Deshacer"><svg class="icon"><use href="#i-undo"/></svg></button>
     <button id="btn-stats" class="btn-icon hidden" onclick="toggleStatsView()">Datos</button>
   </div>
 </header>
@@ -156,7 +164,7 @@
     </div>
     <div class="menu-footer">
       <svg class="menu-footer-logo"><use href="#logo-mark"/></svg>
-      <span id="app-version-label">Padel Metric · v13</span>
+      <span id="app-version-label">Padel Metric · v14</span>
     </div>
   </nav>
 </div>
@@ -185,7 +193,7 @@
       <div class="section-hero-kicker">Toca cada posición para elegir al jugador y la pelota de quien saca primero.</div>
     </div>
 
-    <div class="setup-head"><h2>Jugadores</h2><button type="button" class="home-link" onclick="clearSetupCourt()">Vaciar la pista</button></div>
+    <div class="setup-head"><h2>Jugadores</h2><span class="setup-head-links"><button type="button" class="home-link" onclick="openGroupsSheet()">Grupos</button><button type="button" class="home-link" onclick="clearSetupCourt()">Vaciar la pista</button></span></div>
     <div class="lineup-court-arena">
       <svg class="court-bg-svg" viewBox="0 0 400 420" preserveAspectRatio="none">
         <defs>
@@ -234,7 +242,7 @@
     <div class="setup-head"><h2>Reglas</h2></div>
     <div id="setup-rules" class="setup-rules"></div>
 
-    <button class="btn-volt" onclick="startMatch()">Empezar partido</button>
+    <button class="btn-volt" onclick="startNewMatch()">Empezar partido</button>
   </div>
 
   <!-- PANTALLA 2: RANKING (IDENTIDAD DORADA: PODIO + CLASIFICACIÓN) -->
@@ -406,9 +414,10 @@
     </div>
 
     <div class="match-bottom-actions">
+      <button class="mba mba-undo" id="btn-undo" onclick="undoLast()" aria-label="Deshacer el último punto"><svg class="icon"><use href="#i-undo"/></svg><span>Deshacer</span></button>
       <button class="mba" id="btn-live-broadcast" onclick="openBroadcastPanel()"><svg class="icon"><use href="#i-broadcast"/></svg><span>Emitir</span></button>
       <button class="mba" id="btn-match-options" onclick="openMatchOptions()"><svg class="icon"><use href="#i-sliders"/></svg><span>Opciones</span></button>
-      <button class="mba danger" onclick="exitMatchScreen()"><svg class="icon"><use href="#i-exit"/></svg><span>Salir</span></button>
+      <button class="mba danger" id="btn-match-exit" onclick="openExitMatchSheet()"><svg class="icon"><use href="#i-exit"/></svg><span>Salir</span></button>
     </div>
     <div id="cele-layer" class="cele-layer"></div>
   </div>
@@ -738,6 +747,8 @@
 <script src="js/links.js"></script>
 <script src="js/inscripcion.js"></script>
 <script src="js/install.js"></script>
+<script src="js/quick.js"></script>
+<script src="js/mando.js"></script>
 <script src="js/home.js"></script>
 <script src="js/app.js"></script>
 </body>

@@ -118,6 +118,7 @@ function openHistoryActions(idx) {
     <div class="menu-list">
       ${row('i-chart', 'Ver estadísticas', `openHistoryMatchStats(${idx})`)}
       ${row('i-share', 'Compartir: enlace, QR o póster', `openShareMatchSheet(matchHistory[${idx}])`)}
+      ${row('i-play', 'Jugar otro con los mismos jugadores', `repeatMatch(${idx})`)}
       ${row('i-trash', 'Eliminar partido', `deleteHistoryMatch(${idx})`, 'menu-row-danger')}
     </div>`);
 }

@@ -46,7 +46,7 @@ for (const f of files) {
   const newPage = async (opts = {}) => {
     const ctx = await browser.newContext({ viewport: opts.viewport || { width: 400, height: 860 }, acceptDownloads: true, colorScheme: 'dark' });
     contexts.push(ctx);
-    if (opts.seen !== false) await ctx.addInitScript(() => { try { if (!sessionStorage.getItem('t')) { sessionStorage.setItem('t', '1'); localStorage.setItem('pm_bienvenida_v1', '1'); localStorage.setItem('pm_novedades_v1', '999'); } } catch (e) {} });
+    if (opts.seen !== false) await ctx.addInitScript(() => { try { if (!sessionStorage.getItem('t')) { sessionStorage.setItem('t', '1'); localStorage.setItem('pm_bienvenida_v1', '1'); localStorage.setItem('pm_novedades_v1', '999'); localStorage.setItem('pm_guia_partido_v1', '1'); } } catch (e) {} });
     const page = await ctx.newPage();
     page.on('pageerror', e => errors.push(`Error de la página: ${e.message}`));
     page.on('console', m => { if (m.type() === 'error' && !/Failed to load resource|net::ERR|navigator\.vibrate/.test(m.text())) errors.push(`Consola: ${m.text()}`); });

@@ -14,6 +14,7 @@ import android.os.VibrationEffect;
 import android.os.Vibrator;
 import android.speech.tts.TextToSpeech;
 import android.util.Base64;
+import android.view.KeyEvent;
 import android.view.WindowManager;
 import android.webkit.JavascriptInterface;
 import android.webkit.ValueCallback;
@@ -219,6 +220,27 @@ public class MainActivity extends Activity {
         web.saveState(b);
     }
 
+    /** Mando: durante un partido y con el ajuste activado, los botones de volumen (y los mandos Bluetooth que los
+     *  imitan) anotan puntos: subir = pareja 1, bajar = pareja 2, mantener pulsado = deshacer (lo decide la web). */
+    private volatile boolean mando = false;
+    private long mandoDesde = 0;
+
+    @Override
+    public boolean dispatchKeyEvent(KeyEvent e) {
+        int k = e.getKeyCode();
+        if (mando && (k == KeyEvent.KEYCODE_VOLUME_UP || k == KeyEvent.KEYCODE_VOLUME_DOWN)) {
+            if (e.getAction() == KeyEvent.ACTION_DOWN) {
+                if (e.getRepeatCount() == 0) mandoDesde = e.getEventTime();
+            } else if (e.getAction() == KeyEvent.ACTION_UP) {
+                long pulsado = Math.max(0, e.getEventTime() - mandoDesde);
+                String lado = k == KeyEvent.KEYCODE_VOLUME_UP ? "a" : "b";
+                web.evaluateJavascript("window.__padelMando && window.__padelMando('" + lado + "', " + pulsado + ")", null);
+            }
+            return true;
+        }
+        return super.dispatchKeyEvent(e);
+    }
+
     /** Atrás: la web decide (cerrar menú o ventanas, volver a Inicio...). Si no hace nada, se sale de la app. */
     @Override
     public void onBackPressed() {
@@ -320,6 +342,9 @@ public class MainActivity extends Activity {
             ClipboardManager cm = (ClipboardManager) getSystemService(CLIPBOARD_SERVICE);
             cm.setPrimaryClip(ClipData.newPlainText("Padel Metric", texto));
         }
+
+        @JavascriptInterface
+        public void mando(boolean si) { mando = si; }
 
         @JavascriptInterface
         public void pantallaEncendida(boolean si) {

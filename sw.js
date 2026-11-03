@@ -3,11 +3,13 @@
 // (poca cobertura en la pista) se abre la copia guardada al momento y la red termina de actualizarla por detrás.
 // Sin conexión, la copia guardada.
 // Al añadir archivos nuevos a la app, inclúyelos en APP_FILES y sube el número de versión.
-const CACHE = 'padel-metric-v18';
+const CACHE = 'padel-metric-v19';
 const NET_TIMEOUT_MS = 3000;
 const APP_FILES = [
   './',
   './index.html',
+  './presentacion.html',
+  './privacidad.html',
   './manifest.json',
   './css/styles.css',
   './js/nativo.js',
@@ -40,6 +42,8 @@ const APP_FILES = [
   './js/links.js',
   './js/inscripcion.js',
   './js/install.js',
+  './js/quick.js',
+  './js/mando.js',
   './js/home.js',
   './js/app.js',
   './icons/icon-192.png',

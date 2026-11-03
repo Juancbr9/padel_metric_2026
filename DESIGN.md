@@ -44,7 +44,7 @@ Activos de marca (logo, iconos, tipografías): [`docs/brand-index.md`](docs/bran
 
 ### 2.2 Modo claro y tema automático
 
-El tema se elige en Ajustes: **Oscuro** (por defecto), **Claro** o **Automático** (sigue al del móvil con `prefers-color-scheme`). `applyTheme()` pone `body.light-mode` y cambia la `meta theme-color` (`#030508` / `#F4F6F8`). Lo que es una ilustración o un rótulo (la pista, el marcador, las cartas, las páginas públicas) conserva sus colores en los dos temas; en modo claro, las fichas de los jugadores sobre la pista de "Nuevo partido" son blancas.
+El tema se elige en Ajustes: **Oscuro** (por defecto), **Claro** o **Automático** (sigue al del móvil con `prefers-color-scheme`). `applyTheme()` pone `body.light-mode` y cambia la `meta theme-color` (`#030508` / `#F4F6F8`). Lo que es una ilustración o un rótulo (la pista, el marcador, las cartas, las páginas públicas) conserva sus colores en los dos temas; en modo claro, la pista de "Nuevo partido" pasa a un azul pista muy claro (`#E3EBF5`, líneas y red claras) con las fichas de los jugadores en blanco; la pista del partido en directo conserva su azul.
 
 Mismo sistema con valores claros: fondo `#F4F6F8`, tarjetas `#FFFFFF`, borde `rgba(15,23,42,0.08)`, texto `#0B1220` / `#5B6474` / `#8A93A0`. El acento se oscurece para leerse sobre blanco (`--volt: #4D7C0F`, `--on-volt: #FFFFFF`). Parejas `#0284C7` y `#E11D48`; estados `#248A3D`, `#D70015` y `#C93400`.
 

@@ -17,7 +17,12 @@ function setSectionIdentity(section, label) {
   if (el) el.innerText = label;
 }
 
+// Pila de secciones visitadas: el botón atrás vuelve a la anterior. El inicio es la raíz (la vacía).
+let navStack = [], navGoingBack = false;
+
 function switchMainTab(tab) {
+  if (tab === 'home') navStack = [];
+  else if (!navGoingBack && currentTab && currentTab !== tab) { navStack.push(currentTab); if (navStack.length > 20) navStack.shift(); }
   closeAppMenu();
   closeMatchEnd();
   // Las estadísticas de un partido del historial se cierran al ir a otra sección
@@ -108,6 +113,8 @@ function openSettingsSheet() {
       ${sw('vibration', 'i-vibrate', 'Vibración al anotar', "toggleAppSetting('vibration')")}
       ${sw('wakeLock', 'i-screen', 'Pantalla siempre encendida en partido', "toggleAppSetting('wakeLock')")}
       ${sw('sound', 'i-music', 'Sonidos en juegos, sets y partido', "toggleAppSetting('sound')")}
+      ${sw('remote', 'i-target', 'Anotar con mando o botones de volumen', "toggleAppSetting('remote')")}
+      <button type="button" class="menu-row" onclick="openRemoteHelp()"><svg class="icon"><use href="#i-info"/></svg><span>Cómo anotar con un mando</span><span class="menu-row-hint">›</span></button>
     </div>
     <div class="menu-list mt-8">
       <button type="button" class="menu-row" onclick="closeEventModal(); openRulesModal()">
@@ -120,6 +127,8 @@ function openSettingsSheet() {
     </div>
     <div class="menu-group-title">Acerca de</div>
     <div class="menu-list">
+      <button type="button" class="menu-row" onclick="openAboutSheet()">
+        <svg class="icon"><use href="#i-info"/></svg><span>Acerca de, privacidad y contacto</span><span class="menu-row-hint">›</span></button>
       <button type="button" class="menu-row" onclick="openNewsSheet()">
         <svg class="icon"><use href="#i-star"/></svg><span>Novedades de la versión ${APP_VERSION}</span><span class="menu-row-hint">›</span></button>
     </div>`);
@@ -153,6 +162,7 @@ function renderMenuSwitches() {
   document.getElementById('sw-vibration')?.classList.toggle('on', appSettings.vibration);
   document.getElementById('sw-wakeLock')?.classList.toggle('on', appSettings.wakeLock);
   document.getElementById('sw-sound')?.classList.toggle('on', appSettings.sound);
+  document.getElementById('sw-remote')?.classList.toggle('on', !!appSettings.remote);
 }
 
 function toggleAppSetting(key) {
@@ -161,6 +171,7 @@ function toggleAppSetting(key) {
   renderMenuSwitches();
   vibrate(12);
   if (key === 'sound' && appSettings.sound) fxSound('game');
+  if (key === 'remote') { syncNativeRemote(); if (appSettings.remote) showToast('Durante el partido, el mando y los botones de volumen anotan puntos'); }
 }
 
 // Exporta todos los partidos a un CSV que abre Excel o Google Sheets
@@ -194,6 +205,8 @@ function exportHistoryCSV() {
 // Cierra lo que esté encima (hojas, menú, historias, cierre del partido). Devuelve true si ha cerrado algo.
 function closeTopOverlay() {
   if (!document.getElementById('wrapped').classList.contains('hidden')) { closeWrapped(); return true; }
+  const guide = document.getElementById('match-guide');
+  if (guide && !guide.classList.contains('hidden')) { closeMatchGuide(); return true; }
   const open = [...document.querySelectorAll('.sheet-backdrop')].filter(el => !el.classList.contains('hidden'));
   if (open.length) { open.forEach(el => el.classList.add('hidden')); return true; }
   if (!document.getElementById('match-end').classList.contains('hidden')) { closeMatchEnd(); return true; }
@@ -201,15 +214,28 @@ function closeTopOverlay() {
   return false;
 }
 
-// Botón atrás (app de Android, navegador y app instalada): cierra lo que esté abierto o vuelve a Inicio.
+// Botón atrás (app de Android, navegador y app instalada), en este orden: cierra lo que esté abierto, sale de las
+// estadísticas, en el partido abre "Salir del partido", vuelve de un torneo o americano a su lista, vuelve a la
+// sección anterior y, si no hay, al inicio. En el inicio sale; en la app de Android pide pulsar otra vez.
 // Devuelve false para salir de la app.
+let lastBackAtHome = 0;
 window.__padelAtras = () => {
   if (closeTopOverlay()) return true;
   if (!document.getElementById('view-stats').classList.contains('hidden')) { toggleStatsView(); return true; }
-  if (document.body.classList.contains('in-live-match')) { showToast('Para salir del partido usa el botón Salir'); return true; }
+  if (document.body.classList.contains('in-live-match')) { openExitMatchSheet(); return true; }
   if (currentTab === 'tournaments' && tView.mode !== 'list') { eventDraft = null; showTournamentList(); return true; }
   if (currentTab === 'americano' && aView.mode !== 'list') { eventDraft = null; showAmericanoList(); return true; }
+  if (navStack.length) {
+    navGoingBack = true;
+    try { switchMainTab(navStack.pop()); } finally { navGoingBack = false; }
+    return true;
+  }
   if (currentTab !== 'home') { switchMainTab('home'); return true; }
+  if (window.PadelNative && Date.now() - lastBackAtHome > 2000) {
+    lastBackAtHome = Date.now();
+    showToast('Pulsa atrás otra vez para salir');
+    return true;
+  }
   return false;
 };
 
@@ -245,12 +271,53 @@ function initBackGuard() {
   });
 }
 
+// Acerca de: qué es, privacidad en pocas líneas, contacto y enlaces a las páginas públicas
+const CONTACT_EMAIL = 'juancbr9@gmail.com';
+
+function contactMailto(kind) {
+  const subject = kind === 'bug' ? 'Padel Metric: un fallo' : 'Padel Metric: una sugerencia';
+  let where = 'navegador';
+  try { if (window.PadelNative) where = `app de Android ${PadelNative.versionApp()}`; else if (window.matchMedia('(display-mode: standalone)').matches) where = 'app instalada'; } catch (e) {}
+  const body = `\n\n\n---\nVersión ${APP_VERSION} · ${where} · ${navigator.userAgent}`;
+  return `mailto:${CONTACT_EMAIL}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+}
+
+function openAboutSheet() {
+  const base = appPublicUrl();
+  openEventModal(`
+    <div class="about-head">
+      <svg class="about-logo"><use href="#logo-mark"/></svg>
+      <div><strong>Padel Metric</strong><small>Versión ${APP_VERSION}</small></div>
+    </div>
+    <p class="bc-intro">Marcador y estadísticas de pádel punto a punto, con ranking, torneos, americanos y directo para quien no está en la pista. Gratis y sin anuncios.</p>
+    <div class="menu-group-title">Tus datos</div>
+    <ul class="about-list">
+      <li>Todo se guarda en este dispositivo. No hace falta cuenta ni se piden datos personales.</li>
+      <li>Solo sale del móvil lo que tú decides compartir: el directo de un partido, el club compartido, los enlaces de partido o de perfil y las inscripciones con QR.</li>
+      <li>No hay publicidad ni seguimiento de lo que haces en la app.</li>
+    </ul>
+    <div class="menu-group-title">Contacto</div>
+    <div class="menu-list">
+      <a class="menu-row" href="${contactMailto('idea')}"><svg class="icon"><use href="#i-star"/></svg><span>Enviar una sugerencia</span><span class="menu-row-hint">›</span></a>
+      <a class="menu-row" href="${contactMailto('bug')}"><svg class="icon"><use href="#i-info"/></svg><span>Avisar de un fallo</span><span class="menu-row-hint">›</span></a>
+    </div>
+    <div class="menu-group-title">Más</div>
+    <div class="menu-list">
+      <a class="menu-row" href="${base}privacidad.html" target="_blank" rel="noopener"><svg class="icon"><use href="#i-info"/></svg><span>Política de privacidad</span><span class="menu-row-hint">›</span></a>
+      <a class="menu-row" href="${base}presentacion.html" target="_blank" rel="noopener"><svg class="icon"><use href="#i-share"/></svg><span>Página de presentación</span><span class="menu-row-hint">›</span></a>
+      <button type="button" class="menu-row" onclick="closeEventModal(); openInstallSheet()"><svg class="icon"><use href="#i-share"/></svg><span>Compartir la app</span><span class="menu-row-hint">›</span></button>
+    </div>
+    <p class="exit-note">Contacto: ${CONTACT_EMAIL}</p>`);
+}
+
 // Novedades: se muestran una vez tras actualizar (no a quien abre la app por primera vez)
-const APP_VERSION = 13;
+const APP_VERSION = 14;
 const APP_NEWS = [
-  ['Temporada en historias, renovada', 'Elige la temporada (cada año o toda la historia) y mira tus partidos mes a mes, tu mejor partido, tus títulos y cómo has cambiado frente al año anterior. El ELO de cada temporada es ahora exacto.'],
-  ['Resumen para compartir', 'Al final de las historias, "Compartir el resumen" crea una imagen vertical lista para las historias de WhatsApp o Instagram.'],
-  ['Más fácil de manejar', 'Desliza hacia abajo para cerrar, mantén pulsado para pausar y, en el ordenador, usa las flechas. Si cambias de aplicación, la historia se detiene.']
+  ['Empezar en un toque', 'En el inicio: "Repetir el último partido" con los mismos jugadores y reglas, y "Partido rápido" para llevar solo el marcador. Al terminar, "Revancha". En Nuevo partido, guarda tus grupos de cuatro.'],
+  ['Deshacer a mano y terminar sin guardar', 'Deshacer está abajo a la izquierda en el partido. En Salir puedes pausar, terminar y guardar o terminar sin guardar nada.'],
+  ['Anotar con un mando', 'Con un mando Bluetooth de los de hacer fotos o, en la app de Android, con los botones de volumen. Actívalo en Ajustes.'],
+  ['Botón atrás', 'Ahora vuelve a la pantalla anterior. En el partido, abre las opciones para salir.'],
+  ['Acerca de y privacidad', 'En Ajustes: qué datos se guardan, la política de privacidad y un contacto para sugerencias o fallos.']
 ];
 
 function openNewsSheet() {

@@ -140,6 +140,7 @@ function startMatch(link = null) {
   startMatchTimer();
   persistActiveMatchState();
   updateUI();
+  maybeShowMatchGuide();
 }
 
 function startMatchTimer() {
@@ -272,6 +273,7 @@ let liveUiPrev = { players: {}, server: null };
 
 function updateUI() {
   if (!state) return;
+  document.getElementById('btn-undo')?.classList.toggle('is-empty', !historyStack.length);
   const over = state.matchOver;
   const srvPair = state.serverIdx < 2 ? 0 : 1;
   const ch = liveChance();
@@ -488,8 +490,10 @@ function openMatchEnd() {
     <div class="me-actions">
       <button class="btn-volt" onclick="closeMatchEnd(); toggleStatsView();">Ver estadísticas</button>
       <button class="btn-icon" onclick="openShareMatchSheet(state)">Compartir</button>
+      <button class="btn-icon" onclick="rematch()">Revancha</button>
       <button class="btn-icon" onclick="closeMatchEnd(); exitMatchScreen();">Salir</button>
-    </div>`;
+    </div>
+    <button type="button" class="btn-text btn-block me-discard" onclick="discardCurrentMatch()">No guardar este partido</button>`;
   document.getElementById('match-end').classList.remove('hidden');
 }
 
@@ -510,11 +514,14 @@ function openMatchOptions() {
     ${row('Al deslizar', 'Elegir el golpe con su dibujo o anotar al momento', seg([['tap', 'Elegir golpe'], ['swipe', 'Rápido']], state.inputMode, 'setMatchInputMode'))}
     ${row('Cronómetro', state.timerPaused ? 'En pausa' : 'En marcha', `<button type="button" class="btn-icon" onclick="toggleTimerPause(); openMatchOptions();">${state.timerPaused ? 'Reanudar' : 'Pausar'}</button>`)}
     ${row('Narrador de voz', 'Canta el marcador tras cada punto', `<button type="button" class="btn-icon" onclick="toggleVoiceNarrator(); openMatchOptions();">${voiceEnabled ? 'Desactivar' : 'Activar'}</button>`)}
+    ${row('Mando', 'Anotar con un mando Bluetooth o los botones de volumen', `<button type="button" class="btn-icon" onclick="toggleAppSetting('remote'); openMatchOptions();">${appSettings.remote ? 'Desactivar' : 'Activar'}</button>`)}
     ${row('Saque', 'Corrige quién saca si no coincide con la pista', `<button type="button" class="btn-icon" onclick="cycleServerManual(); openMatchOptions();">Siguiente</button>`)}
+    ${row('Guía', 'Cómo se anota, se deshace y se sale', `<button type="button" class="btn-icon" onclick="closeEventModal(); openMatchGuide();">Ver</button>`)}
     <div class="mo-actions">
       <button type="button" class="btn-icon" onclick="closeEventModal(); openShareMatchSheet(state)">Compartir</button>
       <button type="button" class="btn-icon mo-finish" onclick="closeEventModal(); finishMatchManually()">Finalizar partido</button>
-    </div>`);
+    </div>
+    <button type="button" class="btn-text btn-block exit-discard" onclick="closeEventModal(); discardCurrentMatch()">Terminar sin guardar</button>`);
 }
 
 function setMatchThirdSet(rule) {
@@ -697,14 +704,47 @@ function renderZonePicker() {
   if (tg) tg.innerHTML = `Zona: ${modalZone.z ? `${ZONE_LABELS[modalZone.z]} · ${modalZone.l === 'D' ? 'drive' : 'revés'}` : 'automática según el golpe'}<span>${document.getElementById('zone-box').classList.contains('hidden') ? 'Cambiar' : 'Ocultar'}</span>`;
 }
 
+// Salir del partido: pausar para seguir luego, terminar y guardar, o terminar sin guardar nada
+function openExitMatchSheet() {
+  if (!state) return;
+  if (state.matchOver) { exitMatchScreen(); return; }
+  vibrate(10);
+  const played = (state.points || []).length;
+  openEventModal(`
+    <div class="mo-title">Salir del partido</div>
+    <p class="bc-intro">${played ? `Llevas ${played} punto${played === 1 ? '' : 's'} anotado${played === 1 ? '' : 's'}.` : 'Todavía no hay puntos anotados.'}</p>
+    <div class="exit-options">
+      <button type="button" class="btn-volt" onclick="closeEventModal(); exitMatchScreen()">Pausar y seguir más tarde</button>
+      <button type="button" class="btn-icon" onclick="closeEventModal(); finishMatchManually()">Terminar y guardar el resultado</button>
+      <button type="button" class="btn-icon exit-discard" onclick="closeEventModal(); discardCurrentMatch()">Terminar sin guardar</button>
+    </div>
+    <p class="exit-note">"Terminar sin guardar" borra el partido: no cuenta para el ranking ni las estadísticas. Podrás deshacerlo durante unos segundos.</p>`);
+}
+
+// Terminar sin guardar: borra el partido en curso (y su copia en el historial si ya se había guardado)
+function discardCurrentMatch() {
+  if (!state) return;
+  vibrate([10, 30]);
+  const snap = JSON.stringify(state);
+  const histIdx = matchHistory.findIndex(m => m && m.id === state.id);
+  const histCopy = histIdx >= 0 ? matchHistory[histIdx] : null;
+  if (histIdx >= 0) { matchHistory.splice(histIdx, 1); saveDB(); }
+  localStorage.removeItem('pm_partido_activo_v14');
+  const link = state.link || null;
+  state = null;
+  leaveMatchScreen(link);
+  showToast('Partido terminado sin guardar', {
+    label: 'Deshacer',
+    run: () => {
+      if (histCopy) restoreHistoryMatch(histCopy, histIdx);
+      try { localStorage.setItem('pm_partido_activo_v14', snap); } catch (e) {}
+      resumeSavedActiveMatch();
+    }
+  });
+}
+
 function exitMatchScreen() {
   vibrate(15);
-  clearTimeout(matchEndTimer);
-  closeMatchEnd();
-  if (timerInterval) clearInterval(timerInterval);
-  if (wakeLockRef) { try { wakeLockRef.release(); } catch (e) {} wakeLockRef = null; }
-  document.body.classList.remove('in-live-match');
-
   const link = state ? state.link : null;
   if (state) {
     if (state.matchOver) {
@@ -717,7 +757,16 @@ function exitMatchScreen() {
       showToast('Partido en pausa: puedes continuar cuando quieras');
     }
   }
+  leaveMatchScreen(link);
+}
 
+// Vuelve de la pantalla del partido al inicio (o al torneo del que venía)
+function leaveMatchScreen(link) {
+  clearTimeout(matchEndTimer);
+  closeMatchEnd();
+  if (timerInterval) clearInterval(timerInterval);
+  if (wakeLockRef) { try { wakeLockRef.release(); } catch (e) {} wakeLockRef = null; }
+  document.body.classList.remove('in-live-match');
   document.getElementById('view-match').classList.add('hidden');
   document.getElementById('view-stats').classList.add('hidden');
   document.getElementById('btn-undo').classList.add('hidden');
@@ -728,4 +777,75 @@ function exitMatchScreen() {
   } else {
     switchMainTab('home');
   }
+}
+
+// ---------- Guía del primer partido ----------
+// Cuatro avisos sobre la propia pantalla (sumar punto, gestos, deshacer y salir). Sale una vez (pm_guia_partido_v1)
+// y se puede volver a ver desde Opciones del partido.
+const MATCH_GUIDE = [
+  ['.quick-points', 'Sumar un punto', 'Toca la pareja que gana el punto. Es lo único imprescindible para llevar el marcador.'],
+  ['#pcard-0', 'Golpes y errores', 'Si quieres estadísticas, desliza hacia arriba sobre el jugador que hace un golpe ganador y hacia abajo si comete un error. Al tocarlo, eliges el golpe con su dibujo.'],
+  ['#btn-undo', 'Deshacer', '¿Te has equivocado? Deshacer quita el último punto. Puedes pulsarlo varias veces.'],
+  ['#btn-match-exit', 'Salir', 'Pausa el partido para seguir más tarde, termínalo y guárdalo, o termínalo sin guardar.']
+];
+let matchGuideStep = -1;
+
+function maybeShowMatchGuide() {
+  let seen = null;
+  try { seen = localStorage.getItem('pm_guia_partido_v1'); } catch (e) {}
+  if (!seen) setTimeout(() => openMatchGuide(), 350);
+}
+
+function openMatchGuide() {
+  if (document.getElementById('view-match').classList.contains('hidden')) return;
+  closeEventModal?.();
+  let el = document.getElementById('match-guide');
+  if (!el) {
+    el = document.createElement('div');
+    el.id = 'match-guide';
+    el.className = 'match-guide';
+    el.innerHTML = '<div class="mg-hole"></div><div class="mg-tip" role="dialog" aria-live="polite"></div>';
+    document.body.appendChild(el);
+  }
+  el.classList.remove('hidden');
+  matchGuideStep = 0;
+  renderMatchGuide();
+}
+
+function renderMatchGuide() {
+  const el = document.getElementById('match-guide');
+  const step = MATCH_GUIDE[matchGuideStep];
+  if (!el || !step) { closeMatchGuide(); return; }
+  const target = document.querySelector(step[0]);
+  const r = target ? target.getBoundingClientRect() : { left: 20, top: 200, width: 0, height: 0, bottom: 200 };
+  const pad = 6;
+  const hole = el.querySelector('.mg-hole');
+  hole.style.left = `${r.left - pad}px`; hole.style.top = `${r.top - pad}px`;
+  hole.style.width = `${r.width + pad * 2}px`; hole.style.height = `${r.height + pad * 2}px`;
+  const last = matchGuideStep === MATCH_GUIDE.length - 1;
+  const tip = el.querySelector('.mg-tip');
+  tip.innerHTML = `
+    <div class="mg-count">${matchGuideStep + 1} de ${MATCH_GUIDE.length}</div>
+    <strong>${step[1]}</strong>
+    <p>${step[2]}</p>
+    <div class="mg-actions">
+      <button type="button" class="btn-text" onclick="closeMatchGuide()">${last ? '' : 'Saltar'}</button>
+      <button type="button" class="btn-volt" onclick="nextMatchGuide()">${last ? 'Entendido' : 'Siguiente'}</button>
+    </div>`;
+  // El aviso va debajo del elemento si cabe; si no, encima
+  const below = r.top + r.height / 2 < window.innerHeight / 2;
+  tip.style.top = below ? `${r.bottom + pad + 12}px` : '';
+  tip.style.bottom = below ? '' : `${window.innerHeight - r.top + pad + 12}px`;
+}
+
+function nextMatchGuide() {
+  matchGuideStep++;
+  vibrate(6);
+  if (matchGuideStep >= MATCH_GUIDE.length) closeMatchGuide(); else renderMatchGuide();
+}
+
+function closeMatchGuide() {
+  matchGuideStep = -1;
+  document.getElementById('match-guide')?.classList.add('hidden');
+  try { localStorage.setItem('pm_guia_partido_v1', '1'); } catch (e) {}
 }

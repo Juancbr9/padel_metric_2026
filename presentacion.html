@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Padel Metric · Marcador y estadísticas de pádel</title>
+  <meta name="description" content="Marcador de pádel punto a punto con estadísticas, ranking ELO, torneos, americanos y directo. Gratis, sin anuncios y sin crear cuenta.">
+  <meta name="theme-color" content="#030508">
+  <link rel="icon" href="icons/icon-192.png">
+  <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="Padel Metric · Marcador y estadísticas de pádel">
+  <meta property="og:description" content="Anota tus partidos punto a punto y descubre dónde ganas y dónde pierdes los puntos. Gratis y sin cuenta.">
+  <meta property="og:image" content="https://juancbr9.github.io/padel_metric_2026/assets/og.png">
+  <meta property="og:url" content="https://juancbr9.github.io/padel_metric_2026/presentacion.html">
+  <meta name="twitter:card" content="summary_large_image">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&family=Barlow+Condensed:ital,wght@0,600;0,700;1,900&display=swap" rel="stylesheet">
+  <style>
+    :root { --bg: #030508; --card: #0D1117; --border: rgba(255,255,255,0.08); --text: #F5F7FA; --muted: #8B95A5; --volt: #D4FF2A; --on-volt: #06090F; }
+    * { box-sizing: border-box; }
+    html { -webkit-text-size-adjust: 100%; }
+    body { margin: 0; background: var(--bg); color: var(--text); font-family: 'Barlow', system-ui, sans-serif; line-height: 1.5; font-variant-numeric: tabular-nums; }
+    a { color: inherit; }
+    .wrap { max-width: 1040px; margin: 0 auto; padding: 0 20px; }
+    header { display: flex; align-items: center; justify-content: space-between; padding: 18px 0; }
+    .brand { display: flex; align-items: center; gap: 10px; text-decoration: none; }
+    .brand img { width: 36px; height: 36px; border-radius: 9px; }
+    .brand span { font-family: 'Barlow Condensed', sans-serif; font-style: italic; font-weight: 900; font-size: 1.35rem; }
+    .open-link { font-weight: 600; font-size: 0.95rem; color: var(--muted); text-decoration: none; }
+    .hero { display: grid; grid-template-columns: 1.1fr 0.9fr; gap: 40px; align-items: center; padding: 36px 0 56px; }
+    h1 { font-family: 'Barlow Condensed', sans-serif; font-weight: 700; font-size: clamp(2.6rem, 7vw, 4.6rem); line-height: 0.95; margin: 0 0 16px; text-transform: uppercase; }
+    .lead { font-size: 1.15rem; color: #C9D1DC; max-width: 34em; margin: 0 0 24px; }
+    .ctas { display: flex; flex-wrap: wrap; gap: 10px; }
+    .btn { display: inline-flex; align-items: center; justify-content: center; min-height: 50px; padding: 0 22px; border-radius: 12px; font-weight: 700; font-size: 1rem; text-decoration: none; border: 1px solid var(--border); background: var(--card); color: var(--text); }
+    .btn.primary { background: var(--volt); color: var(--on-volt); border-color: var(--volt); }
+    .note { font-size: 0.9rem; color: var(--muted); margin-top: 12px; }
+    .shots { display: flex; gap: 14px; justify-content: center; }
+    .shots img { width: 46%; max-width: 230px; border-radius: 22px; border: 1px solid var(--border); }
+    .shots img:first-child { margin-top: 40px; }
+    section { padding: 44px 0; border-top: 1px solid var(--border); }
+    h2 { font-family: 'Barlow Condensed', sans-serif; font-weight: 700; font-size: 2.1rem; line-height: 1; margin: 0 0 22px; text-transform: uppercase; }
+    .features { display: grid; grid-template-columns: repeat(3, 1fr); gap: 28px 32px; }
+    .features h3 { font-size: 1.08rem; margin: 0 0 4px; }
+    .features p { margin: 0; color: var(--muted); font-size: 0.97rem; }
+    .install { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+    .install div { background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 18px; }
+    .install h3 { margin: 0 0 8px; font-size: 1.1rem; }
+    .install ol { margin: 0; padding-left: 18px; color: #C9D1DC; font-size: 0.95rem; }
+    .install .btn { margin-top: 14px; width: 100%; }
+    .wide { display: flex; justify-content: center; gap: 14px; flex-wrap: wrap; }
+    .wide img { width: 30%; min-width: 200px; max-width: 260px; border-radius: 22px; border: 1px solid var(--border); }
+    footer { border-top: 1px solid var(--border); padding: 26px 0 40px; color: var(--muted); font-size: 0.9rem; display: flex; flex-wrap: wrap; gap: 8px 22px; }
+    footer a { color: var(--muted); }
+    @media (max-width: 760px) {
+      .hero { grid-template-columns: 1fr; padding-top: 16px; gap: 28px; }
+      .features, .install { grid-template-columns: 1fr; }
+      .ctas .btn { flex: 1 1 100%; }
+      .wide { flex-wrap: nowrap; justify-content: flex-start; overflow-x: auto; scroll-snap-type: x mandatory; margin: 0 -20px; padding: 0 20px 6px; }
+      .wide img { width: 62%; min-width: 0; flex-shrink: 0; scroll-snap-align: start; }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <a class="brand" href="./"><img src="icons/icon-192.png" alt=""><span>PADEL METRIC</span></a>
+      <a class="open-link" href="./">Abrir la app ›</a>
+    </header>
+
+    <div class="hero">
+      <div>
+        <h1>Tu pádel, punto a punto</h1>
+        <p class="lead">Lleva el marcador desde el móvil y descubre dónde ganas y dónde pierdes los puntos: golpes, zonas de la pista, puntos clave y probabilidad de victoria en cada momento.</p>
+        <div class="ctas">
+          <a class="btn primary" href="./">Abrir Padel Metric</a>
+          <a class="btn" href="#instalar">Instalarla en el móvil</a>
+        </div>
+        <p class="note">Gratis, sin anuncios y sin crear cuenta. Tus datos se quedan en tu móvil.</p>
+      </div>
+      <div class="shots">
+        <img src="assets/screenshots/partido.jpg" alt="Marcador de un partido en directo" loading="lazy">
+        <img src="assets/screenshots/inicio.jpg" alt="Pantalla de inicio con la carta del jugador" loading="lazy">
+      </div>
+    </div>
+
+    <section>
+      <h2>Qué puedes hacer</h2>
+      <div class="features">
+        <div><h3>Marcador completo</h3><p>Ventaja, star point o punto de oro, tie-break y súper tie-break. El saque rota solo y se deshace cualquier punto.</p></div>
+        <div><h3>Estadísticas de verdad</h3><p>Golpes ganadores y errores de cada jugador, mapa de calor por zonas, puntos clave y la curva de probabilidad de victoria.</p></div>
+        <div><h3>Ranking ELO</h3><p>De jugadores y de parejas, con el cara a cara y la carta de cada jugador con sus atributos.</p></div>
+        <div><h3>Americanos y torneos</h3><p>Americano, mexicano, pozo, eliminatorias, ligas y grupos. Cruces y clasificación automáticos, e inscripción con un QR.</p></div>
+        <div><h3>En directo</h3><p>Un enlace o un QR para que cualquiera siga el marcador o la clasificación desde su móvil o en una tele.</p></div>
+        <div><h3>Anota sin tocar el móvil</h3><p>Con un mando Bluetooth de los de hacer fotos o, en Android, con los botones de volumen.</p></div>
+      </div>
+    </section>
+
+    <section>
+      <h2>Así se ve</h2>
+      <div class="wide">
+        <img src="assets/screenshots/inicio.jpg" alt="Inicio" loading="lazy">
+        <img src="assets/screenshots/partido.jpg" alt="Partido" loading="lazy">
+        <img src="assets/screenshots/ranking.jpg" alt="Ranking" loading="lazy">
+      </div>
+    </section>
+
+    <section id="instalar">
+      <h2>Instalarla</h2>
+      <div class="install">
+        <div>
+          <h3>Android</h3>
+          <ol><li>Abre la app en Chrome.</li><li>Pulsa "Instalar" en el aviso o en el menú ⋮.</li><li>Aparecerá en tu pantalla de inicio.</li></ol>
+          <a class="btn" href="descargas/PadelMetric.apk" download="PadelMetric.apk">Descargar la app de Android</a>
+        </div>
+        <div>
+          <h3>iPhone</h3>
+          <ol><li>Abre la app en Safari.</li><li>Pulsa el botón de compartir.</li><li>Elige "Añadir a pantalla de inicio".</li></ol>
+          <a class="btn" href="./">Abrir en Safari</a>
+        </div>
+        <div>
+          <h3>Ordenador o tablet</h3>
+          <ol><li>Abre la app en Chrome o Edge.</li><li>Pulsa el icono de instalar de la barra de direcciones.</li><li>Funciona también sin conexión.</li></ol>
+          <a class="btn" href="./">Abrir la app</a>
+        </div>
+      </div>
+    </section>
+
+    <footer>
+      <span>Padel Metric</span>
+      <a href="privacidad.html">Privacidad</a>
+      <a href="mailto:juancbr9@gmail.com?subject=Padel%20Metric">Contacto: juancbr9@gmail.com</a>
+    </footer>
+  </div>
+</body>
+</html>
