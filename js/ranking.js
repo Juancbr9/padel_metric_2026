@@ -68,6 +68,35 @@ function applyEloRatings(statsMap) {
   Object.values(statsMap).forEach(st => { st.elo = Math.round(st.elo); });
 }
 
+// Racha actual de cada jugador (victorias o derrotas seguidas en sus últimos partidos)
+function currentStreaks() {
+  const out = {};
+  matchHistory.forEach(m => {
+    if (!m || !m.players || (m.winnerPair !== 0 && m.winnerPair !== 1)) return;
+    m.players.forEach((p, idx) => {
+      if (p.isGeneric) return;
+      const won = m.winnerPair === (idx < 2 ? 0 : 1);
+      const st = out[p.name];
+      if (!st) out[p.name] = { won, n: 1, open: true };
+      else if (st.open && st.won === won) st.n++;
+      else st.open = false;
+    });
+  });
+  return out;
+}
+
+// Cifra de la derecha según el orden elegido: [valor, etiqueta, cambio en el último partido]
+function rankingMainValue(item) {
+  const per = (a) => (item.PJ ? a / item.PJ : 0);
+  if (rankingSortBy === 'winPct') return [`${Math.round(per(item.V) * 100)} %`, 'victorias', 0];
+  if (rankingSortBy === 'avgR') return [(item.PJ ? item.ratingSum / item.PJ : 6.5).toFixed(1).replace('.', ','), 'valoración', 0];
+  if (rankingSortBy === 'W') return [item.W, 'winners', 0];
+  if (rankingSortBy === 'lowENF') return [per(item.ENF).toFixed(1).replace('.', ','), 'errores/partido', 0];
+  if (rankingSortBy === 'bal') return [item.W - item.ENF, 'winners − errores', 0];
+  if (rankingSortBy === 'elo') return [item.elo, 'ELO', item.PJ ? Math.round(item.eloDelta || 0) : 0];
+  return [item.V, 'victorias', 0];
+}
+
 function formDotsHTML(form) {
   if (!form || !form.length) return '';
   return `<span class="form-dots">${form.map(r => `<i class="${r}"></i>`).join('')}</span>`;
@@ -131,10 +160,13 @@ function renderGlobalRanking() {
   if (list.length === 0) {
     wrap.innerHTML = `<div class="empty-note">No hay jugadores registrados con ese filtro</div>`;
   } else {
+    // Fila limpia: posición, foto, nombre, últimos 5 resultados, balance y racha; a la derecha la cifra por la que
+    // se ordena (ELO con su último cambio, por defecto). El club y la nota media van en la ficha del jugador.
+    const streaks = currentStreaks();
     wrap.innerHTML = `<div class="rk-card-list">${list.map((item, i) => {
-      const prof = ensureProfile(item.name);
-      const avgR = item.PJ ? (item.ratingSum / item.PJ).toFixed(1) : '6.5';
-      const winPct = item.PJ ? Math.round((item.V / item.PJ) * 100) : 0;
+      const lost = item.PJ - item.V;
+      const st = streaks[item.name];
+      const [val, lbl, delta] = rankingMainValue(item);
       return `
         <div class="rk-player-row ${item.name === myPlayerName ? 'is-me' : ''}" onclick="openPlayerProfile(${jsArg(item.name)})">
           <div class="rk-left">
@@ -142,18 +174,12 @@ function renderGlobalRanking() {
             ${renderAvatarHTML(item.name, '')}
             <div class="rk-info">
               <div class="rk-name">${escapeHtml(item.name)}${item.name === myPlayerName ? '<span class="me-tag">Tú</span>' : ''}</div>
-              <div class="rk-sub">${prof.club ? escapeHtml(prof.club) + ' · ' : ''}${item.PJ ? `${item.V} de ${item.PJ} ganados` : 'Sin partidos'}${formDotsHTML(item.form)}</div>
+              <div class="rk-sub">${item.PJ ? `${formDotsHTML(item.form)}<span class="rk-rec">${item.V}-${lost}</span>${st && st.n >= 2 ? `<span class="rk-streak ${st.won ? 'w' : 'l'}">${st.won ? `Racha de ${st.n}` : `${st.n} sin ganar`}</span>` : ''}` : 'Sin partidos'}</div>
             </div>
           </div>
-          <div class="rk-right">
-            <div class="rk-stat-box">
-              <span class="rk-stat-val">${item.elo}</span>
-              <span class="rk-stat-lbl">ELO</span>
-            </div>
-            <div class="rk-stat-box">
-              <span class="rk-stat-val">${avgR}</span>
-              <span class="rk-stat-lbl">Val. media</span>
-            </div>
+          <div class="rk-main">
+            <strong>${val}</strong>
+            <small class="${delta > 0 ? 'up' : delta < 0 ? 'down' : ''}">${delta ? `${delta > 0 ? '+' : '−'}${Math.abs(delta)}` : lbl}</small>
           </div>
         </div>
       `;

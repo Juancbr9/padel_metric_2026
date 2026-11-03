@@ -311,11 +311,10 @@ function openAboutSheet() {
 }
 
 // Novedades: se muestran una vez tras actualizar (no a quien abre la app por primera vez)
-const APP_VERSION = 15;
+const APP_VERSION = 16;
 const APP_NEWS = [
-  ['Resumen del partido', 'Al terminar un partido, o desde el historial, verás sus estadísticas como en el circuito profesional (saque, resto, bolas de break, winners y errores) y podrás pedir la crónica del partido escrita con IA: 3 al mes, lista para compartir.'],
-  ['Cada jugador, por su nombre', 'El marcador, la pista y las cartas muestran el nombre de pila, como se hace en el pádel amateur. Si dos se llaman igual, se añade la inicial del apellido.'],
-  ['Datos de ejemplo nuevos', '30 jugadores inventados con partidos, torneos y americanos más realistas.']
+  ['Ranking más claro', 'Cada fila muestra los últimos cinco resultados, el balance de victorias y derrotas, la racha actual y el cambio de ELO del último partido. El club y la nota media están en la ficha de cada jugador.'],
+  ['Póster del partido nuevo', 'La pareja ganadora en grande, el marcador sin solaparse, las estadísticas como en el circuito profesional y el mejor del partido.']
 ];
 
 function openNewsSheet() {

@@ -844,6 +844,14 @@ body.light-mode .shot-court line { stroke: #475569; } body.light-mode .shot-cour
 .rk-name { font-size: 1rem; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; line-height: 1.2; }
 .rk-sub { font-size: 0.8rem; color: var(--text-secondary); font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-top: 2px; }
 .rk-right { display: flex; align-items: center; gap: 12px; flex-shrink: 0; }
+.rk-sub .form-dots { margin-left: 0; margin-right: 8px; }
+.rk-rec { font-variant-numeric: tabular-nums; color: var(--text-secondary); }
+.rk-streak { margin-left: 8px; font-weight: 600; }
+.rk-streak.w { color: var(--emerald); } .rk-streak.l { color: var(--danger); }
+.rk-main { text-align: right; flex-shrink: 0; min-width: 56px; }
+.rk-main strong { display: block; font-family: var(--font-num); font-size: 1.1rem; font-weight: 700; color: var(--text-primary); font-variant-numeric: tabular-nums; line-height: 1.15; }
+.rk-main small { font-size: 0.75rem; font-weight: 600; color: var(--text-tertiary); font-variant-numeric: tabular-nums; }
+.rk-main small.up { color: var(--emerald); } .rk-main small.down { color: var(--danger); }
 .rk-stat-box { text-align: right; min-width: 48px; }
 .rk-stat-val { font-family: var(--font-num); font-size: 1rem; font-weight: 700; color: var(--text-primary); display: block; }
 .rk-stat-box + .rk-stat-box .rk-stat-val { font-weight: 500; color: var(--text-secondary); }

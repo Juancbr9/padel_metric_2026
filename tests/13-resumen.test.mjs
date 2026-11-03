@@ -36,6 +36,17 @@ export default async ({ newPage, url, assert }) => {
   assert(await p.evaluate(() => !!matchHistory[0].aiSummary), 'La crónica se guarda en el partido');
   assert((await p.evaluate(() => matchSummaryText(matchHistory[0]))).includes('Puntos ganados'), 'El texto para compartir lleva las estadísticas');
 
+  // Ranking: sin el club en la fila, con la racha y la cifra principal; póster nuevo sin errores
+  await p.evaluate(() => { closeEventModal(); switchMainTab('ranking'); });
+  const firstRow = await p.textContent('.rk-player-row');
+  assert(!/Club|Pádel Indoor|Pádel Center/.test(firstRow), 'La fila del ranking no muestra el club');
+  assert(await p.isVisible('.rk-player-row .rk-main strong'), 'Cifra principal a la derecha');
+  assert(await p.locator('.rk-streak').count() > 0, 'Se ve la racha de los jugadores');
+  await p.evaluate(() => { posterTargetState = matchHistory[0]; openPosterModal(); });
+  await p.waitForFunction(() => (document.getElementById('poster-preview').src || '').startsWith('data:image/png'));
+  await p.evaluate(() => closePosterModal());
+  await p.evaluate(() => switchMainTab('home'));
+
   // Cuarta crónica del mes: aviso de la versión Pro
   await p.evaluate(() => { closeEventModal(); openMatchSummary('history', 1); });
   await p.click('#ai-go');
