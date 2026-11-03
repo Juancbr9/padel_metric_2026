@@ -164,7 +164,7 @@
     </div>
     <div class="menu-footer">
       <svg class="menu-footer-logo"><use href="#logo-mark"/></svg>
-      <span id="app-version-label">Padel Metric · v16</span>
+      <span id="app-version-label">Padel Metric · v17</span>
     </div>
   </nav>
 </div>
@@ -711,6 +711,13 @@
     </div>
     <canvas id="poster-canvas" width="1080" height="1350" class="hidden"></canvas>
     <img id="poster-preview" class="poster-img-preview" alt="Resumen del partido">
+    <div id="poster-photo-tools" class="poster-photo-tools hidden">
+      <label class="btn-icon poster-photo-btn"><input type="file" accept="image/*" class="hidden" onchange="choosePosterPhoto(this)"><span id="poster-photo-label">Con la foto del grupo</span></label>
+      <div id="poster-photo-adjust" class="poster-photo-adjust hidden">
+        <span>Encuadre</span><input type="range" min="0" max="100" value="50" oninput="setPosterPhotoY(this.value)" aria-label="Mover la foto arriba o abajo">
+        <button type="button" class="btn-text" onclick="clearPosterPhoto()">Quitar foto</button>
+      </div>
+    </div>
     <div class="u-row-8">
       <button class="btn-volt flex-1 btn-volt-sm" onclick="sharePosterWhatsApp()">Compartir imagen</button>
       <button class="btn-icon btn-tall" onclick="downloadPosterPNG()">Descargar</button>
@@ -723,6 +730,7 @@
 <script src="js/core/storage.js"></script>
 <script src="js/core/utils.js"></script>
 <script src="js/fx.js"></script>
+<script src="js/intro.js"></script>
 <script src="js/setup.js"></script>
 <script src="js/players.js"></script>
 <script src="js/winprob.js"></script>

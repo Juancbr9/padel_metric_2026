@@ -123,6 +123,7 @@ function recordAction(type, shotName, zoneOverride = null) {
 
   closeModal();
   afterPointScored();
+  if (type === 'W' && typeof showShotTrail === 'function') showShotTrail(shotName, selectedSlot);
 }
 
 function addNeutralPoint(teamIdx) {

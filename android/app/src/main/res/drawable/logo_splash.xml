@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Logo de Padel Metric para la pantalla de arranque de Android 12+ (centrado en el área segura del icono) -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="240dp" android:height="240dp" android:viewportWidth="600" android:viewportHeight="600">
+  <group android:pivotX="300" android:pivotY="300" android:scaleX="0.62" android:scaleY="0.62" android:translateX="34" android:translateY="50">
+    <path android:fillColor="#D4FF2A" android:pathData="M158,198 a122,122 0 1,0 244,0 a122,122 0 1,0 -244,0 Z"/>
+    <path android:fillColor="#D4FF2A" android:pathData="M173,96 h0 a35,35 0 0 1 35,35 v260 a35,35 0 0 1 -35,35 h0 a35,35 0 0 1 -35,-35 v-260 a35,35 0 0 1 35,-35 Z"/>
+    <path android:fillColor="#030508" android:pathData="M245.5,135.6 a10.5,10.5 0 1,0 21.0,0 a10.5,10.5 0 1,0 -21.0,0 Z"/>
+    <path android:fillColor="#030508" android:pathData="M281.5,135.6 a10.5,10.5 0 1,0 21.0,0 a10.5,10.5 0 1,0 -21.0,0 Z"/>
+    <path android:fillColor="#030508" android:pathData="M317.5,135.6 a10.5,10.5 0 1,0 21.0,0 a10.5,10.5 0 1,0 -21.0,0 Z"/>
+    <path android:fillColor="#030508" android:pathData="M227.5,166.8 a10.5,10.5 0 1,0 21.0,0 a10.5,10.5 0 1,0 -21.0,0 Z"/>
+    <path android:fillColor="#030508" android:pathData="M263.5,166.8 a10.5,10.5 0 1,0 21.0,0 a10.5,10.5 0 1,0 -21.0,0 Z"/>
+    <path android:fillColor="#030508" android:pathData="M299.5,166.8 a10.5,10.5 0 1,0 21.0,0 a10.5,10.5 0 1,0 -21.0,0 Z"/>
+    <path android:fillColor="#030508" android:pathData="M335.5,166.8 a10.5,10.5 0 1,0 21.0,0 a10.5,10.5 0 1,0 -21.0,0 Z"/>
+    <path android:fillColor="#030508" android:pathData="M209.5,198 a10.5,10.5 0 1,0 21.0,0 a10.5,10.5 0 1,0 -21.0,0 Z"/>
+    <path android:fillColor="#030508" android:pathData="M245.5,198 a10.5,10.5 0 1,0 21.0,0 a10.5,10.5 0 1,0 -21.0,0 Z"/>
+    <path android:fillColor="#030508" android:pathData="M281.5,198 a10.5,10.5 0 1,0 21.0,0 a10.5,10.5 0 1,0 -21.0,0 Z"/>
+    <path android:fillColor="#030508" android:pathData="M317.5,198 a10.5,10.5 0 1,0 21.0,0 a10.5,10.5 0 1,0 -21.0,0 Z"/>
+    <path android:fillColor="#030508" android:pathData="M353.5,198 a10.5,10.5 0 1,0 21.0,0 a10.5,10.5 0 1,0 -21.0,0 Z"/>
+    <path android:fillColor="#030508" android:pathData="M227.5,229.2 a10.5,10.5 0 1,0 21.0,0 a10.5,10.5 0 1,0 -21.0,0 Z"/>
+    <path android:fillColor="#030508" android:pathData="M263.5,229.2 a10.5,10.5 0 1,0 21.0,0 a10.5,10.5 0 1,0 -21.0,0 Z"/>
+    <path android:fillColor="#030508" android:pathData="M299.5,229.2 a10.5,10.5 0 1,0 21.0,0 a10.5,10.5 0 1,0 -21.0,0 Z"/>
+    <path android:fillColor="#030508" android:pathData="M335.5,229.2 a10.5,10.5 0 1,0 21.0,0 a10.5,10.5 0 1,0 -21.0,0 Z"/>
+    <path android:fillColor="#030508" android:pathData="M245.5,260.4 a10.5,10.5 0 1,0 21.0,0 a10.5,10.5 0 1,0 -21.0,0 Z"/>
+    <path android:fillColor="#030508" android:pathData="M281.5,260.4 a10.5,10.5 0 1,0 21.0,0 a10.5,10.5 0 1,0 -21.0,0 Z"/>
+    <path android:fillColor="#030508" android:pathData="M317.5,260.4 a10.5,10.5 0 1,0 21.0,0 a10.5,10.5 0 1,0 -21.0,0 Z"/>
+    <path android:fillColor="#D4FF2A" android:pathData="M334,388 a38,38 0 1,0 76,0 a38,38 0 1,0 -76,0 Z"/>
+  </group>
+</vector>

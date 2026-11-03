@@ -252,6 +252,7 @@ input:focus, select:focus, textarea:focus { border-color: var(--text-primary); }
 .ios-segmented { background: var(--bg-obsidian); border: 1px solid var(--border-subtle); padding: 3px; border-radius: var(--r-md); display: grid; gap: 3px; }
 .ios-segmented.cols-2 { grid-template-columns: 1fr 1fr; }
 .ios-segmented.cols-3 { grid-template-columns: 1fr 1fr 1fr; }
+.ios-segmented.cols-4 { grid-template-columns: repeat(4, 1fr); }
 .ios-segmented.cols-4, .ios-segmented.cols-5 { grid-template-columns: 1fr 1fr; }
 .ios-segmented.cols-5 > :last-child { grid-column: 1 / -1; }
 .ios-seg-option { background: transparent; border: none; border-radius: 8px; padding: 10px 6px; color: var(--text-secondary); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; }
@@ -746,8 +747,8 @@ body.light-mode .shot-art { background: #E6EAEF; }
 .shot-vec { display: block; width: 100%; height: auto; aspect-ratio: 72 / 40; }
 .shot-tile-title { font-size: 0.92rem; font-weight: 700; line-height: 1.1; padding: 0 2px; color: var(--text-primary); }
 .shot-tile-hint { font-size: 0.72rem; font-weight: 500; color: var(--text-secondary); line-height: 1.2; padding: 0 2px; }
-.shot-court line { stroke: #8B95A5; stroke-width: 1; opacity: 0.45; }
-.shot-court .net { stroke: #E2E8F0; stroke-width: 2.6; opacity: 0.9; }
+.shot-court line { stroke: #8B95A5; stroke-width: 1; opacity: var(--court-op, 0.45); }
+.shot-court .net { stroke: #E2E8F0; stroke-width: 2.6; opacity: var(--court-net-op, 0.9); }
 body.light-mode .shot-court line { stroke: #475569; } body.light-mode .shot-court .net { stroke: #334155; }
 .zone-toggle { width: 100%; justify-content: flex-start; gap: 8px; margin-top: 12px; padding: 11px 12px; font-size: 0.86rem; background: var(--surface-1); color: var(--text-secondary); }
 .zone-toggle span { margin-left: auto; color: var(--text-primary); }
@@ -1368,3 +1369,139 @@ body.spectator-mode > header, body.spectator-mode .container, body.spectator-mod
 .avatar-sm { width: 28px; height: 28px; font-size: 0.7rem; }
 .avatar-md { width: 40px; height: 40px; font-size: 0.9rem; }
 .avatar-xl { width: 58px; height: 58px; font-size: 1.2rem; }
+
+/* ---------- 18. Animación de entrada del logo (js/intro.js) ----------
+   Fondo plano y la P en el acento; no bloquea los toques y se funde a los 1,9 s */
+.intro-splash { position: fixed; inset: 0; z-index: 900; background: var(--bg-obsidian); display: flex; align-items: center; justify-content: center; pointer-events: none; transition: opacity .45s ease-out; }
+.intro-splash.out { opacity: 0; }
+.intro-stage { display: flex; flex-direction: column; align-items: center; gap: 18px; }
+.intro-logo { width: min(34vw, 170px); height: auto; overflow: visible; }
+.intro-logo .ip, .intro-logo .idot { fill: var(--volt); }
+.intro-logo .ih { fill: var(--bg-obsidian); }
+.intro-word { font-family: var(--font-display); font-style: italic; font-weight: 900; font-size: min(9vw, 44px); color: var(--text-primary); opacity: 0; }
+/* A · Saque */
+.intro-A .ihead { transform-origin: 280px 198px; transform: scale(0); animation: inPop .55s cubic-bezier(.2,1.4,.4,1) .55s forwards; }
+.intro-A .ihandle { transform-origin: 173px 426px; transform: scaleY(0); animation: inPop .45s cubic-bezier(.2,.9,.3,1) .35s forwards; }
+.intro-A .ih { transform-box: fill-box; transform-origin: center; transform: scale(0); animation: inPop .3s ease-out forwards; animation-delay: calc(.9s + var(--d) * .25s); }
+.intro-A .idot { animation: inBall 1s cubic-bezier(.3,.6,.4,1) forwards; }
+.intro-A .intro-word { animation: inFade .45s ease-out 1.3s forwards; }
+@keyframes inBall { 0% { transform: translate(260px,-420px); } 45% { transform: translate(120px,0); } 62% { transform: translate(60px,-120px); } 80% { transform: translate(20px,0); } 90% { transform: translate(8px,-24px); } 100% { transform: none; } }
+/* B · Trazo */
+.intro-B .ip { fill: transparent; stroke: var(--volt); stroke-width: 6; stroke-dasharray: 1; stroke-dashoffset: 1; animation: inDraw .9s ease-in-out forwards, inFill .35s ease-out .85s forwards; }
+.intro-B .ih { opacity: 0; animation: inFade .25s ease-out forwards; animation-delay: calc(1.05s + var(--d) * .3s); }
+.intro-B .idot { transform-origin: 372px 388px; transform: scale(0); animation: inPop .4s cubic-bezier(.2,1.6,.4,1) 1.4s forwards; }
+.intro-B .intro-word { animation: inFade .45s ease-out 1.45s forwards; }
+@keyframes inDraw { to { stroke-dashoffset: 0; } }
+@keyframes inFill { to { fill: var(--volt); stroke-width: 0; } }
+/* C · Perforado */
+.intro-C .ipg { transform-origin: 240px 260px; transform: rotate(-14deg) scale(.6); opacity: 0; animation: inSwing .7s cubic-bezier(.2,1.2,.3,1) forwards; }
+.intro-C .ih { transform-box: fill-box; transform-origin: center; transform: scale(0); animation: inPop .28s ease-out forwards; animation-delay: calc(.55s + var(--d) * .35s); }
+.intro-C .idot { opacity: 0; transform: translateY(-60px); animation: inDrop .45s cubic-bezier(.5,0,.5,1.4) 1.05s forwards; }
+.intro-C .intro-word { transform: translateX(-20px); animation: inSlide .5s cubic-bezier(.2,.9,.3,1) 1.2s forwards; }
+@keyframes inSwing { to { transform: none; opacity: 1; } }
+@keyframes inDrop { to { opacity: 1; transform: none; } }
+@keyframes inSlide { to { opacity: 1; transform: none; } }
+@keyframes inPop { to { transform: none; } }
+@keyframes inFade { to { opacity: 1; } }
+
+/* Póster con la foto del grupo */
+.poster-photo-tools { display: grid; gap: 8px; margin: 0 0 10px; }
+.poster-photo-btn { min-height: 44px; cursor: pointer; display: flex; align-items: center; justify-content: center; font-weight: 600; }
+.poster-photo-adjust { display: flex; align-items: center; gap: 10px; font-size: 0.85rem; color: var(--text-secondary); }
+.poster-photo-adjust input[type=range] { flex: 1; accent-color: var(--volt); }
+
+/* ---------- 19. Marcador gigante en horizontal ----------
+   Con el móvil girado durante el partido (pantalla baja y ancha) el marcador ocupa la pantalla con cifras
+   enormes para leerlo desde la pista; a la derecha, los dos botones de punto; abajo, las acciones. */
+@media (orientation: landscape) and (max-height: 560px) {
+  body.in-live-match > header { display: none; }
+  body.in-live-match .container { max-width: none; padding-top: 0; padding-bottom: 0; }
+  body.in-live-match .match-screen-fixed {
+    height: calc(100dvh - var(--sa-t) - var(--sa-b) - 12px); max-height: none; margin-top: calc(6px + var(--sa-t));
+    display: grid; grid-template-columns: minmax(0, 1.75fr) minmax(0, 1fr); grid-template-rows: minmax(0, 1fr) 2.6rem; gap: 8px;
+    padding: 0 max(4px, var(--sa-r)) 0 max(4px, var(--sa-l));
+  }
+  body.in-live-match .match-screen-fixed > .serve-strip, body.in-live-match .match-screen-fixed > .court-arena { display: none; }
+  body.in-live-match #scoreboard-box { grid-column: 1; grid-row: 1; display: flex; flex-direction: column; }
+  body.in-live-match #scoreboard-box .sb-rows { flex: 1; display: grid; grid-template-rows: 1fr 1fr; }
+  body.in-live-match #scoreboard-box .sb-wp, body.in-live-match #scoreboard-box .fixed-ticker-row { display: none; }
+  body.in-live-match .sb-row { height: auto; grid-template-columns: 0.7rem minmax(0, 1fr) auto minmax(5rem, 27%); gap: 0.7rem; }
+  body.in-live-match .sb-names { font-size: clamp(1.3rem, 5.6vh, 2.4rem); white-space: normal; line-height: 1.02; }
+  body.in-live-match .sb-names::before { width: 0.8rem; height: 0.8rem; }
+  body.in-live-match .sb-set { width: clamp(2rem, 11vh, 3.8rem); height: clamp(2.4rem, 14vh, 4.6rem); font-size: clamp(1.6rem, 9vh, 3.2rem); }
+  body.in-live-match .sb-pts { font-size: clamp(3rem, 24vh, 8.5rem); }
+  body.in-live-match .sb-status { font-size: 0.95rem; }
+  body.in-live-match .quick-points { grid-column: 2; grid-row: 1; height: auto; grid-template-columns: 1fr; grid-template-rows: 1fr 1fr; gap: 8px; }
+  body.in-live-match .qp { padding: 0 1.1rem; }
+  body.in-live-match .qp strong { font-size: clamp(1.3rem, 6vh, 2.2rem); white-space: normal; }
+  body.in-live-match .qp small { font-size: 0.85rem; }
+  body.in-live-match .match-bottom-actions { grid-column: 1 / 3; grid-row: 2; height: 2.6rem; }
+  body.in-live-match .gesture-hint { display: none; }
+}
+
+/* ---------- 20. Modo tele del directo ----------
+   En una pantalla ancha y horizontal (tele, ordenador, tableta girada) el directo de un partido se ve como una
+   retransmisión: marcador grande abajo, estadísticas de cada jugador a la derecha y avisos de bola de break,
+   de set, de partido o punto de oro en grande cuando llegan. */
+.spx-alert { display: none; }
+@media (min-width: 900px) and (orientation: landscape) {
+  .spectator.spx-match { max-width: none; height: 100dvh; min-height: 0; overflow: hidden; display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(260px, 24vw); grid-template-rows: auto minmax(0, 1fr) auto auto; gap: 2.2vh 2vw; padding: 3vh 3vw; }
+  .spx-match .spx-top { grid-column: 1 / 3; grid-row: 1; }
+  .spx-match .spx-brand { font-size: 1.6rem; } .spx-match .spx-brand svg { width: 40px; height: 40px; }
+  .spx-match .spx-board { grid-column: 1; grid-row: 3; align-self: end; }
+  .spx-match .spx-row { grid-template-columns: 16px minmax(0, 1fr) auto 16vh; min-height: 13vh; }
+  .spx-match .spx-names strong { font-size: 6vh; }
+  .spx-match .spx-names small { font-size: 2vh; }
+  .spx-match .spx-set { font-size: 7.5vh; }
+  .spx-match .spx-pts { font-size: 9vh; }
+  .spx-match .spx-status { min-height: 6vh; font-size: 2.2vh; }
+  .spx-match .spx-spark { height: 9vh; }
+  .spx-match .spx-players { grid-column: 2; grid-row: 2 / 4; grid-template-columns: 1fr; align-content: end; gap: 1.4vh; }
+  .spx-match .spx-player { padding: 1.6vh 1.2vw; }
+  .spx-match .spx-player strong { font-size: 3.2vh; }
+  .spx-match .spx-player span { font-size: 1.8vh; }
+  .spx-match .spx-log { grid-column: 1 / 3; grid-row: 4; justify-content: flex-start; flex-wrap: nowrap; overflow: hidden; }
+  .spx-match .spx-foot { display: none; }
+  .spx-match .spx-alert.on { display: flex; grid-column: 1; grid-row: 2; align-self: center; justify-self: start; align-items: center; gap: 1.4vw;
+    font-family: var(--font-display); font-style: italic; font-weight: 800; text-transform: uppercase; font-size: 7vh; line-height: 1;
+    background: #F5F7FA; color: #06090F; padding: 2.2vh 2.4vw 2.2vh 1.6vw; border-radius: 10px; }
+  .spx-match .spx-alert.on::before { content: ''; width: 2.2vh; height: 2.2vh; border-radius: 3px; flex-shrink: 0; }
+  .spx-match .spx-alert.a::before { background: var(--pa); } .spx-match .spx-alert.b::before { background: var(--pb); }
+  .spx-match .spx-alert.enter { animation: spxAlertIn .6s var(--ease-spring); }
+}
+@keyframes spxAlertIn { from { transform: translateX(-40px); opacity: 0; } to { transform: none; opacity: 1; } }
+
+/* ---------- 21. Trayectoria del golpe sobre la pista ---------- */
+.shot-trail { position: absolute; left: 16%; right: 16%; z-index: 6; pointer-events: none; display: flex; flex-direction: column; align-items: center; gap: 2px;
+  color: #FFFFFF; animation: trailOut 1.5s ease-in forwards; }
+.shot-trail.high { top: 6%; } .shot-trail.low { bottom: 6%; }
+.shot-trail svg { width: 100%; height: auto; overflow: visible; stroke-dasharray: 160; stroke-dashoffset: 160; animation: trailDraw .75s cubic-bezier(.3,.7,.3,1) forwards; }
+.shot-trail svg { --court-op: 0; --court-net-op: 0; }
+.shot-trail span { font-family: var(--font-display); font-weight: 700; font-size: 1.15rem; text-transform: uppercase; background: rgba(3,5,8,0.82); padding: 2px 10px; border-radius: 6px; }
+.shot-trail.z-R span { color: #22D3EE; } .shot-trail.z-T span { color: #F5C04A; } .shot-trail.z-F span { color: #A78BFA; }
+@keyframes trailDraw { to { stroke-dashoffset: 0; } }
+@keyframes trailOut { 0%, 70% { opacity: 1; } 100% { opacity: 0; } }
+
+/* ---------- 22. Cierre del partido de retransmisión ---------- */
+.me-mvp { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin: 4px 0 10px; }
+.me-mvp > span { font-size: 0.85rem; font-weight: 600; color: #8B95A5; }
+.me-mvp .pcard { width: 9.5rem; perspective: 600px; }
+#match-end.cine .me-kicker { animation: meFade .4s ease-out .1s both; }
+#match-end.cine .me-winners { animation: meWin .75s var(--ease-spring) .3s both; }
+#match-end.cine .me-losers { animation: meFade .45s ease-out .75s both; }
+#match-end.cine .me-set { animation: meUp .45s var(--ease-spring) both; }
+#match-end.cine .me-set:nth-child(1) { animation-delay: .9s; } #match-end.cine .me-set:nth-child(2) { animation-delay: 1.02s; } #match-end.cine .me-set:nth-child(3) { animation-delay: 1.14s; }
+#match-end.cine .me-mvp .pcard { animation: meFlip .8s var(--ease-spring) 1.25s both; transform-origin: center; }
+#match-end.cine .me-mvp > span { animation: meFade .4s ease-out 1.25s both; }
+#match-end.cine .me-stats, #match-end.cine .me-chart { animation: meFade .45s ease-out 1.55s both; }
+#match-end.cine .me-actions, #match-end.cine .me-discard { animation: meFade .45s ease-out 1.75s both; }
+@keyframes meWin { from { opacity: 0; transform: scale(1.5); letter-spacing: 0.08em; } to { opacity: 1; transform: none; } }
+@keyframes meUp { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
+@keyframes meFade { from { opacity: 0; } to { opacity: 1; } }
+@keyframes meFlip { from { opacity: 0; transform: rotateY(90deg) scale(.9); } to { opacity: 1; transform: none; } }
+
+/* ---------- 23. Mapa de calor en perspectiva ----------
+   La pista completa se inclina como en las retransmisiones (la pareja 2 más cerca) al aparecer */
+.heat-court:not(.half) { transform-origin: 50% 70%; transform: perspective(1100px) rotateX(30deg) scale(.96); animation: heatTilt .9s var(--ease-out) both; margin-top: -10px; margin-bottom: -30px; }
+@keyframes heatTilt { from { transform: none; } to { transform: perspective(1100px) rotateX(30deg) scale(.96); } }

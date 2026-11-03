@@ -131,6 +131,7 @@ function openShareImage(drawFn, title, { height = 1350 } = {}) {
   ctx.textAlign = 'left';
   document.getElementById('poster-preview').src = canvas.toDataURL('image/png');
   document.getElementById('poster-modal-title').innerText = title;
+  document.getElementById('poster-photo-tools')?.classList.add('hidden');
   document.getElementById('poster-modal').classList.remove('hidden');
 }
 

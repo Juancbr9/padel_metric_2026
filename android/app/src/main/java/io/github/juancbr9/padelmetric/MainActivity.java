@@ -66,7 +66,7 @@ public class MainActivity extends Activity {
         super.onCreate(estado);
         archivos = new Web(this);
         web = new WebView(this);
-        web.setBackgroundColor(Color.parseColor("#06090F"));
+        web.setBackgroundColor(Color.parseColor("#030508"));
         marco = new FrameLayout(this);
         marco.addView(web);
         setContentView(marco);
@@ -156,7 +156,7 @@ public class MainActivity extends Activity {
         WindowInsetsControllerCompat c = WindowCompat.getInsetsController(getWindow(), marco);
         c.setAppearanceLightStatusBars(clara);
         c.setAppearanceLightNavigationBars(clara);
-        getWindow().getDecorView().setBackgroundColor(Color.parseColor(clara ? "#F1F5F9" : "#06090F"));
+        getWindow().getDecorView().setBackgroundColor(Color.parseColor(clara ? "#F1F5F9" : "#030508"));
     }
 
     private WebResourceResponse servir(Uri u) {

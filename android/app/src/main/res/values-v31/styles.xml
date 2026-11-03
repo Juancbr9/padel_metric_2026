@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Android 12+: la pantalla de arranque del sistema usa el mismo fondo y el logo de la app,
+         y enlaza sin destellos con la animación de entrada de la web -->
+    <style name="Tema" parent="@android:style/Theme.Material.NoActionBar">
+        <item name="android:statusBarColor">@android:color/transparent</item>
+        <item name="android:navigationBarColor">@android:color/transparent</item>
+        <item name="android:windowBackground">@color/fondo</item>
+        <item name="android:windowSplashScreenBackground">@color/fondo</item>
+        <item name="android:windowSplashScreenAnimatedIcon">@drawable/logo_splash</item>
+    </style>
+</resources>

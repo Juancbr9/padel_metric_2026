@@ -179,7 +179,9 @@ function spxSparkSVG(sp) {
     <path d="${line}" class="sb-spark-line"/></svg>`;
 }
 
+let spxAlertPrev = '';
 function renderSpectator(d) {
+  document.getElementById('view-spectator')?.classList.remove('spx-match');
   if (d && d.kind === 'ev') { renderEventSpectator(d); return; }
   if (d && d.kind === 'signup') { renderSignupSpectator(d); return; }
   const box = document.getElementById('view-spectator');
@@ -210,7 +212,13 @@ function renderSpectator(d) {
   };
   const pa = Math.round(d.wp * 100);
   const spark = spxSparkSVG(d.spark || []);
+  // Aviso grande de bola de break, de set, de partido o punto de oro (en la tele); solo se anima cuando cambia
+  const alertTxt = !d.over && d.status && d.status.pair != null ? `${d.status.text.split('·').pop().trim()} · ${d.pairs[d.status.pair]}` : '';
+  const alertNew = alertTxt && alertTxt !== spxAlertPrev;
+  spxAlertPrev = alertTxt;
+  box.classList.add('spx-match');
   box.innerHTML = `${head}
+    <div class="spx-alert ${alertTxt ? `on ${d.status.pair ? 'b' : 'a'}` : ''} ${alertNew ? 'enter' : ''}">${escapeHtml(alertTxt)}</div>
     <div class="spx-board">
       <div class="spx-status sb-status ${d.over ? 'is-over' : d.status.cls}">${badge}<span class="spx-status-txt">${escapeHtml(d.status.text)}</span><span class="spx-time">${mm}:${ss}</span></div>
       ${row(0)}${row(1)}

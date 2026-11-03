@@ -449,6 +449,7 @@ function celebrateEvent(ev) {
   const layer = document.getElementById('cele-layer');
   if (ev.kind === 'match') {
     fxSound('match');
+    vibrate([40, 60, 40, 60, 120]);
     fxConfetti({ colors: ev.pair ? ['#FF2E54', '#FFFFFF'] : ['#00F0FF', '#FFFFFF'], count: 110 });
     clearTimeout(matchEndTimer);
     matchEndTimer = setTimeout(openMatchEnd, 900);
@@ -460,12 +461,14 @@ function celebrateEvent(ev) {
     kind = 'Set';
     score = `${s[0]}-${s[1]}`;
     fxSound('set');
+    vibrate([30, 50, 30, 50, 60]);
   } else {
     const last = state.points[state.points.length - 1];
     if (last && last.sv != null && (last.sv < 2 ? 0 : 1) !== ev.pair) kind = 'Break';
     const g = state.sets[state.currentSet];
     score = `${g[0]}-${g[1]}`;
     fxSound('game');
+    vibrate([20, 40, 20]);
   }
   layer.innerHTML = `<div class="cele-banner ${ev.pair ? 'b' : 'a'} ${ev.kind === 'set' ? 'big' : ''}">
     <span class="cele-kind">${kind}</span><span class="cele-who">${escapeHtml(livePairName(ev.pair))}</span><span class="cele-score">${score}</span></div>`;
@@ -492,6 +495,7 @@ function openMatchEnd() {
     <div class="me-winners ${w ? 'b' : 'a'}">${escapeHtml(livePairName(w))}</div>
     <div class="me-losers">${escapeHtml(full(w))} ganan a ${escapeHtml(full(l))}</div>
     <div class="me-sets">${sets.map(({ s, i }) => `<div class="me-set"><small>${i === 2 && state.thirdSetRule === 'supertb' ? 'Súper TB' : `Set ${i + 1}`}</small>${s[0]}-${s[1]}</div>`).join('')}</div>
+    ${!mvp.isGeneric && dbPlayers.includes(mvp.name) ? `<div class="me-mvp"><span>Mejor del partido</span>${playerCardHTML(computePlayerCard(mvp.name), { mini: true })}</div>` : ''}
     <div class="me-stats">
       <div class="me-stat"><strong>${(state.points || []).length || '-'}</strong><span>Puntos</span></div>
       <div class="me-stat"><strong>${state.players.reduce((a, p) => a + (p.W || 0), 0)}</strong><span>Winners</span></div>
@@ -506,7 +510,10 @@ function openMatchEnd() {
       <button class="btn-icon" onclick="closeMatchEnd(); exitMatchScreen();">Salir</button>
     </div>
     <button type="button" class="btn-text btn-block me-discard" onclick="discardCurrentMatch()">No guardar este partido</button>`;
-  document.getElementById('match-end').classList.remove('hidden');
+  // Entrada "de retransmisión": el nombre de la pareja ganadora, los sets uno a uno y la carta del mejor del partido
+  const me = document.getElementById('match-end');
+  me.classList.remove('cine'); void me.offsetWidth; me.classList.add('cine');
+  me.classList.remove('hidden');
 }
 
 function closeMatchEnd(silent) {
@@ -860,4 +867,20 @@ function closeMatchGuide() {
   matchGuideStep = -1;
   document.getElementById('match-guide')?.classList.add('hidden');
   try { localStorage.setItem('pm_guia_partido_v1', '1'); } catch (e) {}
+}
+
+// ---------- Trayectoria del golpe ----------
+// Tras un winner con golpe del catálogo, su dibujo (pala, trayectoria y bote) se traza un instante sobre la pista,
+// en el campo de quien lo ha dado, y se desvanece. No tapa nada ni bloquea los toques.
+function showShotTrail(shotName, idx) {
+  const shot = (typeof SHOT_BY_ID !== 'undefined' && SHOT_BY_ID[shotName]) || SHOT_CATALOG.find(s => s.group === shotName);
+  const arena = document.querySelector('#view-match .court-arena');
+  if (!shot || !arena || arena.offsetParent === null) return;
+  if (window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  arena.querySelector('.shot-trail')?.remove();
+  const el = document.createElement('div');
+  el.className = `shot-trail ${idx != null && idx >= 2 ? 'low' : 'high'} z-${shot.zone}`;
+  el.innerHTML = `<svg viewBox="0 0 72 40" aria-hidden="true"><use href="#${shot.icon}"/></svg><span>${escapeHtml(shot.label)}</span>`;
+  arena.appendChild(el);
+  setTimeout(() => el.remove(), 1500);
 }

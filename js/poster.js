@@ -1,12 +1,108 @@
 // ==========================================================
 // PÓSTER HD PARA WHATSAPP (CON AVATARES CIRCULARES Y SIN DRIVE / REVÉS)
 // ==========================================================
+// Póster con la foto del grupo: la foto ocupa todo el póster y el resultado va encima, en una franja oscura.
+// La foto solo vive en memoria mientras el póster está abierto (no se guarda).
+let posterPhoto = null, posterPhotoY = 0.5, posterPhotoFor = null;
+
 function openPosterModal() {
   posterTargetState = posterTargetState || state;
   if (!posterTargetState) return;
+  if (posterPhotoFor !== posterTargetState.id) { posterPhoto = null; posterPhotoY = 0.5; }
   drawPosterCanvas(posterTargetState);
   document.getElementById('poster-modal-title').innerText = 'Póster del partido';
+  document.getElementById('poster-photo-tools')?.classList.remove('hidden');
+  syncPosterPhotoTools();
   document.getElementById('poster-modal').classList.remove('hidden');
+}
+
+function syncPosterPhotoTools() {
+  const lbl = document.getElementById('poster-photo-label');
+  if (lbl) lbl.innerText = posterPhoto ? 'Cambiar la foto' : 'Con la foto del grupo';
+  document.getElementById('poster-photo-adjust')?.classList.toggle('hidden', !posterPhoto);
+}
+
+function choosePosterPhoto(input) {
+  const file = input.files && input.files[0];
+  input.value = '';
+  if (!file || !posterTargetState) return;
+  const reader = new FileReader();
+  reader.onload = () => {
+    const img = new Image();
+    img.onload = () => {
+      posterPhoto = img; posterPhotoY = 0.5; posterPhotoFor = posterTargetState.id;
+      const r = document.querySelector('#poster-photo-adjust input[type=range]');
+      if (r) r.value = 50;
+      syncPosterPhotoTools();
+      drawPosterCanvas(posterTargetState);
+    };
+    img.onerror = () => showToast('No se ha podido abrir la foto');
+    img.src = reader.result;
+  };
+  reader.readAsDataURL(file);
+}
+
+function setPosterPhotoY(v) {
+  posterPhotoY = Math.max(0, Math.min(1, v / 100));
+  if (posterPhoto && posterTargetState) drawPosterCanvas(posterTargetState);
+}
+
+function clearPosterPhoto() {
+  posterPhoto = null;
+  syncPosterPhotoTools();
+  if (posterTargetState) drawPosterCanvas(posterTargetState);
+}
+
+// Versión con foto: foto a sangre, logo arriba y el resultado abajo sobre una franja oscura (sin degradados)
+function drawPhotoPoster(ctx, W, H, m) {
+  const img = posterPhoto;
+  const sc = Math.max(W / img.width, H / img.height);
+  const dw = img.width * sc, dh = img.height * sc;
+  ctx.drawImage(img, (W - dw) / 2, -(dh - H) * posterPhotoY, dw, dh);
+  const X = 64, R = W - 64;
+  const font = (w, px, fam = 'Barlow') => `${w} ${px}px "${fam}", sans-serif`;
+  // Logo arriba, sobre una pastilla oscura
+  ctx.fillStyle = 'rgba(3,5,8,0.78)'; ctx.beginPath(); ctx.roundRect(X - 16, 44, 372, 84, 42); ctx.fill();
+  drawLogoMark(ctx, X + 4, 58, 56, '#D4FF2A');
+  ctx.fillStyle = '#F5F7FA'; ctx.font = font('italic 900', 36, 'Barlow Condensed'); ctx.textAlign = 'left';
+  ctx.fillText('PADEL METRIC', X + 74, 98);
+  // Franja inferior con el resultado
+  const sets = (m.sets || []).filter(s => s[0] + s[1] > 0);
+  const winner = m.winnerPair === 0 || m.winnerPair === 1 ? m.winnerPair : null;
+  const top = H - 470;
+  ctx.fillStyle = 'rgba(3,5,8,0.9)'; ctx.fillRect(0, top, W, H - top);
+  ctx.fillStyle = 'rgba(255,255,255,0.14)'; ctx.fillRect(0, top, W, 2);
+  let y = top + 70;
+  ctx.fillStyle = '#8B95A5'; ctx.font = font(600, 28);
+  ctx.fillText(winner !== null ? 'Ganan' : 'Partido', X, y);
+  ctx.textAlign = 'right'; ctx.font = font(500, 26);
+  ctx.fillText([m.date, m.elapsedSec ? formatMatchDuration(m.elapsedSec) : ''].filter(Boolean).join(' · '), R, y);
+  ctx.textAlign = 'left';
+  y += 92;
+  ctx.fillStyle = '#F5F7FA'; ctx.font = font(700, 92, 'Barlow Condensed');
+  ctx.fillText(fitText(ctx, livePairName(winner ?? 0, m).toUpperCase(), R - X), X, y);
+  y += 30;
+  const colW = 84, setsX0 = R - colW * sets.length;
+  [0, 1].forEach(k => {
+    const mid = y + 44 + k * 70;
+    ctx.fillStyle = k ? '#FF2E54' : '#00F0FF'; ctx.fillRect(X, mid - 22, 16, 16);
+    ctx.fillStyle = winner === k ? '#F5F7FA' : '#AEB6C2'; ctx.font = font(winner === k ? 700 : 600, 44, 'Barlow Condensed');
+    ctx.fillText(fitText(ctx, livePairName(k, m).toUpperCase(), setsX0 - X - 60), X + 34, mid - 2);
+    sets.forEach((s, c) => {
+      ctx.textAlign = 'center'; ctx.fillStyle = s[k] > s[1 - k] ? '#F5F7FA' : '#6B7584';
+      ctx.font = font(700, 52, 'Barlow Condensed'); ctx.fillText(String(s[k]), setsX0 + c * colW + colW / 2, mid);
+      ctx.textAlign = 'left';
+    });
+  });
+  const sum = (key, k) => m.players.slice(k * 2, k * 2 + 2).reduce((a, p) => a + (p[key] || 0), 0);
+  const wk = winner ?? 0;
+  const facts = [`${sum('W', wk)} winners`, `${sum('ENF', wk)} errores no forzados`];
+  if (Array.isArray(m.points) && m.points.length) facts.unshift(`${m.points.filter(p => p.w === wk).length} puntos ganados`);
+  ctx.fillStyle = '#C9D1DC'; ctx.font = font(500, 28);
+  ctx.fillText(facts.join(' · '), X, H - 70);
+  ctx.fillStyle = '#8B95A5'; ctx.font = font(500, 22); ctx.textAlign = 'right';
+  ctx.fillText('juancbr9.github.io/padel_metric_2026', R, H - 30);
+  ctx.textAlign = 'left';
 }
 
 function closePosterModal() {
@@ -21,6 +117,11 @@ async function drawPosterCanvas(matchData) {
   const W = canvas.width, H = canvas.height, X = 64, R = W - 64;
   const m = matchData;
   try { await Promise.all(['700 40px "Barlow Condensed"', 'italic 900 40px "Barlow Condensed"', '600 30px "Barlow"', '500 30px "Barlow"'].map(f => document.fonts.load(f))); } catch (e) {}
+  if (posterPhoto) {
+    drawPhotoPoster(ctx, W, H, m);
+    document.getElementById('poster-preview').src = canvas.toDataURL('image/jpeg', 0.92);
+    return;
+  }
   const C = { bg: '#030508', card: '#0D1117', line: 'rgba(255,255,255,0.08)', text: '#F5F7FA', muted: '#8B95A5', a: '#00F0FF', b: '#FF2E54', volt: '#D4FF2A' };
   const font = (w, px, fam = 'Barlow') => `${w} ${px}px "${fam}", sans-serif`;
   const sets = (m.sets || []).map((s, i) => ({ s, i })).filter(({ s }) => s[0] + s[1] > 0);

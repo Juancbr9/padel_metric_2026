@@ -110,13 +110,31 @@ function fxConfetti({ colors = ['#D4FF2A', '#FFFFFF', '#8B95A5'], count = 90 } =
 
 // Sonidos cortos sintetizados (sin archivos). Desactivados por defecto: Ajustes → Sonidos
 let fxAudio = null;
+// Golpe de pala: un chasquido corto (ruido filtrado hacia 1,9 kHz) y un golpe grave que se apaga en 70 ms
+function fxPaddleHit() {
+  const ctx = fxAudio, t = ctx.currentTime + 0.005;
+  const len = Math.floor(ctx.sampleRate * 0.06);
+  const buf = ctx.createBuffer(1, len, ctx.sampleRate);
+  const data = buf.getChannelData(0);
+  for (let i = 0; i < len; i++) data[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / len, 3);
+  const src = ctx.createBufferSource(); src.buffer = buf;
+  const bp = ctx.createBiquadFilter(); bp.type = 'bandpass'; bp.frequency.value = 1900; bp.Q.value = 1.4;
+  const g = ctx.createGain(); g.gain.value = 0.9;
+  src.connect(bp).connect(g).connect(ctx.destination); src.start(t);
+  const o = ctx.createOscillator(), og = ctx.createGain();
+  o.type = 'sine'; o.frequency.setValueAtTime(190, t); o.frequency.exponentialRampToValueAtTime(90, t + 0.07);
+  og.gain.setValueAtTime(0.35, t); og.gain.exponentialRampToValueAtTime(0.0001, t + 0.08);
+  o.connect(og).connect(ctx.destination); o.start(t); o.stop(t + 0.09);
+}
+
 function fxSound(kind) {
   if (!appSettings.sound) return;
   try {
     fxAudio = fxAudio || new (window.AudioContext || window.webkitAudioContext)();
     if (fxAudio.state === 'suspended') fxAudio.resume();
+    if (kind === 'point' || kind === 'hit') { fxPaddleHit(); return; }
+    if (kind === 'game' || kind === 'set' || kind === 'match') fxPaddleHit();
     const notes = {
-      point: [[880, 0, 0.07]],
       game: [[660, 0, 0.09], [990, 0.09, 0.14]],
       set: [[523, 0, 0.1], [659, 0.1, 0.1], [784, 0.2, 0.1], [1047, 0.3, 0.22]],
       match: [[523, 0, 0.12], [659, 0.12, 0.12], [784, 0.24, 0.12], [1047, 0.36, 0.18], [784, 0.56, 0.1], [1047, 0.66, 0.4]],

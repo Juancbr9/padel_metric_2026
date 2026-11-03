@@ -107,6 +107,10 @@ function openSettingsSheet() {
       <button type="button" class="ios-seg-option" data-theme="light" onclick="setThemePref('light')"><span class="opt-main">Claro</span></button>
       <button type="button" class="ios-seg-option" data-theme="auto" onclick="setThemePref('auto')"><span class="opt-main">Automático</span><span class="opt-sub">Como el móvil</span></button>
     </div>
+    <div class="menu-group-title">Animación de entrada</div>
+    <div class="ios-segmented cols-4" id="intro-seg">
+      ${INTRO_STYLES.map(([k, t]) => `<button type="button" class="ios-seg-option ${(appSettings.intro || 'A') === k ? 'active' : ''}" data-intro="${k}" onclick="setIntroStyle('${k}')"><span class="opt-main">${t}</span></button>`).join('')}
+    </div>
     <div class="menu-group-title">Durante el partido</div>
     <div class="menu-list">
       ${sw('voice', 'i-volume', 'Narrador de voz', 'toggleVoiceNarrator()')}
@@ -311,10 +315,13 @@ function openAboutSheet() {
 }
 
 // Novedades: se muestran una vez tras actualizar (no a quien abre la app por primera vez)
-const APP_VERSION = 16;
+const APP_VERSION = 17;
 const APP_NEWS = [
-  ['Ranking más claro', 'Cada fila muestra los últimos cinco resultados, el balance de victorias y derrotas, la racha actual y el cambio de ELO del último partido. El club y la nota media están en la ficha de cada jugador.'],
-  ['Póster del partido nuevo', 'La pareja ganadora en grande, el marcador sin solaparse, las estadísticas como en el circuito profesional y el mejor del partido.']
+  ['Póster con la foto del grupo', 'En el póster del partido, "Con la foto del grupo" pone el resultado encima de vuestra foto. Puedes mover el encuadre.'],
+  ['Marcador gigante', 'Gira el móvil durante el partido y el marcador ocupa toda la pantalla, para leerlo desde la pista.'],
+  ['Directo en la tele', 'El enlace del directo, abierto en una tele u ordenador, se ve como una retransmisión, con avisos de bola de break, de set y de partido.'],
+  ['Más vida en el partido', 'Al anotar un golpe ganador se dibuja su trayectoria, el cierre del partido se presenta como en la tele con la carta del mejor y, con los sonidos activados, suena la pala.'],
+  ['Animación de entrada', 'La P del logo se monta al abrir la app. En Ajustes puedes elegir entre tres estilos o quitarla.']
 ];
 
 function openNewsSheet() {
