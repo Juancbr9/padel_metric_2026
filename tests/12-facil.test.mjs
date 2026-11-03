@@ -46,7 +46,7 @@ export default async ({ newPage, url, assert }) => {
   await p.click('#match-end .me-discard');
   assert.equal(await p.evaluate(() => matchHistory.length), 0, 'Se puede quitar desde el cierre');
 
-  // Repetir el último partido, revancha y grupos (con datos de ejemplo)
+  // Repetir el último partido y grupos (con datos de ejemplo)
   await p.evaluate(() => loadDemoData());
   await p.waitForFunction(() => matchHistory.length > 20);
   await p.evaluate(() => switchMainTab('home'));
@@ -56,11 +56,12 @@ export default async ({ newPage, url, assert }) => {
   assert.deepEqual(await p.evaluate(() => state.players.map(x => x.name)), last, 'Repite los mismos jugadores');
   await p.evaluate(() => finishMatchManually());
   await p.waitForSelector('#match-end', { state: 'visible' });
+  assert.equal(await p.locator('#match-end button:has-text("Revancha")').count(), 0, 'El cierre ya no tiene Revancha');
   const id1 = await p.evaluate(() => state.id);
-  await p.click('#match-end button:has-text("Revancha")');
-  assert(await p.evaluate(id => state && state.id !== id && !state.matchOver, id1), 'La revancha empieza otro partido');
-  assert.deepEqual(await p.evaluate(() => state.players.map(x => x.name)), last, 'Con los mismos jugadores');
-  assert(await p.evaluate(id => matchHistory.some(m => m.id === id), id1), 'Y el anterior queda guardado');
+  await p.click('#match-end button:has-text("Salir")');
+  assert(await p.evaluate(id => matchHistory.some(m => m.id === id), id1), 'El partido terminado queda guardado');
+  await p.evaluate(() => repeatMatch(0));
+  assert(await p.evaluate(id => state && state.id !== id && !state.matchOver, id1), 'Repetir empieza otro partido');
   // Con un partido en pausa, empezar otro pregunta antes
   await p.evaluate(() => exitMatchScreen());
   await p.evaluate(() => quickMatch());

@@ -202,11 +202,13 @@ function scorePointForTeam(winningTeam, shortTag, meta = {}) {
     state.gamePointLog.push(`${state.pts[0]}-${state.pts[1]} (${shortTag})`);
     const totalPts = state.pts[0] + state.pts[1];
     if (totalPts % 2 === 1) state.serverIdx = nextServer(state.serverIdx);
-    if (totalPts > 0 && totalPts % 6 === 0) showToast('Cambio de lado (6 puntos)');
     if (state.pts[winningTeam] >= 10 && (state.pts[winningTeam] - state.pts[1 - winningTeam]) >= 2) {
       // El súper tie-break se apunta con sus puntos (p. ej. 10-8) para que cuente como set ganado
       state.sets[state.currentSet] = [...state.pts];
       winSet(winningTeam);
+    } else if (totalPts % 6 === 0) {
+      changeEnds();
+      showToast('Cambio de lado (6 puntos)');
     }
     return;
   }
@@ -215,13 +217,16 @@ function scorePointForTeam(winningTeam, shortTag, meta = {}) {
     state.gamePointLog.push(`${state.pts[0]}-${state.pts[1]} (${shortTag})`);
     const totalPts = state.pts[0] + state.pts[1];
     if (totalPts % 2 === 1) state.serverIdx = nextServer(state.serverIdx);
-    if (totalPts > 0 && totalPts % 6 === 0) showToast('Cambio de lado (6 puntos)');
     if (state.pts[winningTeam] >= 7 && (state.pts[winningTeam] - state.pts[1 - winningTeam]) >= 2) {
       state.sets[state.currentSet][winningTeam]++;
       // Tras el tie-break empieza sacando la pareja que restó el primer punto del tie-break
       if (state.tbFirstServer !== undefined && state.tbFirstServer !== null) state.serverIdx = nextServer(state.tbFirstServer);
       state.tbFirstServer = null;
-      winSet(winningTeam);
+      // El tie-break cuenta como el juego 13 del set (impar): las parejas cambian de lado para el set siguiente
+      winSet(winningTeam, { ends: true });
+    } else if (totalPts % 6 === 0) {
+      changeEnds();
+      showToast('Cambio de lado (6 puntos)');
     }
     return;
   }
@@ -268,13 +273,33 @@ function winGame(winningTeam) {
     state.tbFirstServer = state.serverIdx;
     showToast('6-6 · ¡Comienza el Tie-Break!');
   } else if ((gW >= 6 && (gW - gL) >= 2) || gW === 7) {
-    winSet(winningTeam);
+    // Si el set acaba con un total impar de juegos (6-3, 6-1…), el set siguiente empieza con las parejas cambiadas
+    winSet(winningTeam, { ends: totalGamesInSet % 2 === 1 });
   } else if (totalGamesInSet % 2 === 1) {
+    changeEnds();
     showToast('Cambio de lado');
   }
 }
 
-function winSet(winningTeam) {
+// Cambio de lado: las parejas cambian de campo en los juegos impares de cada set (1, 3, 5…), al terminar un set con
+// un total impar de juegos y cada 6 puntos del tie-break y del súper tie-break. state.ends (0 o 1) dice si están en el
+// campo contrario al del inicio; la pista del partido se gira (liveView en js/match/pista.js). Con el interruptor
+// "Cambio de lado en la pista" apagado (appSettings.autoEnds === false) solo se avisa y la pista no se mueve.
+function changeEnds() {
+  if (appSettings.autoEnds === false) return;
+  state.ends = state.ends ? 0 : 1;
+}
+
+// Desde Opciones del partido: corrige el lado si la pista no coincide con lo que se ve
+function changeEndsManual() {
+  if (!state) return;
+  vibrate(15);
+  state.ends = state.ends ? 0 : 1;
+  persistActiveMatchState();
+  updateUI();
+}
+
+function winSet(winningTeam, { ends = false } = {}) {
   state.pts = [0, 0];
   state.inTieBreak = false;
   state.inSuperTB = false;
@@ -297,11 +322,13 @@ function winSet(winningTeam) {
     showToast(`¡Partido finalizado! Guardado en Estadísticas e Historial`);
   } else if (state.currentSet < 2) {
     state.currentSet++;
+    if (ends) changeEnds();
+    const lado = ends ? ' · Cambio de lado' : '';
     if (state.currentSet === 2 && state.thirdSetRule === 'supertb') {
       state.inSuperTB = true;
-      showToast('3.er Set: ¡Súper Tie-Break a 10 puntos!');
+      showToast(`3.er Set: ¡Súper Tie-Break a 10 puntos!${lado}`);
     } else {
-      showToast(`Comienza el Set ${state.currentSet + 1}`);
+      showToast(`Comienza el Set ${state.currentSet + 1}${lado}`);
     }
   }
 }

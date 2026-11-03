@@ -113,6 +113,7 @@ function openSettingsSheet() {
       ${sw('vibration', 'i-vibrate', 'Vibración al anotar', "toggleAppSetting('vibration')")}
       ${sw('wakeLock', 'i-screen', 'Pantalla siempre encendida en partido', "toggleAppSetting('wakeLock')")}
       ${sw('sound', 'i-music', 'Sonidos en juegos, sets y partido', "toggleAppSetting('sound')")}
+      ${sw('autoEnds', 'i-swap', 'Cambio de lado automático en la pista', "toggleAppSetting('autoEnds')")}
       ${sw('remote', 'i-target', 'Anotar con mando o botones de volumen', "toggleAppSetting('remote')")}
       <button type="button" class="menu-row" onclick="openRemoteHelp()"><svg class="icon"><use href="#i-info"/></svg><span>Cómo anotar con un mando</span><span class="menu-row-hint">›</span></button>
     </div>
@@ -165,6 +166,7 @@ function renderMenuSwitches() {
   document.getElementById('sw-wakeLock')?.classList.toggle('on', appSettings.wakeLock);
   document.getElementById('sw-sound')?.classList.toggle('on', appSettings.sound);
   document.getElementById('sw-remote')?.classList.toggle('on', !!appSettings.remote);
+  document.getElementById('sw-autoEnds')?.classList.toggle('on', appSettings.autoEnds !== false);
 }
 
 function toggleAppSetting(key) {
@@ -313,8 +315,10 @@ function openAboutSheet() {
 }
 
 // Novedades: se muestran una vez tras actualizar (no a quien abre la app por primera vez)
-const APP_VERSION = 18;
+const APP_VERSION = 19;
 const APP_NEWS = [
+  ['Cambio de lado en la pista', 'En los juegos impares las parejas cambian de lado y la pista del partido se gira sola, como en la realidad. Si no coincide con lo que ves, en Opciones del partido puedes cambiar de lado las parejas o intercambiar drive y revés. Se puede apagar en Ajustes.'],
+  ['Cierre del partido más claro', 'Al terminar quedan las estadísticas, el resumen, compartir y salir.'],
   ['Anotar sencillo o avanzado', 'Por defecto, modo sencillo: desliza hacia arriba para un winner y hacia abajo para un error. En el avanzado eliges el golpe y tocas en la pista desde dónde golpeó, vista desde donde tú estás (detrás de una pareja o desde el lateral). El mapa de calor marca cada golpe en su sitio.'],
   ['Nuevo partido renovado', 'Los jugadores aparecen en su sitio de la pista con su foto, cada pareja con su nivel, botones para equilibrar o sortear parejas y el botón de empezar siempre a mano.'],
   ['Compartir mejor', 'Imagen del resultado, imagen con todas las estadísticas o resumen en texto.'],

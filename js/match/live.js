@@ -99,6 +99,7 @@ function startMatch(link = null) {
     thirdSetRule: setupConfig.thirdSetRule,
     inputMode: setupConfig.inputMode,
     view: setupConfig.view || 'p2',
+    ends: 0, // 1 = las parejas han cambiado de lado respecto al inicio (cambio de lado en los juegos impares)
     players,
     sets: [[0, 0], [0, 0], [0, 0]],
     currentSet: 0,
@@ -508,7 +509,6 @@ function openMatchEnd() {
       <button class="btn-volt" onclick="closeMatchEnd(); toggleStatsView();">Ver estadísticas</button>
       <button class="btn-icon me-wide" onclick="openMatchSummary('live')">Resumen del partido</button>
       <button class="btn-icon" onclick="openShareMatchSheet(state)">Compartir</button>
-      <button class="btn-icon" onclick="rematch()">Revancha</button>
       <button class="btn-icon" onclick="closeMatchEnd(); exitMatchScreen();">Salir</button>
     </div>
     <button type="button" class="btn-text btn-block me-discard" onclick="discardCurrentMatch()">No guardar este partido</button>`;
@@ -534,6 +534,7 @@ function openMatchOptions() {
     ${row('Tercer set', 'Se puede cambiar mientras no haya empezado', seg([['normal', 'Set normal'], ['supertb', 'Súper tie-break']], state.thirdSetRule, 'setMatchThirdSet'))}
     ${row('Cómo anotar', 'Sencillo: winner o error. Avanzado: golpe y sitio de la pista', seg(INPUT_MODES, state.inputMode, 'setMatchInputMode'))}
     ${state.inputMode === 'tap' ? row('Ves el partido', 'Para marcar bien desde dónde golpean', seg(COURT_VIEWS.map(([v, t]) => [v, t.replace('Detrás de la pareja ', 'Tras P').replace('Desde el lateral', 'Lateral')]), currentView(), 'setMatchView')) : ''}
+    ${courtPositionsHTML()}
     ${row('Cronómetro', state.timerPaused ? 'En pausa' : 'En marcha', `<button type="button" class="btn-icon" onclick="toggleTimerPause(); openMatchOptions();">${state.timerPaused ? 'Reanudar' : 'Pausar'}</button>`)}
     ${row('Narrador de voz', 'Canta el marcador tras cada punto', `<button type="button" class="btn-icon" onclick="toggleVoiceNarrator(); openMatchOptions();">${voiceEnabled ? 'Desactivar' : 'Activar'}</button>`)}
     ${row('Mando', 'Anotar con un mando Bluetooth o los botones de volumen', `<button type="button" class="btn-icon" onclick="toggleAppSetting('remote'); openMatchOptions();">${appSettings.remote ? 'Desactivar' : 'Activar'}</button>`)}

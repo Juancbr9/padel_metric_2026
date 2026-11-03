@@ -681,7 +681,7 @@ body.light-mode .match-screen-fixed { --qa: #0369A1; --qb: #BE123C; }
 .me-stat span { font-size: 0.74rem; font-weight: 500; color: #8B95A5; }
 .me-chart { margin-bottom: 1rem; }
 .me-chart-title { display: flex; justify-content: space-between; font-size: 0.78rem; font-weight: 600; color: #8B95A5; margin-bottom: 6px; }
-.me-actions { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.45rem; }
+.me-actions { display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.45rem; }
 .me-actions .btn-volt { grid-column: 1 / -1; background: #D4FF2A; color: #06090F; }
 .me-actions .btn-icon { min-height: 2.75rem; background: #151B24; color: #F5F7FA; border-color: rgba(255,255,255,0.10); }
 .confetti-canvas { position: fixed; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 95; }
@@ -1479,13 +1479,36 @@ body.light-mode .simple-act.ef strong { color: #B45309; }
 .court-arena.view-p1 .court-pair-row > :last-child, .court-arena.view-side .court-pair-row > :last-child { order: 1; }
 .court-arena.view-p1 .court-pair-row > .btn-swap-center, .court-arena.view-side .court-pair-row > .btn-swap-center { order: 2; }
 .court-arena.view-p1 .gesture-hint { order: -1; }
-.court-arena.view-side .court-bg-svg { display: none; } .court-arena.view-side .court-bg-side { display: block; }
+/* view-side2: el lateral tras el cambio de lado (la pareja 1 a la derecha; cada pareja con su drive en su sitio) */
+.court-arena:is(.view-side, .view-side2) .court-bg-svg { display: none; } .court-arena:is(.view-side, .view-side2) .court-bg-side { display: block; }
 .court-arena.view-side .court-overlay { flex-direction: row; }
-.court-arena.view-side .court-pair-row { grid-template-columns: minmax(0, 1fr); grid-template-rows: minmax(0, 1fr) 1.9rem minmax(0, 1fr); }
-.court-arena.view-side .court-pair-row > .btn-swap-center { justify-self: center; }
-.court-arena.view-side .premier-net-container { height: auto; width: 1.4rem; margin: -0.45rem 0; border-top: none; border-bottom: none; border-left: 2.5px solid #F5F7FA; border-right: 2px solid #020408; }
-.court-arena.view-side .premier-net-sign { transform: rotate(-90deg) skewX(-14deg); white-space: nowrap; }
-.court-arena.view-side .gesture-hint { display: none; }
+.court-arena.view-side2 .court-overlay { flex-direction: row-reverse; }
+.court-arena:is(.view-side, .view-side2) .court-pair-row { grid-template-columns: minmax(0, 1fr); grid-template-rows: minmax(0, 1fr) 1.9rem minmax(0, 1fr); }
+.court-arena:is(.view-side, .view-side2) .court-pair-row > .btn-swap-center { justify-self: center; }
+.court-arena:is(.view-side, .view-side2) .premier-net-container { height: auto; width: 1.4rem; margin: -0.45rem 0; border-top: none; border-bottom: none; border-left: 2.5px solid #F5F7FA; border-right: 2px solid #020408; }
+.court-arena:is(.view-side, .view-side2) .premier-net-sign { transform: rotate(-90deg) skewX(-14deg); white-space: nowrap; }
+.court-arena:is(.view-side, .view-side2) .gesture-hint { display: none; }
+/* Cambio de lado: las tarjetas aparecen en su nuevo sitio con un fundido breve */
+.court-arena.ends-swap .court-overlay { animation: endsSwap 0.42s var(--ease-out) both; }
+@keyframes endsSwap { from { opacity: 0; transform: scale(0.96); } to { opacity: 1; transform: none; } }
+
+/* Opciones del partido: posición de cada jugador en la pista (courtPositionsHTML en js/match/pista.js) */
+.mo-block { padding: 12px 0; border-bottom: 1px solid var(--border-subtle); }
+.mo-block-head strong { display: block; font-size: 0.98rem; font-weight: 600; }
+.mo-block-head small { display: block; font-size: 0.8rem; color: var(--text-secondary); margin-top: 2px; }
+.mo-court { position: relative; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); grid-template-rows: 1fr 1fr; width: min(100%, 15rem); height: 10.5rem; margin: 12px auto; border: 1px solid var(--border-subtle); border-radius: var(--r-md); background: var(--bg-obsidian); }
+.mo-court::after { content: ''; position: absolute; left: 10px; right: 10px; top: 50%; border-top: 2px solid var(--text-secondary); }
+.mo-court.is-side { width: 100%; height: 7.5rem; }
+.mo-court.is-side::after { left: 50%; right: auto; top: 10px; bottom: 10px; border-top: none; border-left: 2px solid var(--text-secondary); }
+.mo-court-p { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; min-width: 0; padding: 4px 6px; text-align: center; }
+.mo-court-p.q-tl { grid-area: 1 / 1; } .mo-court-p.q-tr { grid-area: 1 / 2; } .mo-court-p.q-bl { grid-area: 2 / 1; } .mo-court-p.q-br { grid-area: 2 / 2; }
+.mo-court-p span { display: inline-flex; align-items: center; gap: 6px; max-width: 100%; font-size: 0.92rem; font-weight: 600; }
+.mo-court-p span b { font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.mo-court-p i { flex-shrink: 0; width: 0.55rem; height: 0.55rem; border-radius: 2px; }
+.mo-court-p small { font-size: 0.72rem; color: var(--text-secondary); }
+.mo-pos-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.mo-pos-actions .btn-icon { min-height: 44px; white-space: normal; line-height: 1.2; padding: 6px 10px; }
+.mo-pos-actions .mo-wide { grid-column: 1 / -1; }
 
 /* ---------- 22. Cierre del partido de retransmisión ---------- */
 .me-mvp { display: flex; align-items: center; gap: 12px; margin: 6px 0 8px; padding: 10px 0; border-top: 1px solid rgba(255,255,255,0.08); border-bottom: 1px solid rgba(255,255,255,0.08); }

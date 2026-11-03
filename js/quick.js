@@ -1,7 +1,7 @@
 // ==========================================================
 // EMPEZAR MÁS RÁPIDO: PARTIDO RÁPIDO, REPETIR EL ÚLTIMO, REVANCHA Y GRUPOS
 // - Partido rápido: cuatro jugadores sin nombre y las reglas por defecto, sin pasar por "Nuevo partido".
-// - Repetir / revancha: los mismos cuatro jugadores y las mismas reglas que un partido anterior.
+// - Repetir: los mismos cuatro jugadores y las mismas reglas que un partido anterior.
 // - Grupos: conjuntos de cuatro jugadores habituales guardados en appSettings.groups (en este móvil).
 // - Si hay un partido en pausa, se pregunta antes de empezar otro (si no, se perdería).
 // ==========================================================
@@ -50,17 +50,6 @@ function repeatMatch(idx = 0) {
   const m = matchHistory[idx];
   if (!m || !m.players) return;
   startMatchWith(m.players.map(p => (p.isGeneric ? 'GEN' : p.name)), rulesOf(m));
-}
-
-// Revancha desde el cierre del partido: guarda el actual y empieza otro con los mismos jugadores
-function rematch() {
-  if (!state) return;
-  const slots = state.players.map(p => (p.isGeneric ? 'GEN' : p.name));
-  const rules = rulesOf(state);
-  if (state.matchOver && !state.savedToHistory) saveMatchToHistory(false);
-  localStorage.removeItem('pm_partido_activo_v14');
-  state = null;
-  startMatchWith(slots, rules);
 }
 
 // Último partido que se puede repetir: con al menos un jugador con ficha
