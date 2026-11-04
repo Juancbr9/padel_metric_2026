@@ -133,7 +133,7 @@ function openTestCodeSheet() {
   openEventModal(`
     <div class="mo-title">Código de pruebas</div>
     <p class="bc-intro">Con el código del dueño de la app, la crónica con IA y las fotos de perfil con IA no tienen límite en este móvil.</p>
-    <input type="text" id="test-code" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="PM-XXXX-XXXX" value="${escapeHtml(cur)}">
+    <input type="text" id="test-code" autocomplete="off" autocapitalize="characters" spellcheck="false" aria-label="Código de pruebas" placeholder="PM-XXXX-XXXX…" value="${escapeHtml(cur)}">
     <div class="u-grid-2 mt-14">
       <button type="button" class="btn-volt" onclick="saveTestCode()">Guardar</button>
       <button type="button" class="btn-icon" onclick="saveTestCode(true)">${cur ? 'Quitar' : 'Cancelar'}</button>

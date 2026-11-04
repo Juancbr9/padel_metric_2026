@@ -94,7 +94,7 @@ function startMatch(link = null) {
 
   state = {
     id: Date.now(),
-    date: new Date().toLocaleDateString('es-ES', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' }),
+    date: fmtDate(Date.now(), { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' }),
     deuceRule: setupConfig.deuceRule,
     thirdSetRule: setupConfig.thirdSetRule,
     inputMode: setupConfig.inputMode,
@@ -295,6 +295,7 @@ function updateUI() {
   const st = liveStatus();
   const banner = document.getElementById('status-banner');
   banner.className = `sb-status ${st.cls}`;
+  document.getElementById('banner-btn').disabled = !over;
   const bannerTxt = document.getElementById('banner-text');
   if (bannerTxt.innerHTML !== st.html) bannerTxt.innerHTML = st.html;
   document.getElementById('match-timer').classList.toggle('paused', !!state.timerPaused && !over);
@@ -498,7 +499,7 @@ function openMatchEnd() {
     <div class="me-mvp">
       ${renderAvatarHTML(mvp.name, `avatar-md ${state.players.indexOf(mvp) < 2 ? 'avatar-p1' : 'avatar-p2'}`, '', mvp.isGeneric, liveSurname(mvp).slice(0, 2).toUpperCase())}
       <div class="me-mvp-txt"><small>Mejor del partido</small><strong>${escapeHtml(liveSurname(mvp))}</strong></div>
-      <div class="me-mvp-val"><strong>${calcPlayerRating(mvp).toFixed(1).replace('.', ',')}</strong><small>${mvp.W || 0} winners</small></div>
+      <div class="me-mvp-val"><strong>${fmtNum(calcPlayerRating(mvp), 1)}</strong><small>${mvp.W || 0} winners</small></div>
     </div>
     <div class="me-line">${(state.points || []).length ? `${state.points.length} puntos · ` : ''}${state.players.reduce((a, p) => a + (p.W || 0), 0)} winners · ${state.players.reduce((a, p) => a + (p.ENF || 0), 0)} errores no forzados</div>
     ${chart ? `<div class="me-chart"><div class="me-chart-title"><span>Probabilidad de victoria</span><span>${escapeHtml(livePairName(0))}</span></div>${chart}</div>` : ''}

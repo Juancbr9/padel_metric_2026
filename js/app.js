@@ -145,7 +145,7 @@ function openDataSheet() {
     <div class="mo-title">Datos y copias de seguridad</div>
     <p class="bc-intro">Todo se guarda en este móvil. Guarda una copia de vez en cuando.</p>
     <div class="menu-list">
-      ${row('i-download', 'Guardar copia de seguridad', appSettings.lastBackupAt ? `última: ${new Date(appSettings.lastBackupAt).toLocaleDateString('es-ES', { day: 'numeric', month: 'short' })}` : '.json', 'exportBackupJSON()')}
+      ${row('i-download', 'Guardar copia de seguridad', appSettings.lastBackupAt ? `última: ${fmtDate(appSettings.lastBackupAt, { day: 'numeric', month: 'short' })}` : '.json', 'exportBackupJSON()')}
       ${row('i-upload', 'Restaurar copia de seguridad', '.json', "closeEventModal(); document.getElementById('import-file').click()")}
       ${row('i-file', 'Exportar partidos a Excel', '.csv', 'exportHistoryCSV()')}
     </div>
@@ -191,7 +191,7 @@ function exportHistoryCSV() {
     const winner = m.winnerPair === 0 ? p1 : m.winnerPair === 1 ? p2 : '';
     m.players.forEach((p, idx) => {
       rows.push([m.date, p1, p2, score, winner, Math.round((m.elapsedSec || 0) / 60), p.name, idx < 2 ? 1 : 2,
-        p.W || 0, p.ENF || 0, p.EF || 0, p.aces || 0, p.df || 0, calcPlayerRating(p).toFixed(1).replace('.', ',')].map(esc).join(';'));
+        p.W || 0, p.ENF || 0, p.EF || 0, p.aces || 0, p.df || 0, fmtNum(calcPlayerRating(p), 1)].map(esc).join(';'));
     });
   });
   const blob = new Blob(['\ufeff' + rows.join('\n')], { type: 'text/csv;charset=utf-8' });
@@ -311,8 +311,9 @@ function openAboutSheet() {
 }
 
 // Novedades: se muestran una vez tras actualizar (no a quien abre la app por primera vez)
-const APP_VERSION = 20;
+const APP_VERSION = 21;
 const APP_NEWS = [
+  ['Más cómoda de usar', 'Botones y casillas más fáciles de tocar, textos con más contraste en claro y en oscuro, se puede ampliar la pantalla con dos dedos y la app funciona mejor con el lector de pantalla y con teclado.'],
   ['Más sencilla', 'Menos textos y menos opciones repetidas: cada pantalla muestra solo lo que se usa. Las opciones del partido se quedan en lo imprescindible y el resto está en Ajustes.'],
   ['Cambio de lado en la pista', 'En los juegos impares las parejas cambian de lado y la pista del partido se gira sola, como en la realidad. Si no coincide con lo que ves, en Opciones del partido puedes cambiar de lado las parejas o intercambiar drive y revés. Se puede apagar en Ajustes.'],
   ['Cierre del partido más claro', 'Al terminar quedan las estadísticas, el resumen, compartir y salir.'],
@@ -413,3 +414,33 @@ if ('serviceWorker' in navigator) {
 if (navigator.storage && navigator.storage.persist) {
   navigator.storage.persist().catch(() => {});
 }
+
+// Hojas y menús abiertos: lo de debajo queda inerte (ni el teclado ni un lector de pantalla se van detrás) y el
+// foco entra en la hoja; al cerrarla vuelve a donde estaba
+(() => {
+  const OVERLAYS = '.sheet-backdrop, #app-menu, #match-end, #wrapped';
+  let lastFocus = null;
+  const sync = () => {
+    const open = [...document.querySelectorAll(OVERLAYS)].filter(el => !el.classList.contains('hidden'));
+    const blocked = open.length > 0;
+    for (const id of ['contenido']) { const el = document.getElementById(id); if (el && el.inert !== blocked) el.inert = blocked; }
+    const header = document.querySelector('body > header'); if (header && header.inert !== blocked) header.inert = blocked;
+    if (blocked) {
+      const top = open[open.length - 1];
+      if (!top.contains(document.activeElement)) {
+        lastFocus = lastFocus || document.activeElement;
+        const panel = top.querySelector('[role="dialog"], .app-menu-panel') || top;
+        if (!panel.hasAttribute('tabindex')) panel.setAttribute('tabindex', '-1');
+        panel.focus({ preventScroll: true });
+      }
+    } else if (lastFocus) {
+      if (document.contains(lastFocus)) lastFocus.focus({ preventScroll: true });
+      lastFocus = null;
+    }
+  };
+  const start = () => {
+    new MutationObserver(sync).observe(document.body, { subtree: true, attributes: true, attributeFilter: ['class'] });
+    sync();
+  };
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', start); else start();
+})();

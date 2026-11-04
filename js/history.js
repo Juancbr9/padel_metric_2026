@@ -33,14 +33,6 @@ function historyPairRow(m, pair) {
   </div>`;
 }
 
-function historySpark(m) {
-  const series = wpSeries(m);
-  if (!series || series.length < 3) return '';
-  const w = 120, h = 22, mid = h / 2;
-  const line = series.map((p, i) => `${i ? 'L' : 'M'}${((i / (series.length - 1)) * w).toFixed(1)} ${(mid - (p.wp - 0.5) * 2 * (mid - 1.5)).toFixed(1)}`).join('');
-  return `<svg class="hm-spark" viewBox="0 0 ${w} ${h}" preserveAspectRatio="none" aria-label="Probabilidad de victoria"><line x1="0" y1="${mid}" x2="${w}" y2="${mid}"/><path d="${line}"/></svg>`;
-}
-
 function renderHistoryList() {
   const el = document.getElementById('history-list');
   if (!el) return;
@@ -65,7 +57,7 @@ function renderHistoryList() {
     const key = `${d.getFullYear()}-${d.getMonth()}`;
     let g = months[months.length - 1];
     if (!g || g.key !== key) {
-      const label = d.toLocaleDateString('es-ES', { month: 'long', year: 'numeric' });
+      const label = fmtDate(d, { month: 'long', year: 'numeric' });
       g = { key, label: label.charAt(0).toUpperCase() + label.slice(1), items: [] };
       months.push(g);
     }
@@ -83,11 +75,11 @@ function renderHistoryList() {
         m.deuceRule ? `<span class="hm-chip">${DEUCE_NAMES[m.deuceRule] || ''}</span>` : '',
         m.elapsedSec ? `<span class="hm-chip">${formatMatchDuration(m.elapsedSec)}</span>` : ''
       ].join('');
-      return `<div class="hm-card" role="button" tabindex="0" onclick="openHistoryMatchStats(${idx})">
+      return `<div class="hm-card">
         <div class="hm-top"><span class="hm-date">${escapeHtml(m.date || '')}</span><span class="hm-chips">${chips}</span>
-          <button type="button" class="hm-more" onclick="event.stopPropagation(); openHistoryActions(${idx})" aria-label="Más opciones">···</button></div>
+          <button type="button" class="hm-more" onclick="openHistoryActions(${idx})" aria-label="Más opciones del partido">···</button></div>
         ${historyPairRow(m, 0)}${historyPairRow(m, 1)}
-        <div class="hm-foot">${historySpark(m) || '<span></span>'}<span>Ver estadísticas ›</span></div>
+        <div class="hm-foot"><button type="button" class="hm-open" onclick="openHistoryMatchStats(${idx})">Ver estadísticas ›</button></div>
       </div>`;
     }).join('')}`).join('');
 }
@@ -257,7 +249,7 @@ function shiftDemoDates(data) {
   if (shift <= 0) return;
   data.matchHistory.forEach(m => {
     m.id += shift;
-    m.date = new Date(m.id).toLocaleDateString('es-ES', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' });
+    m.date = fmtDate(m.id, { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' });
   });
   [...(data.tournaments || []), ...(data.americanos || [])].forEach(ev => {
     if (ev.createdAt) ev.createdAt += shift;

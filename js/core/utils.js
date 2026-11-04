@@ -7,6 +7,19 @@ function jsArg(text) {
   return escapeHtml(JSON.stringify(String(text ?? '')));
 }
 
+// Números y fechas en español con Intl (formateadores guardados para no crearlos en cada llamada)
+const NUM_FORMATS = {};
+function fmtNum(n, dec = 0) {
+  const f = NUM_FORMATS[dec] || (NUM_FORMATS[dec] = new Intl.NumberFormat('es-ES', { minimumFractionDigits: dec, maximumFractionDigits: dec }));
+  return f.format(Number(n) || 0);
+}
+const DATE_FORMATS = new Map();
+function fmtDate(when, opts) {
+  const key = JSON.stringify(opts || {});
+  if (!DATE_FORMATS.has(key)) DATE_FORMATS.set(key, new Intl.DateTimeFormat('es-ES', opts));
+  return DATE_FORMATS.get(key).format(when instanceof Date ? when : new Date(when));
+}
+
 function uid(prefix = 'id') {
   return `${prefix}_${Date.now().toString(36)}${Math.random().toString(36).slice(2, 7)}`;
 }
@@ -54,6 +67,7 @@ function applyTheme() {
   const pref = themePref();
   const light = pref === 'light' || (pref === 'auto' && !!themeQuery && themeQuery.matches);
   document.body.classList.toggle('light-mode', light);
+  document.documentElement.style.colorScheme = light ? 'light' : 'dark';
   // Color de la barra del navegador y de la barra de estado del móvil
   document.querySelector('meta[name="theme-color"]')?.setAttribute('content', light ? '#F4F6F8' : '#030508');
   syncNativeTheme();

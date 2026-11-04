@@ -374,8 +374,8 @@ function openSyncPanel() {
       <div id="sync-panel-status" class="sync-status">${syncStatusHTML()}</div>
       <p class="reset-text">Todos los móviles del club comparten jugadores, partidos, torneos y americanos. Cada móvil funciona sin conexión y se sincroniza solo al guardar y al abrir la app.</p>
       <button class="btn-volt" onclick="syncNow(true)">Sincronizar ahora</button>
-      <div class="form-label">Invitar a otro móvil</div>
-      <input type="text" readonly value="${escapeHtml(inviteLink())}" onclick="this.select()">
+      <label class="form-label" for="sync-link">Invitar a otro móvil</label>
+      <input type="text" id="sync-link" readonly autocomplete="off" value="${escapeHtml(inviteLink())}" onclick="this.select()">
       <button class="btn-icon btn-block" onclick="shareInvite()">Enviar invitación</button>
       <p class="reset-text mt-10">Cualquiera con este enlace puede ver y cambiar los datos del club: compártelo solo con tu grupo.</p>
       <button class="btn-icon reset-danger" onclick="leaveClub()">Dejar de sincronizar en este móvil</button>`);
@@ -384,11 +384,11 @@ function openSyncPanel() {
   openEventModal(`
     <div class="reset-title">Club compartido</div>
     <p class="reset-text">Comparte el ranking y los partidos con tu grupo. Uno crea el club y los demás se unen con el enlace.</p>
-    <div class="form-label">¿Te han enviado una invitación?</div>
-    <input type="text" id="sync-invite" placeholder="Pega aquí el enlace de invitación">
+    <label class="form-label" for="sync-invite">¿Te han enviado una invitación?</label>
+    <input type="url" inputmode="url" id="sync-invite" name="invitacion" autocomplete="off" spellcheck="false" placeholder="Pega aquí el enlace…">
     <button class="btn-volt mt-8" onclick="joinClubFromForm()">Unirme al club</button>
-    <div class="form-label mt-20">O crea un club nuevo</div>
-    <input type="text" id="sync-name" placeholder="Nombre del club (ej. Pádel de los jueves)">
+    <label class="form-label mt-20" for="sync-name">O crea un club nuevo</label>
+    <input type="text" id="sync-name" name="club" autocomplete="off" placeholder="Ej. Pádel de los jueves…">
     <button class="btn-icon btn-block" onclick="createClubFromForm()">Crear club con los datos de este móvil</button>
 `);
 }

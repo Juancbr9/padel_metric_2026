@@ -103,7 +103,8 @@ function openGroupsSheet() {
       </div>`).join('')}</div>` : '<p class="empty-note">Todavía no hay grupos guardados.</p>'}
     ${named.length === 4 ? `
       <div class="group-save">
-        <input type="text" id="group-name" maxlength="40" placeholder="Nombre del grupo (por ejemplo, Martes)">
+        <label class="field-label" for="group-name">Nombre del grupo</label>
+        <input type="text" id="group-name" name="grupo" maxlength="40" autocomplete="off" placeholder="Ej. Martes…">
         <button type="button" class="btn-volt" onclick="saveCurrentGroup()">Guardar los cuatro de la pista</button>
       </div>` : '<p class="exit-note">Para guardar un grupo, pon primero a cuatro jugadores con ficha en la pista.</p>'}`);
 }

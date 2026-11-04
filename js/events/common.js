@@ -41,7 +41,7 @@ function shuffleArray(arr) {
 }
 
 function formatEventDate(ts) {
-  return new Date(ts).toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' });
+  return fmtDate(ts, { day: '2-digit', month: 'short', year: 'numeric' });
 }
 
 // Selector de jugadores: lista con buscador (los elegidos arriba), un toque marca o desmarca, y alta rápida.
@@ -64,11 +64,11 @@ function renderPlayerChooserHTML(selected, { onToggle, onAdd, showGender = false
     </button>`;
   }).join('');
   return `
-    <input type="search" class="chooser-search" placeholder="Buscar jugador" value="${escapeHtml(chooserQuery)}" oninput="filterChooser(this)">
+    <input type="search" class="chooser-search" placeholder="Buscar jugador…" aria-label="Buscar jugador" autocomplete="off" value="${escapeHtml(chooserQuery)}" oninput="filterChooser(this)">
     <div class="chooser-list">${rows || '<span class="empty-note pad-4">No hay jugadores todavía: añádelos abajo.</span>'}</div>
     <div class="input-row mt-8">
-      <input type="text" id="quick-player-name" placeholder="Añadir jugador nuevo (nombre y apellido)" onkeydown="if(event.key==='Enter'){${onAdd}();}">
-      ${showGender ? `<select class="mw-90" id="quick-player-gender"><option value="M">Hombre</option><option value="F">Mujer</option></select>` : ''}
+      <input type="text" id="quick-player-name" name="jugador" autocomplete="off" aria-label="Añadir jugador nuevo" placeholder="Ej. Lucía Fernández…" onkeydown="if(event.key==='Enter'){${onAdd}();}">
+      ${showGender ? `<select class="mw-90" id="quick-player-gender" aria-label="Sexo del jugador nuevo"><option value="M">Hombre</option><option value="F">Mujer</option></select>` : ''}
       <button type="button" class="btn-icon" onclick="${onAdd}()" aria-label="Añadir jugador"><svg class="icon"><use href="#i-plus"/></svg></button>
     </div>`;
 }

@@ -177,6 +177,7 @@ function setTournamentResult(t, mid, sets, forcedWinner = null, historyId = null
 function clearTournamentResult(tid, mid) {
   const t = findTournament(tid);
   const m = findTMatch(t, mid);
+  const before = JSON.stringify(t); // para poder deshacer
   m.sets = null;
   m.winner = null;
   if (m.stage === 'ko') placeWinner(t, m);
@@ -184,6 +185,12 @@ function clearTournamentResult(tid, mid) {
   saveDB();
   closeEventModal();
   renderTournamentsView();
+  showToast('Resultado borrado', { label: 'Deshacer', run: () => {
+    const i = tournaments.findIndex(x => x.id === tid);
+    if (i >= 0) tournaments[i] = JSON.parse(before);
+    saveDB();
+    renderTournamentsView();
+  } });
 }
 
 function updateTournamentStatus(t) {
@@ -268,9 +275,9 @@ function openTournamentResult(tid, mid) {
   const rows = [0, 1, 2].map(i => `
     <div class="set-input-row">
       <span>Set ${i + 1}</span>
-      <input type="number" inputmode="numeric" min="0" max="20" id="rs-${i}-a" value="${val(i, 0)}" placeholder="–">
+      <input type="number" inputmode="numeric" min="0" max="20" id="rs-${i}-a" autocomplete="off" aria-label="Set ${i + 1}, juegos de la primera pareja" value="${val(i, 0)}" placeholder="–">
       <span class="set-dash">–</span>
-      <input type="number" inputmode="numeric" min="0" max="20" id="rs-${i}-b" value="${val(i, 1)}" placeholder="–">
+      <input type="number" inputmode="numeric" min="0" max="20" id="rs-${i}-b" autocomplete="off" aria-label="Set ${i + 1}, juegos de la segunda pareja" value="${val(i, 1)}" placeholder="–">
     </div>`).join('');
   openEventModal(`
     <div class="event-modal-title">${escapeHtml(stageLabel(t, m))}</div>
@@ -421,7 +428,7 @@ function renderTournamentCreateHTML() {
       <span class="pair-num">${i + 1}</span>
       <span class="pair-names">${escapeHtml(pp.join(' / '))}</span>
       <span class="elo-pill">${Math.round((eloOfName(pp[0], elos) + eloOfName(pp[1], elos)) / 2)}</span>
-      <button type="button" class="btn-icon btn-xs" onclick="removeTPair(${i})"><svg class="icon"><use href="#i-close"/></svg></button>
+      <button type="button" class="btn-icon btn-xs" onclick="removeTPair(${i})" aria-label="Quitar la pareja ${escapeHtml(pp.join(' / '))}"><svg class="icon" aria-hidden="true"><use href="#i-close"/></svg></button>
     </div>`).join('');
   const poolSelected = d.pool.filter(n => !used.includes(n));
   const chooser = renderPlayerChooserHTML(poolSelected, { onToggle: 'toggleTPool', onAdd: 'addTPoolPlayer', exclude: used });
@@ -430,8 +437,8 @@ function renderTournamentCreateHTML() {
       <h1 class="section-hero-title">Nuevo torneo</h1>
     </div>
     <div class="bento-card">
-      <div class="form-label">Nombre</div>
-      <input type="text" value="${escapeHtml(d.name)}" placeholder="Ej. Open de Otoño 2026" oninput="eventDraft.name=this.value">
+      <label class="form-label" for="ev-name">Nombre</label>
+      <input type="text" id="ev-name" name="evento" autocomplete="off" value="${escapeHtml(d.name)}" placeholder="Ej. Open de Otoño 2026…" oninput="eventDraft.name=this.value">
       <div class="form-label">Formato</div>
       ${segOptionsHTML(Object.entries(TOURNAMENT_FORMATS).map(([value, f]) => ({ value, main: f.main, sub: f.sub })), d.format, "setTDraft.bind(null,'format')")}
       <div class="form-label">Cabezas de serie</div>
@@ -495,7 +502,7 @@ function renderTournamentDetailHTML(t) {
     <div class="section-hero">
       <button type="button" class="hero-back" onclick="showTournamentList()">‹ Torneos</button>
       <div class="section-hero-kicker">${TOURNAMENT_FORMATS[t.format].main} · ${t.teams.length} parejas</div>
-      <div class="section-hero-title">${escapeHtml(t.name)}</div>
+      <h1 class="section-hero-title">${escapeHtml(t.name)}</h1>
       ${t.champion ? `<div class="champion-banner"><svg class="icon icon-lg"><use href="#i-trophy"/></svg><div><small>Campeones</small><strong>${escapeHtml(teamById(t, t.champion).players.join(' / '))}</strong></div></div>`
         : `<div class="event-progress mt-12"><i style="width:${total ? (played / total) * 100 : 0}%"></i></div><div class="event-card-sub u-rel">${played} de ${total} partidos jugados</div>`}
     </div>

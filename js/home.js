@@ -52,9 +52,10 @@ function renderHome() {
 
   // Último partido con el mismo aspecto que en el historial
   const lastCard = last ? `
-    <div class="hm-card home-last" role="button" tabindex="0" onclick="openHistoryMatchStats(0)">
+    <div class="hm-card home-last">
       <div class="hm-top"><span class="hm-date">${escapeHtml(last.date || '')}</span></div>
       ${historyPairRow(last, 0)}${historyPairRow(last, 1)}
+      <div class="hm-foot"><button type="button" class="hm-open" onclick="openHistoryMatchStats(0)">Ver estadísticas ›</button></div>
     </div>` : '';
 
   const topList = top.length ? `
@@ -81,6 +82,7 @@ function renderHome() {
     : `<button type="button" class="btn-volt home-cta" onclick="switchMainTab('setup')">Nuevo partido</button>`;
 
   box.innerHTML = `
+    <h1 class="sr-only">Inicio</h1>
     ${primary}
     ${installBannerHTML() || backupReminderHTML() || chooseMeBannerHTML()}
     ${myHomeCardHTML(statsMap)}

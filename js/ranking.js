@@ -72,9 +72,9 @@ function applyEloRatings(statsMap) {
 function rankingMainValue(item) {
   const per = (a) => (item.PJ ? a / item.PJ : 0);
   if (rankingSortBy === 'winPct') return [`${Math.round(per(item.V) * 100)} %`, 'victorias', 0];
-  if (rankingSortBy === 'avgR') return [(item.PJ ? item.ratingSum / item.PJ : 6.5).toFixed(1).replace('.', ','), 'valoración', 0];
+  if (rankingSortBy === 'avgR') return [fmtNum((item.PJ ? item.ratingSum / item.PJ : 6.5), 1), 'valoración', 0];
   if (rankingSortBy === 'W') return [item.W, 'winners', 0];
-  if (rankingSortBy === 'lowENF') return [per(item.ENF).toFixed(1).replace('.', ','), 'errores/partido', 0];
+  if (rankingSortBy === 'lowENF') return [fmtNum(per(item.ENF), 1), 'errores/partido', 0];
   if (rankingSortBy === 'bal') return [item.W - item.ENF, 'winners − errores', 0];
   if (rankingSortBy === 'elo') return [item.elo, 'ELO', item.PJ ? Math.round(item.eloDelta || 0) : 0];
   return [item.V, 'victorias', 0];
@@ -149,20 +149,20 @@ function renderGlobalRanking() {
       const lost = item.PJ - item.V;
       const [val, lbl, delta] = rankingMainValue(item);
       return `
-        <div class="rk-player-row ${item.name === myPlayerName ? 'is-me' : ''}" onclick="openPlayerProfile(${jsArg(item.name)})">
-          <div class="rk-left">
+        <button type="button" class="rk-player-row ${item.name === myPlayerName ? 'is-me' : ''}" onclick="openPlayerProfile(${jsArg(item.name)})">
+          <span class="rk-left">
             <span class="rk-rank-num">${i + 1}</span>
             ${renderAvatarHTML(item.name, '')}
-            <div class="rk-info">
-              <div class="rk-name">${escapeHtml(item.name)}${item.name === myPlayerName ? '<span class="me-tag">Tú</span>' : ''}</div>
-              <div class="rk-sub">${item.PJ ? `${formDotsHTML(item.form)}<span class="rk-rec">${item.V}-${lost}</span>` : 'Sin partidos'}</div>
-            </div>
-          </div>
-          <div class="rk-main">
+            <span class="rk-info">
+              <span class="rk-name u-block">${escapeHtml(item.name)}${item.name === myPlayerName ? '<span class="me-tag">Tú</span>' : ''}</span>
+              <span class="rk-sub u-block">${item.PJ ? `${formDotsHTML(item.form)}<span class="rk-rec">${item.V}-${lost}</span>` : 'Sin partidos'}</span>
+            </span>
+          </span>
+          <span class="rk-main">
             <strong>${val}</strong>
             <small class="${delta > 0 ? 'up' : delta < 0 ? 'down' : ''}">${delta ? `${delta > 0 ? '+' : '−'}${Math.abs(delta)}` : lbl}</small>
-          </div>
-        </div>
+          </span>
+        </button>
       `;
     }).join('')}</div>`;
   }
@@ -182,18 +182,17 @@ function renderRankingPodium(statsMap) {
   }
   // Orden visual del podio: 2.º · 1.º · 3.º
   const order = [1, 0, 2];
-  const heights = { 0: 64, 1: 46, 2: 34 };
   box.innerHTML = order.map(pos => {
     const st = top[pos];
     if (!st) return '<div></div>';
     const safe = st.name.replace(/'/g, "\\'");
     return `
-      <div class="podium-slot ${pos === 0 ? 'first' : ''}" onclick="openPlayerProfile('${safe}')">
+      <button type="button" class="podium-slot ${pos === 0 ? 'first' : ''}" onclick="openPlayerProfile('${safe}')" aria-label="${pos + 1}.º ${escapeHtml(st.name)}, ELO ${st.elo}">
         ${renderAvatarHTML(st.name, '')}
-        <div class="podium-name">${st.name.split(' ')[0]}</div>
-        <div class="podium-elo">${st.elo}</div>
-        <div class="podium-step" style="height:${heights[pos]}px;">${pos + 1}</div>
-      </div>`;
+        <span class="podium-name">${escapeHtml(st.name.split(' ')[0])}</span>
+        <span class="podium-elo">${st.elo}</span>
+        <span class="podium-step podium-h${pos}">${pos + 1}</span>
+      </button>`;
   }).join('');
 }
 
@@ -299,7 +298,7 @@ function openPlayerProfile(name, keepTab = false) {
     openEditProfileModal(name);
   };
 
-  const per = (v) => (st.PJ ? (v / st.PJ).toFixed(1).replace('.', ',') : '0');
+  const per = (v) => (st.PJ ? fmtNum((v / st.PJ), 1) : '0');
   const winPct = st.PJ ? Math.round((st.V / st.PJ) * 100) : 0;
   const tabs = [['summary', 'Resumen'], ['card', 'Carta'], ['game', 'Juego'], ['matches', 'Partidos']];
   let body = '';
@@ -322,7 +321,7 @@ function openPlayerProfile(name, keepTab = false) {
         <div><span>Último cambio ELO</span><strong class="${st.eloDelta >= 0 ? 'u-good' : 'u-bad'}">${st.PJ ? (st.eloDelta >= 0 ? '+' : '') + Math.round(st.eloDelta) : '–'}</strong></div>
         <div><span>Sets ganados</span><strong>${d.setsWon} de ${d.setsWon + d.setsLost}</strong></div>
         <div><span>Juegos ganados</span><strong>${d.gamesWon} de ${d.gamesWon + d.gamesLost}</strong></div>
-        <div><span>Tiempo en pista</span><strong>${d.timeSec >= 3600 ? (d.timeSec / 3600).toFixed(1).replace('.', ',') + ' h' : Math.round(d.timeSec / 60) + ' min'}</strong></div>
+        <div><span>Tiempo en pista</span><strong>${d.timeSec >= 3600 ? fmtNum((d.timeSec / 3600), 1) + ' h' : Math.round(d.timeSec / 60) + ' min'}</strong></div>
         <div><span>Torneos ganados</span><strong>${d.titles.length}${d.finals ? ` · ${d.finals} final${d.finals > 1 ? 'es' : ''}` : ''}</strong></div>
       </div>
       ${bestPartner || toughRival || d.americanoBest || d.titles.length ? `
@@ -356,7 +355,7 @@ function openPlayerProfile(name, keepTab = false) {
         <div><span>Errores forzados</span><strong>${st.EF}</strong></div>
         <div><span>Saques directos</span><strong>${d.aces}</strong></div>
         <div><span>Dobles faltas</span><strong>${d.df}</strong></div>
-        <div><span>Winners por error</span><strong>${st.ENF ? (st.W / st.ENF).toFixed(2).replace('.', ',') : '–'}</strong></div>
+        <div><span>Winners por error</span><strong>${st.ENF ? fmtNum((st.W / st.ENF), 2) : '–'}</strong></div>
       </div>
       <div class="sheet-category-label">Golpes ganadores</div>
       ${shotNames.map(([k, label]) => `
@@ -501,9 +500,9 @@ function renderH2H() {
     ['ELO', A.elo, B.elo, v => v],
     ['Carta (media)', cA.overall, cB.overall, v => v],
     ['% de victorias', per(A.V, A) * 100, per(B.V, B) * 100, v => `${Math.round(v)} %`],
-    ['Winners por partido', per(A.W, A), per(B.W, B), v => v.toFixed(1).replace('.', ',')],
-    ['Errores NF por partido', per(A.ENF, A), per(B.ENF, B), v => v.toFixed(1).replace('.', ','), true],
-    ['Valoración media', avgR(A), avgR(B), v => v.toFixed(1).replace('.', ',')]
+    ['Winners por partido', per(A.W, A), per(B.W, B), v => fmtNum(v, 1)],
+    ['Errores NF por partido', per(A.ENF, A), per(B.ENF, B), v => fmtNum(v, 1), true],
+    ['Valoración media', avgR(A), avgR(B), v => fmtNum(v, 1)]
   ];
   const bar = ([label, a, b, fmt, lowBetter]) => {
     const tot = Math.abs(a) + Math.abs(b) || 1;

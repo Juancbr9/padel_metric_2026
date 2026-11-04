@@ -27,12 +27,12 @@ Activos de marca (logo, iconos, tipografías): [`docs/brand-index.md`](docs/bran
 | `--bg-carbon` | `#0D1117` | Tarjetas, hojas, menú lateral. |
 | `--surface-1` | `#151B24` | Filas pulsadas, casillas, botones secundarios. |
 | `--surface-2` | `#1E2530` | Opción activa de un segmentado, pistas de barras. |
-| `--border-subtle` | `rgba(255,255,255,0.06)` | **Borde por defecto de toda tarjeta y contenedor (1 px)** y separadores de lista. |
-| `--border-specular` | `rgba(255,255,255,0.10)` | Borde de controles interactivos (botones secundarios, campos, chips). |
-| `--border-strong` | `rgba(255,255,255,0.22)` | Línea de corte de una clasificación (zona de clasificados) y asa de las hojas. |
+| `--border-subtle` | `#1C1F25` | **Borde por defecto de toda tarjeta y contenedor (1 px)** y separadores de lista. Opaco (antes `rgba(255,255,255,0.06)`): el mismo trazo sobre cualquier fondo. |
+| `--border-specular` | `#2A2E35` | Borde de controles interactivos (botones secundarios, campos, chips). |
+| `--border-strong` | `#42464D` | Línea de corte de una clasificación (zona de clasificados) y asa de las hojas. |
 | `--text-primary` | `#F5F7FA` | Texto principal y cifras. |
 | `--text-secondary` | `#8B95A5` | Etiquetas, ayudas, metadatos. |
-| `--text-tertiary` | `#5C6675` | Posiciones de tabla, cabeceras de columna, pie de página. |
+| `--text-tertiary` | `#7F8A9A` | Posiciones de tabla, pie de página. Llega a 4,5:1 sobre las tarjetas (antes `#5C6675`, 3,3:1). |
 | `--volt` | `#D4FF2A` | **Único acento.** Botón principal, saque, interruptor encendido, logotipo. |
 | `--volt-deep` | `#B8E000` | Estado pulsado del acento. |
 | `--on-volt` | `#06090F` | Texto sobre el acento. |
@@ -46,7 +46,7 @@ Activos de marca (logo, iconos, tipografías): [`docs/brand-index.md`](docs/bran
 
 El tema se elige en Ajustes: **Oscuro** (por defecto), **Claro** o **Automático** (sigue al del móvil con `prefers-color-scheme`). `applyTheme()` pone `body.light-mode` y cambia la `meta theme-color` (`#030508` / `#F4F6F8`). Lo que es una ilustración o un rótulo (la pista, el marcador, las cartas, las páginas públicas) conserva sus colores en los dos temas; en modo claro, la pista de "Nuevo partido" pasa a un azul pista muy claro (`#E3EBF5`, líneas y red claras) con las fichas de los jugadores en blanco; la pista del partido en directo conserva su azul.
 
-Mismo sistema con valores claros: fondo `#F4F6F8`, tarjetas `#FFFFFF`, borde `rgba(15,23,42,0.08)`, texto `#0B1220` / `#5B6474` / `#8A93A0`. El acento se oscurece para leerse sobre blanco (`--volt: #4D7C0F`, `--on-volt: #FFFFFF`). Parejas `#0284C7` y `#E11D48`; estados `#248A3D`, `#D70015` y `#C93400`.
+Mismo sistema con valores claros: fondo `#F4F6F8`, tarjetas `#FFFFFF`, borde `#E6E8EC` (controles `#D2D6DC`), texto `#0B1220` / `#5B6474` / `#636B78`. El acento se oscurece para leerse sobre blanco (`--volt: #4D7C0F`, `--on-volt: #FFFFFF`). Parejas `#036FAA` y `#C8143F`; estados `#1F7A35`, `#D70015` y `#C93400` (todos a 4,5:1 o más sobre los fondos claros).
 
 ### 2.3 Reglas
 
@@ -171,7 +171,11 @@ Investigación de noviembre de 2026 sobre lo que delata una interfaz generada po
 
 ## 8. Lista de comprobación antes de publicar un cambio visual
 
-- [ ] Fondo `#030508`, tarjetas `#0D1117` con borde `rgba(255,255,255,0.06)`.
+- [ ] Fondo `#030508`, tarjetas `#0D1117` con borde `#1C1F25` (opaco). Un borde o una sombra, nunca los dos.
+- [ ] Contraste de 4,5:1 en todos los textos, en oscuro y en claro; nada por debajo de 11 px ni etiquetas en mayúsculas espaciadas.
+- [ ] Títulos de pantalla entre 18 y 28 px en el móvil (32 px en pantallas anchas); ninguna cifra de 48 px o más.
+- [ ] Filtros y pestañas activos en gris neutro; un solo botón relleno por pantalla (la acción principal).
+- [ ] Accesibilidad: todo lo que se toca es `<button>` o `<a>` con nombre, 44 px de zona táctil, foco visible, campos con `<label>`, un `h1` por pantalla. Inspector: `node .claude/skills/taste-skill/scripts/inspect.mjs <pantalla> --app --widths 390`.
 - [ ] El lima solo en la acción principal, el saque y los interruptores; cian y rojo solo en datos de pareja.
 - [ ] Ninguna señal de la tabla 3.1: franjas laterales, rótulos en mayúsculas sobre títulos, recuadros de cifras, tarjetas dentro de tarjetas, iconos en botones con texto, desenfoques, degradados, contadores animados.
 - [ ] Textos con mayúscula solo al principio, sin frases de anuncio ni signos de exclamación.
