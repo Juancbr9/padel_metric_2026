@@ -63,7 +63,7 @@ function drawShareFrame(ctx, W, H, { kicker, title, subtitle }) {
   ctx.fillStyle = SHARE_THEME.muted;
   ctx.font = '600 22px "Barlow", sans-serif';
   ctx.textAlign = 'right';
-  ctx.fillText(new Date().toLocaleDateString('es-ES', { day: 'numeric', month: 'long', year: 'numeric' }), W - 64, 112);
+  ctx.fillText(fmtDate(Date.now(), { day: 'numeric', month: 'long', year: 'numeric' }), W - 64, 112);
   ctx.textAlign = 'left';
 }
 

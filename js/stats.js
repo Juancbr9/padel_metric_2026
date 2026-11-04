@@ -227,8 +227,7 @@ function wpPanelHTML(target) {
   return `
     <div class="sheet-category-label">Probabilidad de victoria</div>
     <div class="wp-panel">
-      <div class="wp-panel-head"><span>Pareja 1 arriba · pareja 2 abajo</span>
-        <span class="wp-legend"><span><i class="sw-a"></i>P1</span><span><i class="sw-b"></i>P2</span></span></div>
+      <div class="wp-panel-head"><span>Arriba, ventaja de ${escapeHtml(livePairName(0, target))}; abajo, de ${escapeHtml(livePairName(1, target))}</span></div>
       ${chart}
       <div class="wp-readout" id="wp-readout">Toca o desliza sobre el gráfico para ver cada punto.</div>
       ${keyHtml}

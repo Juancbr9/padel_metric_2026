@@ -61,6 +61,17 @@ El dueño del proyecto no es programador: explica los cambios en español y en l
 - `manifest.json`: además de los iconos, `shortcuts` (iconos en `icons/shortcut-*.png`) y `screenshots` (`assets/screenshots/`, 780 × 1688) para la ventana de instalación de Android.
 - `android/`: app nativa (como la de USAR): WebView que sirve la web desde el APK y se actualiza desde GitHub Pages (`Web.PUBLICA`; al cambiar la carpeta `android/` hay que subir `versionCode`). Ver `android/README.md`. `js/nativo.js` (se carga el primero) conecta con Android a través de `window.PadelNative`; en el navegador no hace nada. Las medidas de pantalla completa llegan como `--sa-t/--sa-b/--sa-l/--sa-r` en CSS. El APK publicado está en `descargas/PadelMetric.apk` y `/.well-known/assetlinks.json` tiene la huella de la firma.
 
+## Accesibilidad y skills de diseño (v21)
+
+- Skills en `.claude/skills/`: `taste-skill` (inspector de pantallas: `node .claude/skills/taste-skill/scripts/inspect.mjs <url o html> --app --widths 390`; como root, `CHROME_PATH` debe apuntar a un Chrome con `--no-sandbox`), `web-design-guidelines` (descarga las reglas en cada uso), `playwright-cli` (con `--config` que apunte a `/opt/pw-browsers/chromium-1194/chrome-linux/chrome`), `image-to-code` (necesita generar imágenes) y `awesome-design` (solo referencia de principios; nunca se copian marcas).
+- Todo lo que se toca es `<button>` o `<a>` con nombre accesible (iconos con `aria-label`). Las tarjetas que se abren enteras (historial, tu carta en el inicio) llevan un botón cuyo `::after` cubre la tarjeta, con los demás controles por encima. Nada de `<div onclick>` salvo los fondos de las hojas (cerrar al tocar fuera, que también tienen botón y Escape).
+- Zonas táctiles de 44 px; los enlaces de texto amplían su zona con relleno compensado y los iconos pequeños con un `::before` invisible.
+- Un `h1` por pantalla (en Inicio y Partido es `.sr-only`, porque el nombre ya se ve en la cabecera). Hay enlace «Saltar al contenido» a `<main id="contenido">`.
+- Con una hoja, el menú, el cierre o las historias abiertos, `#contenido` y la cabecera quedan `inert` y el foco entra en la hoja (observador al final de `app.js`).
+- Campos con `<label>` (o `aria-label` en buscadores), `autocomplete="off"` y ejemplos en el placeholder terminados en «…».
+- Números y fechas con `fmtNum(n, decimales)` y `fmtDate(fecha, opciones)` de `core/utils.js` (Intl, `es-ES`); no uses `toFixed().replace('.', ',')` ni `toLocaleDateString`.
+- El zoom no se bloquea; `color-scheme` y `theme-color` siguen al tema.
+
 ## Simplicidad para los clientes (v20)
 
 La app es para jugadores amateur: cada pantalla muestra solo lo que se usa. No añadas frases de ayuda permanentes (la guía del primer partido y la bienvenida ya explican lo básico), filas de cifras de adorno, opciones técnicas (proyecto de Supabase propio, datos de ejemplo o vaciar el historial en Ajustes) ni duplicados (lo que está en Ajustes no se repite en Opciones del partido). Opciones del partido solo tiene: tercer set, cómo anotar, desde dónde se ve (avanzado), posición en la pista, saque, compartir, finalizar y terminar sin guardar. Datos: copia, restaurar, Excel y "Borrar todos los datos". Los datos de ejemplo solo se ofrecen en la bienvenida y en el inicio vacío.

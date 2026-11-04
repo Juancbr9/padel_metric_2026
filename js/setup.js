@@ -95,11 +95,13 @@ function renderSetupCourt() {
     const sub = isGeneric ? 'Toca para elegir' : (parts.slice(1).join(' ') || ensureProfile(currentVal).club || '');
     card.className = `np-slot ${i < 2 ? 'a' : 'b'} ${isGeneric ? 'empty' : 'assigned'} ${isSrv ? 'initial-srv' : ''}`;
     card.innerHTML = `
-      <span class="np-side">${FIXED_COURT_SIDES[i]}</span>
-      <button type="button" class="np-serve ${isSrv ? 'active' : ''}" onclick="event.stopPropagation(); selectInitialServer(${i});" aria-label="Saca primero" title="Saca primero"><svg class="icon"><use href="#i-ball"/></svg>${isSrv ? '<span>Saca</span>' : ''}</button>
-      <span class="np-av">${isGeneric ? `<span class="np-av-empty"><svg class="icon"><use href="#i-plus"/></svg></span>` : renderAvatarHTML(currentVal, i < 2 ? 'avatar-p1' : 'avatar-p2')}</span>
-      <strong class="np-name">${escapeHtml(first)}</strong>
-      <small class="np-sub">${escapeHtml(sub)}</small>`;
+      <button type="button" class="np-pick" onclick="openPlayerPicker(${i})" aria-label="${escapeHtml(`${isGeneric ? 'Elegir' : 'Cambiar'} jugador de ${FIXED_COURT_SIDES[i].toLowerCase()} de la pareja ${i < 2 ? 1 : 2}${isGeneric ? '' : `: ${currentVal}`}`)}">
+        <span class="np-side">${FIXED_COURT_SIDES[i]}</span>
+        <span class="np-av">${isGeneric ? `<span class="np-av-empty"><svg class="icon" aria-hidden="true"><use href="#i-plus"/></svg></span>` : renderAvatarHTML(currentVal, i < 2 ? 'avatar-p1' : 'avatar-p2')}</span>
+        <strong class="np-name">${escapeHtml(first)}</strong>
+        <small class="np-sub">${escapeHtml(sub)}</small>
+      </button>
+      <button type="button" class="np-serve ${isSrv ? 'active' : ''}" onclick="selectInitialServer(${i});" aria-label="${isSrv ? 'Saca primero' : 'Que saque primero'} ${escapeHtml(first)}" aria-pressed="${isSrv}"><svg class="icon" aria-hidden="true"><use href="#i-ball"/></svg>${isSrv ? '<span>Saca</span>' : ''}</button>`;
   }
   // Rótulo de cada pareja con su nivel medio
   const { statsMap } = computeAllPlayersStats();
@@ -178,7 +180,9 @@ function selectInputMode(mode) {
   vibrate(12);
   setupConfig.inputMode = mode;
   ['tap', 'swipe'].forEach(m => {
-    document.getElementById(`inp-${m}`)?.classList.toggle('active', m === mode);
+    const b = document.getElementById(`inp-${m}`);
+    b?.classList.toggle('active', m === mode);
+    b?.setAttribute('aria-pressed', String(m === mode));
   });
   renderSetupCourt();
   renderSetupRules();

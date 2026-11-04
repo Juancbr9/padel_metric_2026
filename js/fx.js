@@ -21,7 +21,7 @@ function fxCountUp(el) {
   el.dataset.counted = String(target);
   const dec = parseInt(el.dataset.dec || '0', 10);
   const suffix = el.dataset.suffix || '';
-  el.textContent = target.toLocaleString('es-ES', { minimumFractionDigits: dec, maximumFractionDigits: dec }) + suffix;
+  el.textContent = fmtNum(target, dec) + suffix;
 }
 
 function fxScanCounters(root = document) {

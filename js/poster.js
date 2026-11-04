@@ -186,7 +186,7 @@ async function drawPosterCanvas(matchData) {
     ctx.fillStyle = C.muted; ctx.font = font(500, 26); ctx.fillText('Mejor del partido', X + 130, cy - 14);
     ctx.fillStyle = C.text; ctx.font = font(700, 54, 'Barlow Condensed');
     ctx.fillText(fitText(ctx, liveSurname(best.p, m).toUpperCase(), 420), X + 130, cy + 38);
-    ctx.textAlign = 'right'; ctx.font = font(700, 64, 'Barlow Condensed'); ctx.fillText(best.r.toFixed(1).replace('.', ','), R, cy + 12);
+    ctx.textAlign = 'right'; ctx.font = font(700, 64, 'Barlow Condensed'); ctx.fillText(fmtNum(best.r, 1), R, cy + 12);
     ctx.fillStyle = C.muted; ctx.font = font(500, 24); ctx.fillText(`valoración · ${best.p.W || 0} winners`, R, cy + 46);
     ctx.textAlign = 'left';
   }
@@ -299,7 +299,7 @@ function shareMatchStatsImage(m) {
       ctx.fillStyle = i < 2 ? '#00F0FF' : '#FF2E54'; ctx.fillRect(X, ry - 18, 14, 14);
       ctx.fillStyle = '#F5F7FA'; ctx.font = '600 32px "Barlow Condensed", sans-serif'; ctx.fillText(fitText(ctx, p.isGeneric ? `Jugador ${i + 1}` : p.name, 440), X + 26, ry);
       const r = calcPlayerRating(p);
-      const vals = { W: p.W || 0, ENF: p.ENF || 0, EF: p.EF || 0, val: r.toFixed(1).replace('.', ',') };
+      const vals = { W: p.W || 0, ENF: p.ENF || 0, EF: p.EF || 0, val: fmtNum(r, 1) };
       cols.forEach(([k, , x]) => {
         ctx.textAlign = 'right'; ctx.fillStyle = k === 'val' && r === best ? '#F5F7FA' : '#C9D1DC';
         ctx.font = `${k === 'val' && r === best ? 700 : 500} 32px "Barlow Condensed", sans-serif`; ctx.fillText(String(vals[k]), x, ry); ctx.textAlign = 'left';

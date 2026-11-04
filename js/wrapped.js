@@ -229,7 +229,7 @@ function wrapSlides(w) {
     slides.push({ cls: 'w-best', html: `
       <div class="w-kicker">${Su} mejor partido</div>
       <div class="w-name">${score || (b.won ? 'Victoria' : 'Derrota')}</div>
-      <div class="w-sub">${b.won ? 'Victoria' : 'Derrota'} con ${escapeHtml(shortName(b.partner))} contra ${escapeHtml(pairLabel(b.rivals))}${t ? `, el ${new Date(t).toLocaleDateString('es-ES', { day: 'numeric', month: 'long' })}` : ''}.</div>
+      <div class="w-sub">${b.won ? 'Victoria' : 'Derrota'} con ${escapeHtml(shortName(b.partner))} contra ${escapeHtml(pairLabel(b.rivals))}${t ? `, el ${fmtDate(t, { day: 'numeric', month: 'long' })}` : ''}.</div>
       <div class="w-lines">
         ${line('Valoración', dec(b.rating))}
         ${line('Winners', b.p.W || 0)}

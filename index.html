@@ -2,8 +2,9 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <meta name="theme-color" content="#030508">
+  <meta name="color-scheme" content="dark light">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -36,6 +37,7 @@
   </script>
 </head>
 <body>
+<a class="skip-link" href="#contenido">Saltar al contenido</a>
 <!-- Animación de entrada (js/intro.js): está en el marcado para que sea lo primero que se pinta y no se vea
      antes el logo montado. Solo se muestra si el script del <head> pone la clase "intro-on" en <html>. -->
 <div id="intro-splash" class="intro-splash" aria-hidden="true">
@@ -180,12 +182,12 @@
     </div>
     <div class="menu-footer">
       <svg class="menu-footer-logo"><use href="#logo-mark"/></svg>
-      <span id="app-version-label" onclick="versionTap()">Padel Metric · v20</span>
+      <button type="button" id="app-version-label" class="version-btn" onclick="versionTap()">Padel Metric · v21</button>
     </div>
   </nav>
 </div>
 
-<div class="container">
+<main id="contenido" class="container" tabindex="-1">
 
   <!-- PANTALLA 0: INICIO -->
   <div id="view-home" class="hidden"></div>
@@ -218,13 +220,13 @@
           <line x1="1" y1="29" x2="99" y2="29"/><line x1="1" y1="101" x2="99" y2="101"/><line x1="50" y1="29" x2="50" y2="101"/>
         </svg>
         <div class="np-half">
-          <div id="setup-slot-0" class="np-slot" onclick="openPlayerPicker(0)"></div>
-          <div id="setup-slot-1" class="np-slot" onclick="openPlayerPicker(1)"></div>
+          <div id="setup-slot-0" class="np-slot"></div>
+          <div id="setup-slot-1" class="np-slot"></div>
         </div>
-        <div class="np-net"><span>RED</span></div>
+        <div class="np-net" aria-hidden="true"><span>Red</span></div>
         <div class="np-half">
-          <div id="setup-slot-2" class="np-slot" onclick="openPlayerPicker(2)"></div>
-          <div id="setup-slot-3" class="np-slot" onclick="openPlayerPicker(3)"></div>
+          <div id="setup-slot-2" class="np-slot"></div>
+          <div id="setup-slot-3" class="np-slot"></div>
         </div>
       </div>
       <div class="np-pair-label b" id="np-pair-b"></div>
@@ -269,7 +271,7 @@
       <button type="button" data-tab="h2h" onclick="setRankingTab('h2h')">Cara a cara</button>
     </div>
     <div id="rk-panel-players">
-      <div class="hist-search"><svg class="icon"><use href="#i-target"/></svg><input type="search" id="search-player-input" placeholder="Buscar jugador" oninput="renderGlobalRanking()"></div>
+      <div class="hist-search"><svg class="icon"><use href="#i-target"/></svg><input type="search" id="search-player-input" placeholder="Buscar jugador…" aria-label="Buscar jugador" autocomplete="off" oninput="renderGlobalRanking()"></div>
       <div class="rk-filter-row">
         <div class="rk-gender">
           <button type="button" class="sort-chip active" id="sexflt-all" onclick="setRankingGenderFilter('all')">Todos</button>
@@ -319,7 +321,7 @@
       <h1 class="section-hero-title">Historial</h1>
     </div>
     <div class="hist-tools">
-      <div class="hist-search"><svg class="icon"><use href="#i-target"/></svg><input type="search" id="history-search" placeholder="Buscar jugador o pareja" oninput="renderHistoryList()"></div>
+      <div class="hist-search"><svg class="icon"><use href="#i-target"/></svg><input type="search" id="history-search" placeholder="Buscar jugador o pareja…" aria-label="Buscar jugador o pareja" autocomplete="off" oninput="renderHistoryList()"></div>
       <div id="history-filters" class="sort-strip"></div>
     </div>
     <div id="history-list"></div>
@@ -333,10 +335,11 @@
 
   <!-- PANTALLA 4: PARTIDO EN VIVO (ALTURA 100% FIJA SIN DESPLAZAMIENTOS) -->
   <div id="view-match" class="match-screen-fixed hidden">
+    <h1 class="sr-only">Partido en directo</h1>
     <!-- MARCADOR DE RETRANSMISIÓN -->
     <div id="scoreboard-box" class="sb">
-      <div id="status-banner" class="sb-status" onclick="if(state && state.matchOver) openMatchEnd()">
-        <span class="sb-status-left"><span class="live-dot"></span><span id="banner-text">SET 1</span></span>
+      <div id="status-banner" class="sb-status">
+        <button type="button" id="banner-btn" class="sb-status-left" onclick="if(state && state.matchOver) openMatchEnd()" disabled><span class="live-dot"></span><span id="banner-text">Set 1</span></button>
         <button type="button" id="match-timer" class="sb-timer" onclick="event.stopPropagation(); toggleTimerPause();">00:00</button>
       </div>
       <div class="sb-rows">
@@ -467,13 +470,13 @@
       <button id="btn-manual-save" class="btn-icon btn-tall" onclick="saveMatchToHistory(true)">Guardar en el historial</button>
     </div>
   </div>
-</div>
+</main>
 
 
 
 <!-- MODAL SELECTOR DE JUGADOR ANCLADO EN LA PARTE SUPERIOR DE LA PANTALLA -->
 <div id="player-picker-modal" class="sheet-backdrop top-pinned hidden" onclick="closePlayerPicker()">
-  <div class="telemetry-sheet full-top-sheet" onclick="event.stopPropagation()">
+  <div class="telemetry-sheet full-top-sheet" role="dialog" aria-modal="true" onclick="event.stopPropagation()">
     <div class="sheet-head no-shrink mb-8">
       <div class="sheet-title" id="picker-title">Elegir jugador</div>
       <div class="u-row-6">
@@ -481,14 +484,14 @@
         <button class="btn-icon btn-sm" onclick="closePlayerPicker()" aria-label="Cerrar"><svg class="icon"><use href="#i-close"/></svg></button>
       </div>
     </div>
-    <input class="no-shrink" type="text" id="picker-search" placeholder="Buscar jugador o escribir nombre nuevo..." oninput="renderPickerList()" onkeydown="handlePickerSearchEnter(event)">
+    <input class="no-shrink" type="text" id="picker-search" placeholder="Buscar o escribir un nombre nuevo…" aria-label="Buscar jugador o escribir un nombre nuevo" autocomplete="off" oninput="renderPickerList()" onkeydown="handlePickerSearchEnter(event)">
     <div id="picker-list" class="picker-list"></div>
   </div>
 </div>
 
 <!-- MODAL PROFESIONAL DE AJUSTES DEL PARTIDO (REGLAS + CONTROL INTEGRADO) -->
 <div id="rules-modal" class="sheet-backdrop hidden" onclick="closeRulesModal()">
-  <div class="telemetry-sheet" onclick="event.stopPropagation()">
+  <div class="telemetry-sheet" role="dialog" aria-modal="true" onclick="event.stopPropagation()">
     <div class="sheet-head mb-14">
       <div>
         <div class="sheet-title">Reglas del partido</div>
@@ -561,31 +564,15 @@
         <span class="settings-group-hint">Se puede cambiar durante el partido en Opciones</span>
       </div>
       <div class="control-mode-grid">
-        <div class="control-mode-card active" id="inp-swipe" onclick="selectInputMode('swipe')">
-          <div class="control-card-top">
-            <div class="control-icon-box">
-              <svg class="icon"><use href="#i-swipe"/></svg>
-            </div>
-            <div class="control-radio-dot"></div>
-          </div>
-          <div>
-            <div class="control-card-title">Sencillo</div>
-            <div class="control-card-desc">Desliza ↑ winner o ↓ error no forzado y se anota al momento</div>
-          </div>
-        </div>
+        <button type="button" class="control-mode-card active" id="inp-swipe" onclick="selectInputMode('swipe')" aria-pressed="true">
+          <span class="control-card-top"><span class="control-card-title">Sencillo</span><span class="control-radio-dot" aria-hidden="true"></span></span>
+          <span class="control-card-desc">Desliza ↑ winner o ↓ error no forzado y se anota al momento</span>
+        </button>
 
-        <div class="control-mode-card" id="inp-tap" onclick="selectInputMode('tap')">
-          <div class="control-card-top">
-            <div class="control-icon-box">
-              <svg class="icon"><use href="#i-tap"/></svg>
-            </div>
-            <div class="control-radio-dot"></div>
-          </div>
-          <div>
-            <div class="control-card-title">Avanzado</div>
-            <div class="control-card-desc">Elige el golpe con su dibujo y marca en la pista desde dónde golpeó: mapa de calor exacto</div>
-          </div>
-        </div>
+        <button type="button" class="control-mode-card" id="inp-tap" onclick="selectInputMode('tap')" aria-pressed="false">
+          <span class="control-card-top"><span class="control-card-title">Avanzado</span><span class="control-radio-dot" aria-hidden="true"></span></span>
+          <span class="control-card-desc">Elige el golpe con su dibujo y marca en la pista desde dónde golpeó: mapa de calor exacto</span>
+        </button>
       </div>
     </div>
   </div>
@@ -593,7 +580,7 @@
 
 <!-- PANEL DEL GOLPE: WINNER, ERROR NO FORZADO O ERROR FORZADO Y QUÉ GOLPE FUE -->
 <div id="action-modal" class="sheet-backdrop hidden" onclick="closeModal()">
-  <div class="telemetry-sheet shot-sheet" onclick="event.stopPropagation()">
+  <div class="telemetry-sheet shot-sheet" role="dialog" aria-modal="true" onclick="event.stopPropagation()">
     <div class="shot-sheet-head">
       <div><small id="modal-player-side">Drive</small><div id="modal-player-title">Jugador</div></div>
       <button class="btn-icon" onclick="closeModal()" aria-label="Cerrar"><svg class="icon"><use href="#i-close"/></svg></button>
@@ -605,7 +592,7 @@
 
 <!-- MODAL DE FICHA INDIVIDUAL DE JUGADOR -->
 <div id="player-profile-modal" class="sheet-backdrop hidden" onclick="closePlayerProfile()">
-  <div class="telemetry-sheet" onclick="event.stopPropagation()">
+  <div class="telemetry-sheet" role="dialog" aria-modal="true" onclick="event.stopPropagation()">
     <div class="sheet-head">
       <div class="u-row-10">
         <div id="prof-avatar" class="avatar-circle avatar-lg">JR</div>
@@ -625,7 +612,7 @@
 
 <!-- MODAL DE EDICIÓN / ALTA COMPLETA DE JUGADOR CON ENCUADRE INTERACTIVO DE FOTO -->
 <div id="player-edit-modal" class="sheet-backdrop hidden" onclick="closeEditProfileModal()">
-  <div class="telemetry-sheet" onclick="event.stopPropagation()">
+  <div class="telemetry-sheet" role="dialog" aria-modal="true" onclick="event.stopPropagation()">
     <div class="sheet-head mb-12">
       <div class="sheet-title" id="edit-modal-title">Datos del jugador</div>
       <button class="btn-icon btn-sm" onclick="closeEditProfileModal()" aria-label="Cerrar"><svg class="icon"><use href="#i-close"/></svg></button>
@@ -658,15 +645,19 @@
     </div>
 
     <div class="input-row">
-      <input type="text" id="edit-first-name" placeholder="Nombre (obligatorio)" oninput="updateEditAvatarInitialsPreview()">
-      <input type="text" id="edit-last-name" placeholder="Apellidos" oninput="updateEditAvatarInitialsPreview()">
+      <span class="field-col"><label class="field-label" for="edit-first-name">Nombre</label>
+      <input type="text" id="edit-first-name" name="nombre" autocomplete="off" placeholder="Ej. Carlos…" oninput="updateEditAvatarInitialsPreview()"></span>
+      <span class="field-col"><label class="field-label" for="edit-last-name">Apellidos</label>
+      <input type="text" id="edit-last-name" name="apellidos" autocomplete="off" placeholder="Ej. Martín Ruiz…" oninput="updateEditAvatarInitialsPreview()"></span>
     </div>
 
+    <label class="field-label" for="edit-club">Club</label>
     <div class="input-row">
-      <input type="text" id="edit-club" placeholder="Club habitual o instalación">
+      <input type="text" id="edit-club" name="club" autocomplete="off" placeholder="Ej. Club Pádel Norte…">
     </div>
+    <label class="field-label" for="edit-racket">Pala (opcional)</label>
     <div class="input-row">
-      <input type="text" id="edit-racket" maxlength="40" placeholder="Pala que usa (opcional)">
+      <input type="text" id="edit-racket" name="pala" autocomplete="off" maxlength="40" placeholder="Ej. pala de control…">
     </div>
 
     <span class="field-label">Sexo</span>
@@ -689,8 +680,8 @@
     <span class="field-label">Color de su carta</span>
     <div class="pc-swatches mb-10" id="edit-card-colors"></div>
 
-    <span class="field-label">Notas</span>
-    <textarea id="edit-notes" placeholder="Ej. Torneo San Andrés, buen bloqueo de revés..."></textarea>
+    <label class="field-label" for="edit-notes">Notas</label>
+    <textarea id="edit-notes" name="notas" autocomplete="off" placeholder="Ej. Torneo San Andrés, buen bloqueo de revés…"></textarea>
 
     <button class="btn-volt mt-12" onclick="saveEditedProfile()">Guardar ficha</button>
   </div>
@@ -698,7 +689,7 @@
 
 <!-- MODAL DE RESULTADOS DE TORNEOS Y AMERICANOS -->
 <div id="event-modal" class="sheet-backdrop hidden" onclick="closeEventModal()">
-  <div class="telemetry-sheet" onclick="event.stopPropagation()">
+  <div class="telemetry-sheet" role="dialog" aria-modal="true" onclick="event.stopPropagation()">
     <div class="u-end"><button class="btn-icon btn-sm" onclick="closeEventModal()" aria-label="Cerrar"><svg class="icon"><use href="#i-close"/></svg></button></div>
     <div id="event-modal-body"></div>
   </div>
@@ -712,12 +703,12 @@
 
 <!-- CIERRE DEL PARTIDO -->
 <div id="match-end" class="match-end hidden" onclick="closeMatchEnd()">
-  <div id="match-end-card" class="me-card" onclick="event.stopPropagation()"></div>
+  <div id="match-end-card" class="me-card" role="dialog" aria-modal="true" aria-label="Partido finalizado" onclick="event.stopPropagation()"></div>
 </div>
 
 <!-- MODAL DE PÓSTER HD -->
 <div id="poster-modal" class="sheet-backdrop hidden" onclick="closePosterModal()">
-  <div class="telemetry-sheet" onclick="event.stopPropagation()">
+  <div class="telemetry-sheet" role="dialog" aria-modal="true" onclick="event.stopPropagation()">
     <div class="sheet-head">
       <div class="sheet-title" id="poster-modal-title">Póster del partido</div>
       <button class="btn-icon btn-sm" onclick="closePosterModal()" aria-label="Cerrar"><svg class="icon"><use href="#i-close"/></svg></button>

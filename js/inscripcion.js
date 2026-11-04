@@ -271,7 +271,7 @@ function renderSignupSpectator(d) {
   const form = `
     <div class="spe-card-title">${signupEditing ? 'Cambia tu nombre' : 'Apúntate'}</div>
     <div class="spj-form">
-      <input type="text" id="spj-name" maxlength="40" placeholder="Nombre y apellido" value="${escapeHtml(prefill)}" autocomplete="name" onkeydown="if(event.key==='Enter') submitSignup()">
+      <input type="text" id="spj-name" maxlength="40" placeholder="Ej. Lucía Fernández…" aria-label="Tu nombre y apellido" value="${escapeHtml(prefill)}" autocomplete="name" onkeydown="if(event.key==='Enter') submitSignup()">
       ${d.mixed ? `<div class="spj-seg">
         <button type="button" id="spj-g-M" class="${signupGender === 'M' ? 'active' : ''}" onclick="pickSignupGender('M')">Hombre</button>
         <button type="button" id="spj-g-F" class="${signupGender === 'F' ? 'active' : ''}" onclick="pickSignupGender('F')">Mujer</button>

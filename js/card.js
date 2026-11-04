@@ -177,7 +177,7 @@ function openChooseMeSheet() {
   openEventModal(`
     <div class="mo-title">¿Quién eres?</div>
     <p class="bc-intro">Elige tu jugador: el inicio mostrará tu carta, tu ELO y tu temporada, y el ranking y el historial te marcarán.</p>
-    <input type="search" id="me-search" placeholder="Buscar" oninput="filterChooseMe(this.value)">
+    <input type="search" id="me-search" placeholder="Buscar jugador…" aria-label="Buscar jugador" autocomplete="off" oninput="filterChooseMe(this.value)">
     <div class="me-list" id="me-list">${list.map(n => {
       const st = statsMap[n];
       return `<button type="button" class="me-row" data-q="${escapeHtml(n.toLowerCase())}" onclick="chooseMe(${jsArg(n)})">
@@ -303,13 +303,13 @@ function myHomeCardHTML(statsMap) {
   const ranked = Object.values(statsMap).filter(s => s.PJ > 0).sort((a, b) => b.elo - a.elo);
   const pos = ranked.findIndex(s => s.name === myPlayerName) + 1;
   return `
-    <div class="home-me" role="button" tabindex="0" onclick="openPlayerProfile(${jsArg(myPlayerName)}); setProfileTab('card')">
-      <div class="home-me-card">${playerCardHTML(card, { mini: true })}</div>
+    <div class="home-me">
+      <div class="home-me-card" aria-hidden="true">${playerCardHTML(card, { mini: true })}</div>
       <div class="home-me-info">
-        <strong>${escapeHtml(myPlayerName)}</strong>
+        <button type="button" class="home-me-open" onclick="openPlayerProfile(${jsArg(myPlayerName)}); setProfileTab('card')">${escapeHtml(myPlayerName)}</button>
         <span>ELO <b>${card.elo}</b>${pos ? ` · ${pos}.º del ranking` : ''}</span>
         <span>${card.PJ ? `<b>${card.V}</b> de ${card.PJ} ganados` : 'Sin partidos todavía'}${card.form && card.form.length ? ` ${formDotsHTML(card.form)}` : ''}</span>
-        ${card.PJ ? `<span class="home-me-link" role="button" onclick="event.stopPropagation(); openWrapped(${jsArg(myPlayerName)})">Tu temporada ›</span>` : ''}
+        ${card.PJ ? `<button type="button" class="home-me-link" onclick="openWrapped(${jsArg(myPlayerName)})">Tu temporada ›</button>` : ''}
       </div>
     </div>`;
 }

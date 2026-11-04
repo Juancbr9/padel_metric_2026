@@ -539,8 +539,8 @@ function renderAmericanoCreateHTML() {
       <h1 class="section-hero-title">Nuevo evento</h1>
     </div>
     <div class="bento-card">
-      <div class="form-label">Nombre</div>
-      <input type="text" value="${escapeHtml(d.name)}" placeholder="Ej. Americano del viernes" oninput="eventDraft.name=this.value">
+      <label class="form-label" for="ev-name">Nombre</label>
+      <input type="text" id="ev-name" name="evento" autocomplete="off" value="${escapeHtml(d.name)}" placeholder="Ej. Americano del viernes…" oninput="eventDraft.name=this.value">
       <div class="form-label">Modalidad</div>
       ${segOptionsHTML(Object.entries(AMERICANO_FORMATS).map(([value, f]) => ({ value, main: f.main, sub: f.sub })), d.format, "setADraft.bind(null,'format')")}
       <div class="form-label">Tipo de partido</div>
@@ -694,7 +694,7 @@ function renderAmericanoDetailHTML(ev) {
     <div class="section-hero">
       <button type="button" class="hero-back" onclick="showAmericanoList()">‹ Eventos</button>
       <div class="section-hero-kicker">${AMERICANO_FORMATS[ev.format].main} · ${ev.players.length} jugadores</div>
-      <div class="section-hero-title">${escapeHtml(ev.name)}</div>
+      <h1 class="section-hero-title">${escapeHtml(ev.name)}</h1>
       ${podium}
     </div>
     <div class="event-share-row">

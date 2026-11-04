@@ -73,27 +73,25 @@ function renderPickerList() {
   if (rawQuery.length > 0 && !exactMatch) {
     const safeName = rawQuery.replace(/'/g, "\\'");
     html += `
-      <div class="picker-item create-instant" onclick="createAndAssignOnTheFly('${safeName}')">
-        <span class="picker-name">
-          Añadir a «${rawQuery}»
-        </span>
+      <button type="button" class="picker-item create-instant" onclick="createAndAssignOnTheFly('${safeName}')">
+        <span class="picker-name">Añadir a «${escapeHtml(rawQuery)}»</span>
         <span class="picker-badge">Nuevo</span>
-      </div>
+      </button>
     `;
   }
 
   const genKey = `GEN_${activePickerSlot}`;
   html += `
-    <div class="picker-item ${currentAssigned === genKey ? 'current-slot' : ''}" onclick="assignPlayerToSlot('${genKey}')">
-      <div class="u-row-10">
+    <button type="button" class="picker-item ${currentAssigned === genKey ? 'current-slot' : ''}" onclick="assignPlayerToSlot('${genKey}')">
+      <span class="u-row-10">
         <span class="avatar-circle">J${activePickerSlot + 1}</span>
-        <div>
-          <div class="picker-name">Jugador ${activePickerSlot + 1} sin nombre</div>
-          <div class="picker-sub">Sus estadísticas no se guardan en el ranking</div>
-        </div>
-      </div>
+        <span class="u-block">
+          <span class="picker-name u-block">Jugador ${activePickerSlot + 1} sin nombre</span>
+          <span class="picker-sub u-block">Sus estadísticas no se guardan en el ranking</span>
+        </span>
+      </span>
       <span class="picker-badge"></span>
-    </div>
+    </button>
   `;
 
   const filtered = dbPlayers.filter(name => {
@@ -118,18 +116,16 @@ function renderPickerList() {
     const subInfo = [prof.club, { Drive: 'Drive', 'Revés': 'Revés', Ambas: 'Ambos lados' }[prof.prefSide] || ''].filter(Boolean).join(' · ') || (st.PJ ? `${st.V} de ${st.PJ} ganados` : 'Sin partidos');
 
     html += `
-      <div class="picker-item ${isCurrent ? 'current-slot' : ''} ${isOtherSlot ? 'disabled-slot' : ''}" onclick="assignPlayerToSlot('${safeName}')">
-        <div class="u-row-10 u-min0">
+      <button type="button" class="picker-item ${isCurrent ? 'current-slot' : ''} ${isOtherSlot ? 'disabled-slot' : ''}" onclick="assignPlayerToSlot('${safeName}')">
+        <span class="u-row-10 u-min0">
           ${renderAvatarHTML(name, '')}
-          <div class="u-min0">
-            <div class="picker-name u-ellipsis">${name}</div>
-            <div class="picker-sub u-ellipsis">${subInfo}</div>
-          </div>
-        </div>
-        <span class="picker-badge accent">
-          ${isOtherSlot ? `En pista` : `Val. ${avgR}`}
+          <span class="u-min0 u-block">
+            <span class="picker-name u-ellipsis u-block">${escapeHtml(name)}</span>
+            <span class="picker-sub u-ellipsis u-block">${escapeHtml(subInfo)}</span>
+          </span>
         </span>
-      </div>
+        <span class="picker-badge accent">${isOtherSlot ? 'En pista' : `Val. ${avgR}`}</span>
+      </button>
     `;
   });
 
@@ -414,7 +410,7 @@ function openPlayerSearch({ title = 'Elegir jugador', exclude = [], onPick } = {
     .sort((a, b) => ((statsMap[b] && statsMap[b].PJ) || 0) - ((statsMap[a] && statsMap[a].PJ) || 0) || a.localeCompare(b, 'es'));
   openEventModal(`
     <div class="mo-title">${escapeHtml(title)}</div>
-    <input type="search" id="ps-search" placeholder="Buscar jugador o club" oninput="filterPlayerSearch(this.value)">
+    <input type="search" id="ps-search" placeholder="Buscar jugador o club…" aria-label="Buscar jugador o club" autocomplete="off" oninput="filterPlayerSearch(this.value)">
     <div class="me-list" id="ps-list">${list.map(n => {
       const st = statsMap[n];
       const club = ensureProfile(n).club || '';

@@ -73,7 +73,7 @@ function shareToMatch(a) {
   const won = winner === 0 || winner === 1;
   return {
     id: Math.round(+id) || Date.now(),
-    date: new Date(Math.round(+id) || Date.now()).toLocaleDateString('es-ES', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' }),
+    date: fmtDate(Math.round(+id) || Date.now(), { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' }),
     deuceRule: LINK_DEUCE[deuce] || 'adv',
     thirdSetRule: third ? 'supertb' : 'normal',
     players: players.map((p, i) => ({
@@ -222,14 +222,14 @@ function renderSharedMatch() {
       <span class="spx-pts">${m.matchOver && w === t ? '<svg class="icon"><use href="#i-trophy"/></svg>' : ''}</span>
     </div>`;
   const spark = sparkDecode(m.shared && m.shared.spark);
-  const when = new Date(m.id).toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+  const when = fmtDate(m.id, { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
   const saved = sharedMatchSaved();
   box.innerHTML = `${spectatorHeadHTML()}
     <div class="spx-board">
       <div class="spx-status sb-status">
         <span class="spx-badge ${m.matchOver ? 'over' : 'off'}">${m.matchOver ? 'Final' : 'Parcial'}</span>
         <span class="spx-status-txt">${escapeHtml(m.shared.label || 'Resultado del partido')}</span>
-        <span class="spx-time">${escapeHtml(new Date(m.id).toLocaleDateString('es-ES', { day: 'numeric', month: 'short' }))}</span>
+        <span class="spx-time">${escapeHtml(fmtDate(m.id, { day: 'numeric', month: 'short' }))}</span>
       </div>
       ${row(0)}${row(1)}
       ${spark.length > 2 ? `${spxSparkSVG(spark)}<div class="spx-wp-label">Probabilidad de victoria, punto a punto</div>` : ''}
@@ -378,9 +378,9 @@ function renderSharedPlayer() {
   if (!p || !box) return;
   const sideTxt = { Drive: 'juega de drive', 'Revés': 'juega de revés' }[p.side] || 'juega en los dos lados';
   const pct = p.PJ ? Math.round((p.V / p.PJ) * 100) : 0;
-  const mins = p.minutes >= 60 ? `${(p.minutes / 60).toFixed(1).replace('.', ',')} h` : `${p.minutes} min`;
+  const mins = p.minutes >= 60 ? `${fmtNum((p.minutes / 60), 1)} h` : `${p.minutes} min`;
   const row = (label, value) => (value ? `<div class="sp-row"><span>${label}</span><strong>${value}</strong></div>` : '');
-  const when = new Date(p.at).toLocaleDateString('es-ES', { day: 'numeric', month: 'long', year: 'numeric' });
+  const when = fmtDate(p.at, { day: 'numeric', month: 'long', year: 'numeric' });
   box.innerHTML = `${spectatorHeadHTML()}
     <div class="sp-hero">
       ${playerCardHTML(p, { profile: { prefSide: p.side, hand: p.hand, club: p.club, racket: p.racket, cardColor: p.cardColor, photo: null } })}
